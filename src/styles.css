@@ -1,9 +1,31 @@
+/* Base Styles */
 html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
-.hud { position: fixed; top: 12px; left: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; backdrop-filter: blur(6px); }
+
+/* Windows Shell Container (1280x720 - ROG Ally Resolution) */
+#windows-shell {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1280px;
+  height: 720px;
+  background: #1c1f25;
+  border-radius: 0px;
+  overflow: hidden;
+}
+
+/* HUD Container (Outside shell for debugging) */
+#hud-container { position: fixed; top: 12px; left: 12px; }
+.hud { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; backdrop-filter: blur(6px); }
 .hud h2 { margin: 0 0 6px 0; font-size: 14px; font-weight: 600; opacity: .9 }
 .hud pre { margin: 0; font-size: 12px; line-height: 1.35; white-space: pre-wrap; }
-.pill { display:inline-block; padding: 2px 8px; border-radius: 999px; border:1px solid rgba(255,255,255,0.18); font-size: 12px; margin-right: 6px; }
-.center { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+
+/* Status and Debug Containers */
+#status-container { position: fixed; top: 12px; right: 12px; }
+#debug-container { position: fixed; bottom: 12px; left: 12px; }
+
+/* Utility Classes */
+.center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .card { padding: 18px 22px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
-button { background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18); color: inherit; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+button { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: inherit; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
 button:active { transform: translateY(1px); }

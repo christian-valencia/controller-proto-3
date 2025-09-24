@@ -1,0 +1,17 @@
+{
+  "name": "rog-ally-controller-template",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview --port 5173",
+    "start:electron": "node electron/dev.js",
+    "package:electron": "node electron/build.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vite": "^7.1.7"
+  }
+}

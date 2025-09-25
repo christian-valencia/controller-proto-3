@@ -43,6 +43,11 @@ let selectedAppIndex = 0 // 0=green, 1=blue, 2=orange
 let lastStickNavTime = 0
 const STICK_NAV_DELAY = 300 // 300ms delay between stick navigation
 
+// Preview Scaling State
+let isPreviewScaled = false
+let lastAButtonPress = 0
+const A_BUTTON_DEBOUNCE = 300 // 300ms debounce for A button
+
 // Press and hold state
 let isHolding = false
 let holdStartTime = 0
@@ -132,9 +137,9 @@ function handlePressAndHold() {
   // Only handle press and hold if lock screen is still locked
   if (currentUIState !== UI_STATES.LOCKED) return
   
-  const isAPressed = input.isDown('A')
+  const isYPressed = input.isDown('Y')
   
-  if (isAPressed && !isHolding) {
+  if (isYPressed && !isHolding) {
     // Start holding
     isHolding = true
     holdStartTime = Date.now()
@@ -142,7 +147,7 @@ function handlePressAndHold() {
       progressCircle.style.transition = 'none' // Remove CSS transition for manual control
       progressCircle.style.strokeDashoffset = '100.53' // Reset to full circle
     }
-  } else if (isAPressed && isHolding) {
+  } else if (isYPressed && isHolding) {
     // Continue holding - update progress
     const elapsed = Date.now() - holdStartTime
     const progress = Math.min(elapsed / HOLD_DURATION, 1)
@@ -158,7 +163,7 @@ function handlePressAndHold() {
     if (progress >= 1) {
       onHoldComplete()
     }
-  } else if (!isAPressed && isHolding) {
+  } else if (!isYPressed && isHolding) {
     // Released before completion
     resetHold()
   }
@@ -167,8 +172,14 @@ function handlePressAndHold() {
 function onHoldComplete() {
   console.log('Hold complete! Authentication action triggered.')
   
+  // Reset preview scaling state
+  isPreviewScaled = false
+  
   // Change to shell state
   changeUIState(UI_STATES.SHELL)
+  
+  // Ensure preview containers are positioned correctly
+  updateAppStates()
   
   // Fade out the auth container
   if (auth) {
@@ -347,6 +358,71 @@ function updateAppStates() {
       }
     }
   })
+  
+  // Update preview container positions based on active app
+  updatePreviewPositions()
+}
+
+function updatePreviewPositions() {
+  console.log(`updatePreviewPositions called - selectedAppIndex: ${selectedAppIndex}`)
+  
+  const previewContainers = [
+    document.getElementById('green-preview'),
+    document.getElementById('blue-preview'),
+    document.getElementById('orange-preview')
+  ]
+  
+  // Remove all positioning classes and scaling first
+  previewContainers.forEach(container => {
+    if (container) {
+      container.classList.remove('preview-center', 'preview-left', 'preview-right', 'preview-far-left', 'preview-far-right', 'preview-scaled')
+    }
+  })
+  
+  // Reset scaling state when switching apps
+  isPreviewScaled = false
+  
+  // Add positioning classes based on selected app
+  switch (selectedAppIndex) {
+    case 0: // Green active
+      previewContainers[0]?.classList.add('preview-center')  // Green in center
+      previewContainers[1]?.classList.add('preview-right')   // Blue to the right
+      previewContainers[2]?.classList.add('preview-far-right') // Orange far right
+      break
+    case 1: // Blue active  
+      previewContainers[0]?.classList.add('preview-left')    // Green to the left
+      previewContainers[1]?.classList.add('preview-center')  // Blue in center
+      previewContainers[2]?.classList.add('preview-right')   // Orange to the right
+      break
+    case 2: // Orange active
+      previewContainers[0]?.classList.add('preview-far-left') // Green far left
+      previewContainers[1]?.classList.add('preview-left')    // Blue to the left
+      previewContainers[2]?.classList.add('preview-center')  // Orange in center
+      break
+  }
+}
+
+function togglePreviewScaling() {
+  const previewContainers = [
+    document.getElementById('green-preview'),
+    document.getElementById('blue-preview'),
+    document.getElementById('orange-preview')
+  ]
+  
+  const activePreview = previewContainers[selectedAppIndex]
+  if (!activePreview) return
+  
+  if (isPreviewScaled) {
+    // Scale back down to 50%
+    activePreview.classList.remove('preview-scaled')
+    isPreviewScaled = false
+  } else {
+    // Scale up to 100%
+    activePreview.classList.add('preview-scaled')
+    isPreviewScaled = true
+  }
+  
+  RumbleFeedback.confirmation()
 }
 
 // Interaction Handler Functions
@@ -431,9 +507,11 @@ function handleShellInputs() {
   }
   
   // Face buttons for actions
-  if (input.justPressed('A')) {
-    console.log(`Shell: A button - Launch ${appNames[selectedAppIndex]} app`)
-    RumbleFeedback.confirmation()
+  const buttonTime = Date.now()
+  
+  if (input.isDown('A') && (buttonTime - lastAButtonPress) > A_BUTTON_DEBOUNCE) {
+    lastAButtonPress = buttonTime
+    togglePreviewScaling()
   }
   if (input.justPressed('B')) {
     console.log('Shell: B button - Back/Cancel')

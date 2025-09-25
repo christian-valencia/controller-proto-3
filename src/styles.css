@@ -142,6 +142,86 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   /* Future: background-image: url('/path/to/orange-app-icon.png'); */
 }
 
+/* Preview Containers */
+.preview-container {
+  position: absolute;
+  width: 50vw; /* 50% of window width */
+  height: 50vh; /* 50% of window height */
+  border-radius: 8px;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  opacity: 0; /* Hidden by default */
+  visibility: hidden; /* Hidden by default */
+  transform: translate(calc(100vw - 50%), -50%); /* Start from right edge of screen */
+  transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.6s ease, width 0.6s ease, height 0.6s ease; /* Smooth transition with slide animation and scaling */
+}
+
+/* Show preview containers when unlocked */
+.unlocked .preview-container {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Dynamic Preview Positioning Classes */
+.preview-container.preview-center {
+  transform: translate(-50%, -50%) !important; /* Centered */
+  z-index: 5 !important; /* Active/centered preview on top */
+  width: 50vw !important; /* Keep full size for active preview */
+  height: 50vh !important;
+}
+
+.preview-container.preview-left,
+.preview-container.preview-right {
+  z-index: 3 !important; /* Adjacent previews in middle layer */
+  width: 30vw !important; /* Smaller size for non-active previews */
+  height: 30vh !important;
+}
+
+.preview-container.preview-far-left,
+.preview-container.preview-far-right {
+  z-index: 2 !important; /* Far previews at bottom layer */
+  width: 30vw !important; /* Smaller size for non-active previews */
+  height: 30vh !important;
+}
+
+.preview-container.preview-left {
+  transform: translate(calc(-50% - 40vw - 40px), -50%) !important; /* Left: center - (25vw center + 15vw left) - 40px gap */
+}
+
+.preview-container.preview-right {
+  transform: translate(calc(-50% + 40vw + 40px), -50%) !important; /* Right: center + (25vw center + 15vw right) + 40px gap */
+}
+
+.preview-container.preview-far-left {
+  transform: translate(calc(-50% - 70vw - 80px), -50%) !important; /* Far left: 40px gap from left preview */
+}
+
+.preview-container.preview-far-right {
+  transform: translate(calc(-50% + 70vw + 80px), -50%) !important; /* Far right: 40px gap from right preview */
+}
+
+/* Preview Container Scaling */
+.preview-container.preview-scaled {
+  width: 100vw !important; /* Full window width */
+  height: 100vh !important; /* Full window height */
+  transform: translate(-50%, -50%) !important; /* Always centered when scaled */
+  z-index: 999 !important; /* Bring to front when scaled - above all other elements */
+}
+
+#green-preview {
+  background-color: rgb(26, 102, 26);
+  /* Centered by default positioning */
+}
+
+#blue-preview {
+  background-color: rgb(40, 40, 122);
+}
+
+#orange-preview {
+  background-color: rgb(184, 124, 13);
+}
+
 /* System Tray Container */
 #system-tray {
   position: absolute;

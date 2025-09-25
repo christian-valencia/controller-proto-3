@@ -12,6 +12,152 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   background: #1c1f25;
   border-radius: 0px;
   overflow: hidden;
+  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Lock Screen Container */
+#lock-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Clock Container */
+#clock {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 200px;
+  font-weight: 500;
+  color: white;
+  text-align: center;
+  line-height: 1;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+/* Clock Hidden State */
+#clock.hidden {
+  display: none;
+}
+
+/* System Tray Container */
+#system-tray {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 240px;
+  height: 84px;
+  z-index: 100;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+}
+
+/* System Tray States */
+#system-tray.locked {
+  justify-content: flex-end;
+}
+
+#system-tray.unlocked {
+  justify-content: flex-start;
+}
+
+/* WiFi Volume Battery Container */
+#wifi-volume-battery {
+  width: 144px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  order: 1;
+}
+
+/* Status Icon Styling */
+.status-icon {
+  width: 24px;
+  height: 24px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: transparent;
+  flex-shrink: 0;
+}
+
+/* Clock2 Container */
+#clock2 {
+  width: 96px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 500;
+  color: white;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
+  order: 2;
+}
+
+/* Clock2 Hidden State */
+#system-tray.locked #clock2 {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* Clock2 Visible State */
+#system-tray.unlocked #clock2 {
+  opacity: 1;
+  width: 96px;
+}
+
+/* Auth Container */
+#auth {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 1;
+  transition: opacity 0.1s ease;
+}
+
+#auth.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Auth Text Elements */
+#auth-text-left,
+#auth-text-right {
+  color: white;
+  font-size: 18px;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+/* Progress Ring */
+#progress-ring {
+  width: 36px;
+  height: 36px;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+#progress-ring.active {
+  opacity: 1;
 }
 
 /* HUD Container (Outside shell for debugging) */

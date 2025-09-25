@@ -3,6 +3,15 @@ import { createHud } from './ui/Hud'
 
 // DOM ELEMENT SELECTION ONLY - No DOM creation here
 const windowsShell = document.getElementById('windows-shell')
+const lockScreen = document.getElementById('lock-screen')
+const systemTray = document.getElementById('system-tray')
+const clock = document.getElementById('clock')
+const clock2 = document.getElementById('clock2')
+const auth = document.getElementById('auth')
+const authTextLeft = document.getElementById('auth-text-left')
+const authTextRight = document.getElementById('auth-text-right')
+const progressRing = document.getElementById('progress-ring')
+const progressCircle = document.getElementById('progress-circle')
 const hudContainer = document.getElementById('hud-container')
 const statusContainer = document.getElementById('status-container')
 const debugContainer = document.getElementById('debug-container')
@@ -10,6 +19,24 @@ const debugContainer = document.getElementById('debug-container')
 // Initialize input and HUD systems
 const input = new InputManager()
 const hud = createHud()
+
+// UI State Management
+const UI_STATES = {
+  LOCKED: 'locked',
+  SHELL: 'shell',
+  MENU: 'menu',
+  APP: 'app'
+}
+
+let currentUIState = UI_STATES.LOCKED
+
+// Press and hold state
+let isHolding = false
+let holdStartTime = 0
+const HOLD_DURATION = 700 // 0.7 seconds in milliseconds
+
+// Lock screen state (legacy - will be replaced by UI_STATES)
+let isLockScreenUnlocked = false
 
 // Fullscreen toggle via keyboard or View/Menu buttons
 window.addEventListener('keydown', (e) => {
@@ -43,20 +70,166 @@ function loop() {
 }
 
 function handleInputActions() {
-  // Rumble on A button or J key
-  if (input.justPressed('A')) {
-    rumble(0.8, 120)
+  // State-based input routing
+  switch (currentUIState) {
+    case UI_STATES.LOCKED:
+      // Lock screen is active - handle press and hold for unlock
+      handlePressAndHold()
+      break
+      
+    case UI_STATES.SHELL:
+      // Shell/desktop interactions
+      handleShellInputs()
+      break
+      
+    case UI_STATES.MENU:
+      // Menu system interactions
+      handleMenuInputs()
+      break
+      
+    case UI_STATES.APP:
+      // App-specific interactions
+      handleAppInputs()
+      break
+      
+    default:
+      console.warn('Unknown UI state:', currentUIState)
+      break
   }
   
-  // Fullscreen toggle on View/Menu buttons
-  if (input.justPressed('VIEW') || input.justPressed('MENU')) {
+  // Global inputs (always available)
+  if (input.justPressed('VIEW')) {
+    console.log('View button pressed - global action')
+    toggleFullscreen()
+  }
+  
+  // Menu button handled per-state, but fallback for fullscreen
+  if (input.justPressed('MENU') && currentUIState === UI_STATES.LOCKED) {
     toggleFullscreen()
   }
 }
 
+function handlePressAndHold() {
+  // Only handle press and hold if lock screen is still locked
+  if (currentUIState !== UI_STATES.LOCKED) return
+  
+  const isAPressed = input.isDown('A')
+  
+  if (isAPressed && !isHolding) {
+    // Start holding
+    isHolding = true
+    holdStartTime = Date.now()
+    if (progressCircle) {
+      progressCircle.style.transition = 'none' // Remove CSS transition for manual control
+      progressCircle.style.strokeDashoffset = '100.53' // Reset to full circle
+    }
+  } else if (isAPressed && isHolding) {
+    // Continue holding - update progress
+    const elapsed = Date.now() - holdStartTime
+    const progress = Math.min(elapsed / HOLD_DURATION, 1)
+    
+    if (progressCircle) {
+      // Calculate the dash offset (circumference = 2πr = 2π(16) ≈ 100.53)
+      const circumference = 100.53
+      const dashOffset = circumference * (1 - progress)
+      progressCircle.style.strokeDashoffset = dashOffset.toString()
+    }
+    
+    // Check if hold is complete
+    if (progress >= 1) {
+      onHoldComplete()
+    }
+  } else if (!isAPressed && isHolding) {
+    // Released before completion
+    resetHold()
+  }
+}
+
+function onHoldComplete() {
+  console.log('Hold complete! Authentication action triggered.')
+  
+  // Change to shell state
+  changeUIState(UI_STATES.SHELL)
+  
+  // Fade out the auth container
+  if (auth) {
+    auth.classList.add('fade-out')
+  }
+  
+  resetHold()
+  
+  // Success rumble feedback
+  RumbleFeedback.confirmation()
+  
+  console.log('Lock screen unlocked! Shell interactions now active.')
+}
+
+function resetHold() {
+  // Only reset if we're still on the lock screen
+  if (currentUIState !== UI_STATES.LOCKED) return
+  
+  isHolding = false
+  holdStartTime = 0
+  if (progressCircle) {
+    progressCircle.style.transition = 'stroke-dashoffset 0.2s ease' // Smooth reset
+    progressCircle.style.strokeDashoffset = '100.53'
+  }
+}
+
 function updateVisualFeedback() {
+  // Update clock with current time (12-hour format, no AM/PM, no seconds)
+  updateClock()
+  
+  // Update system tray state
+  updateSystemTrayState()
+  
   // Visual feedback can be added here if needed
   // Currently just HUD-based feedback
+}
+
+function updateSystemTrayState() {
+  if (systemTray) {
+    if (currentUIState === UI_STATES.LOCKED) {
+      systemTray.className = 'locked'
+    } else {
+      systemTray.className = 'unlocked'
+    }
+  }
+  
+  // Hide/show main clock based on lock state
+  if (clock) {
+    if (currentUIState === UI_STATES.LOCKED) {
+      clock.classList.remove('hidden')
+    } else {
+      clock.classList.add('hidden')
+    }
+  }
+}
+
+function updateClock() {
+  const now = new Date()
+  let hours = now.getHours()
+  const minutes = now.getMinutes()
+  
+  // Convert to 12-hour format
+  if (hours === 0) {
+    hours = 12
+  } else if (hours > 12) {
+    hours = hours - 12
+  }
+  
+  // Format time as HH:MM
+  const timeString = `${hours}:${minutes.toString().padStart(2, '0')}`
+  
+  // Update main lock screen clock
+  if (clock) {
+    clock.textContent = timeString
+  }
+  
+  // Update system tray clock2
+  if (clock2) {
+    clock2.textContent = timeString
+  }
 }
 
 async function rumble(intensity = 1, durationMs = 200) {
@@ -75,6 +248,177 @@ async function rumble(intensity = 1, durationMs = 200) {
       console.warn('Rumble not supported:', error)
     }
   }
+}
+
+// Enhanced Rumble Patterns
+const RumbleFeedback = {
+  // Light tap for navigation/selection
+  lightTap: () => rumble(0.2, 50),
+  
+  // Confirmation for successful actions
+  confirmation: () => rumble(0.8, 200),
+  
+  // Subtle navigation feedback
+  navigation: () => rumble(0.1, 30),
+  
+  // Error/rejection feedback
+  error: () => rumble(0.6, 100),
+  
+  // Menu open/close
+  menuToggle: () => rumble(0.4, 150),
+  
+  // Selection change
+  selectionChange: () => rumble(0.15, 25)
+}
+
+// State Management Functions
+function changeUIState(newState) {
+  console.log(`UI State: ${currentUIState} → ${newState}`)
+  currentUIState = newState
+  
+  // Update legacy flag for compatibility
+  isLockScreenUnlocked = (newState !== UI_STATES.LOCKED)
+  
+  // Trigger visual updates
+  updateSystemTrayState()
+}
+
+// Interaction Handler Functions
+function handleShellInputs() {
+  console.log('Shell inputs active - ready for desktop interactions!')
+  
+  // D-pad for navigation
+  if (input.justPressed('UP')) {
+    console.log('Navigate UP')
+    RumbleFeedback.navigation()
+  }
+  if (input.justPressed('DOWN')) {
+    console.log('Navigate DOWN') 
+    RumbleFeedback.navigation()
+  }
+  if (input.justPressed('LEFT')) {
+    console.log('Navigate LEFT')
+    RumbleFeedback.navigation()
+  }
+  if (input.justPressed('RIGHT')) {
+    console.log('Navigate RIGHT')
+    RumbleFeedback.navigation()
+  }
+  
+  // Face buttons for actions
+  if (input.justPressed('A')) {
+    console.log('Shell: A button - Activate/Select')
+    RumbleFeedback.confirmation()
+  }
+  if (input.justPressed('B')) {
+    console.log('Shell: B button - Back/Cancel')
+    RumbleFeedback.lightTap()
+  }
+  if (input.justPressed('X')) {
+    console.log('Shell: X button - Context action')
+    RumbleFeedback.lightTap()
+  }
+  if (input.justPressed('Y')) {
+    console.log('Shell: Y button - Alternative action')
+    RumbleFeedback.lightTap()
+  }
+  
+  // Shoulder buttons for quick actions
+  if (input.justPressed('LB')) {
+    console.log('Shell: LB - Previous tab/page')
+    RumbleFeedback.selectionChange()
+  }
+  if (input.justPressed('RB')) {
+    console.log('Shell: RB - Next tab/page')
+    RumbleFeedback.selectionChange()
+  }
+  
+  // Triggers for app switching or other actions
+  if (input.justPressed('LT')) {
+    console.log('Shell: LT - Previous app')
+    RumbleFeedback.menuToggle()
+  }
+  if (input.justPressed('RT')) {
+    console.log('Shell: RT - Next app')
+    RumbleFeedback.menuToggle()
+  }
+  
+  // Stick navigation
+  const leftStick = input.getStick('LEFT')
+  const rightStick = input.getStick('RIGHT')
+  
+  if (leftStick.magnitude > 0.3) {
+    console.log(`Shell: Left stick navigation - x:${leftStick.x.toFixed(2)}, y:${leftStick.y.toFixed(2)}`)
+    // Smooth navigation without rumble (too frequent)
+  }
+  
+  if (rightStick.magnitude > 0.3) {
+    console.log(`Shell: Right stick scrolling - x:${rightStick.x.toFixed(2)}, y:${rightStick.y.toFixed(2)}`)
+    // Smooth scrolling without rumble
+  }
+  
+  // Stick clicks
+  if (input.justPressed('LS')) {
+    console.log('Shell: Left stick click - Quick action')
+    RumbleFeedback.lightTap()
+  }
+  if (input.justPressed('RS')) {
+    console.log('Shell: Right stick click - Context menu')
+    RumbleFeedback.lightTap()
+  }
+  
+  // Menu system access
+  if (input.justPressed('MENU')) {
+    console.log('Shell: Opening main menu')
+    changeUIState(UI_STATES.MENU)
+    RumbleFeedback.menuToggle()
+  }
+}
+
+function handleMenuInputs() {
+  console.log('Menu inputs active - navigating menu system!')
+  
+  // Menu navigation
+  if (input.justPressed('UP')) {
+    console.log('Menu: Navigate up')
+    RumbleFeedback.selectionChange()
+  }
+  if (input.justPressed('DOWN')) {
+    console.log('Menu: Navigate down')
+    RumbleFeedback.selectionChange()
+  }
+  
+  // Menu actions
+  if (input.justPressed('A')) {
+    console.log('Menu: Select item')
+    RumbleFeedback.confirmation()
+  }
+  if (input.justPressed('B')) {
+    console.log('Menu: Back to shell')
+    changeUIState(UI_STATES.SHELL)
+    RumbleFeedback.menuToggle()
+  }
+  
+  // Close menu
+  if (input.justPressed('MENU')) {
+    console.log('Menu: Closing menu')
+    changeUIState(UI_STATES.SHELL)
+    RumbleFeedback.menuToggle()
+  }
+}
+
+function handleAppInputs() {
+  console.log('App inputs active - app-specific controls!')
+  
+  // App-specific controls would go here
+  if (input.justPressed('B')) {
+    console.log('App: Back to shell')
+    changeUIState(UI_STATES.SHELL)
+    RumbleFeedback.lightTap()
+  }
+  
+  // Pass through other inputs to app
+  // This is where you'd delegate to specific app input handlers
 }
 
 // Start the application

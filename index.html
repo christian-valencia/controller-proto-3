@@ -11,6 +11,50 @@
     <div id="app">
       <!-- Windows Shell Container (1280x720 - ROG Ally Resolution) -->
       <div id="windows-shell">
+        <!-- Lock Screen Container -->
+        <div id="lock-screen">
+          <!-- Clock Container -->
+          <div id="clock">
+            
+          </div>
+          
+          <!-- Auth Container -->
+          <div id="auth">
+            <!-- Left Text -->
+            <div id="auth-text-left">Hold</div>
+            
+            <!-- Progress Ring -->
+            <div id="progress-ring">
+              <svg width="36" height="36">
+                <circle cx="18" cy="18" r="16" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/>
+                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="white" stroke-width="2" fill="none" 
+                        stroke-dasharray="100.53" stroke-dashoffset="100.53" transform="rotate(-90 18 18)"
+                        style="transition: stroke-dashoffset 0.05s linear;"/>
+                <text x="18" y="19" text-anchor="middle" dominant-baseline="middle" 
+                      fill="white" font-size="20" font-weight="600">A</text>
+              </svg>
+            </div>
+            
+            <!-- Right Text -->
+            <div id="auth-text-right">to unlock</div>
+          </div>
+        </div>
+        
+        <!-- System Tray Container -->
+        <div id="system-tray">
+          <!-- WiFi, Volume, Battery Container -->
+          <div id="wifi-volume-battery">
+            <div class="status-icon" id="wifi-icon"></div>
+            <div class="status-icon" id="volume-icon"></div>
+            <div class="status-icon" id="battery-icon"></div>
+          </div>
+          
+          <!-- Clock 2 Container -->
+          <div id="clock2">
+            
+          </div>
+        </div>
+        
         <!-- Future containers will go here -->
         
       </div>

@@ -246,7 +246,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 
 /* WiFi Volume Battery Container */
 #wifi-volume-battery {
-  width: 144px;
+  width: 136px;
   height: 100%;
   display: flex;
   align-items: center;
@@ -339,7 +339,12 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 }
 
 /* HUD Container (Outside shell for debugging) */
-#hud-container { position: fixed; top: 12px; left: 12px; }
+#hud-container { 
+  position: fixed; 
+  top: 12px; 
+  left: 12px; 
+  visibility: hidden; /* Hidden for clean UI experience */
+}
 .hud { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; backdrop-filter: blur(6px); }
 .hud h2 { margin: 0 0 6px 0; font-size: 14px; font-weight: 600; opacity: .9 }
 .hud pre { margin: 0; font-size: 12px; line-height: 1.35; white-space: pre-wrap; }
@@ -353,3 +358,54 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 .card { padding: 18px 22px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
 button { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: inherit; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
 button:active { transform: translateY(1px); }
+
+/* Shell Navigation Container */
+#shell-nav {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(120px); /* Start off-screen below */
+  width: 320px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 0 20px;
+  box-sizing: border-box;
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.5s ease-out, opacity 0.5s ease-out, visibility 0.5s ease-out;
+}
+
+/* Shell Navigation Visible State */
+#shell-nav.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Navigation Items */
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.nav-item:hover {
+  transform: scale(1.1);
+}
+
+/* Navigation Circles */
+.nav-circle {
+  width: 24px;
+  height: 24px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: none;
+}

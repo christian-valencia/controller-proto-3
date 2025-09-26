@@ -26,7 +26,7 @@ const appNames = ['green', 'blue', 'orange']
 
 // Initialize input and HUD systems
 const input = new InputManager()
-const hud = createHud()
+// const hud = createHud() // Hidden for clean UI experience
 
 // UI State Management
 const UI_STATES = {
@@ -82,7 +82,9 @@ function loop() {
   updateVisualFeedback()
   
   // Render HUD
-  hud.render(input)
+  // hud.render(input) // Hidden for clean UI experience
+  // Clear any existing HUD content
+  // if (hudContainer) hudContainer.innerHTML = ''
   
   requestAnimationFrame(loop)
 }
@@ -180,6 +182,12 @@ function onHoldComplete() {
   
   // Ensure preview containers are positioned correctly
   updateAppStates()
+  
+  // Show shell navigation with slide-up animation
+  const shellNav = document.getElementById('shell-nav')
+  if (shellNav) {
+    shellNav.classList.add('visible')
+  }
   
   // Fade out the auth container
   if (auth) {

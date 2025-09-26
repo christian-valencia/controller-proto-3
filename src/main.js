@@ -48,6 +48,11 @@ let isPreviewScaled = false
 let lastAButtonPress = 0
 const A_BUTTON_DEBOUNCE = 300 // 300ms debounce for A button
 
+// Focus Navigation State
+let focusArea = 'preview' // 'preview' or 'shell-nav'
+let selectedNavIndex = 0 // 0=library, 1=settings, 2=notifications, 3=gallery
+const navItems = ['library', 'settings', 'notifications', 'gallery']
+
 // Press and hold state
 let isHolding = false
 let holdStartTime = 0
@@ -187,6 +192,16 @@ function onHoldComplete() {
   const shellNav = document.getElementById('shell-nav')
   if (shellNav) {
     shellNav.classList.add('visible')
+  }
+  
+  // Show focus container with active preview highlighting
+  const focusContainer = document.getElementById('focus')
+  if (focusContainer) {
+    focusContainer.classList.add('visible')
+    // Update position after a brief delay to ensure previews are positioned
+    setTimeout(() => {
+      updateFocusPosition()
+    }, 100)
   }
   
   // Fade out the auth container
@@ -344,6 +359,23 @@ function navigateApps(direction) {
   RumbleFeedback.selectionChange()
 }
 
+function navigateShellNav(direction) {
+  console.log(`navigateShellNav called with direction: ${direction}`)
+  console.log(`Current selectedNavIndex: ${selectedNavIndex} (${navItems[selectedNavIndex]})`)
+  
+  const previousNav = selectedNavIndex
+  
+  if (direction === 'right') {
+    selectedNavIndex = (selectedNavIndex + 1) % navItems.length
+  } else if (direction === 'left') {
+    selectedNavIndex = (selectedNavIndex - 1 + navItems.length) % navItems.length
+  }
+  
+  console.log(`Shell Nav Navigation: ${navItems[previousNav]} → ${navItems[selectedNavIndex]}`)
+  updateFocusPosition()
+  RumbleFeedback.selectionChange()
+}
+
 function updateAppStates() {
   console.log(`updateAppStates called - currentUIState: ${currentUIState}, selectedAppIndex: ${selectedAppIndex}`)
   
@@ -408,6 +440,9 @@ function updatePreviewPositions() {
       previewContainers[2]?.classList.add('preview-center')  // Orange in center
       break
   }
+  
+  // Update focus container position
+  updateFocusPosition()
 }
 
 function togglePreviewScaling() {
@@ -430,7 +465,68 @@ function togglePreviewScaling() {
     isPreviewScaled = true
   }
   
+  // Update focus container to match new size
+  updateFocusPosition()
+  
   RumbleFeedback.confirmation()
+}
+
+function updateFocusPosition() {
+  const focusContainer = document.getElementById('focus')
+  if (!focusContainer) return
+  
+  if (focusArea === 'preview') {
+    // Focus on preview area
+    focusContainer.classList.remove('focus-nav')
+    focusContainer.classList.add('focus-preview')
+    
+    const previewContainers = [
+      document.getElementById('green-preview'),
+      document.getElementById('blue-preview'),
+      document.getElementById('orange-preview')
+    ]
+    
+    const activePreview = previewContainers[selectedAppIndex]
+    if (!activePreview) return
+    
+    // Check if the active preview is scaled
+    const isScaled = activePreview.classList.contains('preview-scaled')
+    
+    // Match the size of the active preview and center it
+    if (isScaled) {
+      // When preview is scaled to 100%
+      focusContainer.style.width = '100vw'
+      focusContainer.style.height = '100vh'
+    } else {
+      // Normal size - match the centered preview (50vw x 50vh)
+      focusContainer.style.width = '50vw'
+      focusContainer.style.height = '50vh'
+    }
+    
+    // Center position
+    focusContainer.style.top = '50%'
+    focusContainer.style.left = '50%'
+    focusContainer.style.transform = 'translate(-50%, -50%)'
+    
+  } else if (focusArea === 'shell-nav') {
+    // Focus on shell navigation area
+    focusContainer.classList.remove('focus-preview')
+    focusContainer.classList.add('focus-nav')
+    
+    const navItemElement = document.getElementById(navItems[selectedNavIndex])
+    if (!navItemElement) return
+    
+    // Get the position of the nav item
+    const rect = navItemElement.getBoundingClientRect()
+    const shellRect = document.getElementById('windows-shell').getBoundingClientRect()
+    
+    // Position focus over the nav item (64x64px)
+    focusContainer.style.width = '64px'
+    focusContainer.style.height = '64px'
+    focusContainer.style.top = `${rect.top - shellRect.top + rect.height/2}px`
+    focusContainer.style.left = `${rect.left - shellRect.left + rect.width/2}px`
+    focusContainer.style.transform = 'translate(-50%, -50%)'
+  }
 }
 
 // Interaction Handler Functions
@@ -467,40 +563,91 @@ function handleShellInputs() {
     console.log('Navigation input detected:', { leftPressed, rightPressed, lbPressed, rbPressed })
   }
   
-  // App Navigation - D-pad horizontal (check both justPressed and isDown)
+  // Horizontal Navigation - D-pad left/right (check both justPressed and isDown)
   if (input.justPressed('LEFT') || (input.isDown('LEFT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('LEFT input detected - navigating left')
-    navigateApps('left')
+    console.log('LEFT input detected')
+    if (focusArea === 'preview') {
+      console.log('Navigating apps left')
+      navigateApps('left')
+    } else if (focusArea === 'shell-nav') {
+      console.log('Navigating shell-nav left')
+      navigateShellNav('left')
+    }
     lastStickNavTime = now
   }
   if (input.justPressed('RIGHT') || (input.isDown('RIGHT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('RIGHT input detected - navigating right')
-    navigateApps('right')
+    console.log('RIGHT input detected')
+    if (focusArea === 'preview') {
+      console.log('Navigating apps right')
+      navigateApps('right')
+    } else if (focusArea === 'shell-nav') {
+      console.log('Navigating shell-nav right')
+      navigateShellNav('right')
+    }
     lastStickNavTime = now
   }
   
-  // App Navigation - Shoulder buttons (check both justPressed and isDown)
+  // Horizontal Navigation - Shoulder buttons (check both justPressed and isDown)
   if (input.justPressed('LB') || (input.isDown('LB') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('LB input detected - navigating left')
-    navigateApps('left')
+    console.log('LB input detected')
+    if (focusArea === 'preview') {
+      console.log('Navigating apps left')
+      navigateApps('left')
+    } else if (focusArea === 'shell-nav') {
+      console.log('Navigating shell-nav left')
+      navigateShellNav('left')
+    }
     lastStickNavTime = now
   }
   if (input.justPressed('RB') || (input.isDown('RB') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('RB input detected - navigating right')
-    navigateApps('right')
+    console.log('RB input detected')
+    if (focusArea === 'preview') {
+      console.log('Navigating apps right')
+      navigateApps('right')
+    } else if (focusArea === 'shell-nav') {
+      console.log('Navigating shell-nav right')
+      navigateShellNav('right')
+    }
     lastStickNavTime = now
   }
   
-  // App Navigation - Left stick horizontal
+  // Horizontal Navigation - Left stick horizontal
   const leftStick = input.getStick('LEFT')
   const currentTime = Date.now()
   if (leftStick.magnitude > 0.6 && currentTime - lastStickNavTime > STICK_NAV_DELAY) {
     if (leftStick.x > 0.6) {
-      navigateApps('right')
+      if (focusArea === 'preview') {
+        navigateApps('right')
+      } else if (focusArea === 'shell-nav') {
+        navigateShellNav('right')
+      }
       lastStickNavTime = currentTime
     } else if (leftStick.x < -0.6) {
-      navigateApps('left')
+      if (focusArea === 'preview') {
+        navigateApps('left')
+      } else if (focusArea === 'shell-nav') {
+        navigateShellNav('left')
+      }
       lastStickNavTime = currentTime
+    }
+  }
+  
+  // Focus area navigation - DOWN moves from preview to shell-nav, UP moves back
+  if (input.justPressed('DOWN') || (input.isDown('DOWN') && now - lastStickNavTime > STICK_NAV_DELAY)) {
+    console.log('DOWN input detected - moving focus to shell-nav')
+    if (focusArea === 'preview') {
+      focusArea = 'shell-nav'
+      selectedNavIndex = 0 // Start at library
+      updateFocusPosition()
+      lastStickNavTime = now
+    }
+  }
+  if (input.justPressed('UP') || (input.isDown('UP') && now - lastStickNavTime > STICK_NAV_DELAY)) {
+    console.log('UP input detected - moving focus back to preview')
+    if (focusArea === 'shell-nav') {
+      focusArea = 'preview'
+      updateFocusPosition()
+      lastStickNavTime = now
     }
   }
   
@@ -519,7 +666,14 @@ function handleShellInputs() {
   
   if (input.isDown('A') && (buttonTime - lastAButtonPress) > A_BUTTON_DEBOUNCE) {
     lastAButtonPress = buttonTime
-    togglePreviewScaling()
+    if (focusArea === 'preview') {
+      // A button only scales previews when focus is on preview area
+      togglePreviewScaling()
+    } else if (focusArea === 'shell-nav') {
+      // A button reserved for future shell-nav actions
+      console.log('Shell Nav: A button - Reserved for shell navigation action')
+      RumbleFeedback.confirmation()
+    }
   }
   if (input.justPressed('B')) {
     console.log('Shell: B button - Back/Cancel')

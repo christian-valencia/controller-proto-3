@@ -51,20 +51,23 @@ export class KeyboardManager {
 
   constructor() {
     window.addEventListener('keydown', (e) => {
+      // Prevent default behavior first for game controls
+      if (KEY_MAP[e.key] || e.key === 'Tab') {
+        e.preventDefault()
+      }
+      
       this.keysDown.add(e.key)
       this.updateSticks()
     })
 
     window.addEventListener('keyup', (e) => {
-      this.keysDown.delete(e.key)
-      this.updateSticks()
-    })
-
-    // Prevent default behavior for some keys when they're being used as game controls
-    window.addEventListener('keydown', (e) => {
+      // Prevent default on keyup too for consistency
       if (KEY_MAP[e.key] || e.key === 'Tab') {
         e.preventDefault()
       }
+      
+      this.keysDown.delete(e.key)
+      this.updateSticks()
     })
   }
 

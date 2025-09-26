@@ -847,6 +847,31 @@ function handleShellInputs() {
     }
   }
   
+  // Vertical Navigation - Left stick vertical (UP/DOWN focus area switching)
+  if (leftStick.magnitude > 0.6 && currentTime - lastStickNavTime > STICK_NAV_DELAY) {
+    // Only allow focus area switching if not in a shell surface
+    if (focusArea !== 'shell-surface') {
+      if (leftStick.y > 0.6) { // Stick pushed UP
+        console.log('Analog stick UP detected - moving focus back to preview')
+        if (focusArea === 'shell-nav') {
+          focusArea = 'preview'
+          updateFocusPosition()
+          lastStickNavTime = currentTime
+        }
+      } else if (leftStick.y < -0.6) { // Stick pushed DOWN
+        console.log('Analog stick DOWN detected - moving focus to shell-nav')
+        if (focusArea === 'preview') {
+          focusArea = 'shell-nav'
+          selectedNavIndex = 0 // Start at library
+          updateFocusPosition()
+          lastStickNavTime = currentTime
+        }
+      }
+    } else {
+      console.log('Analog stick vertical navigation blocked - currently in shell surface:', currentShellSurface)
+    }
+  }
+  
   // Focus area navigation - DOWN moves from preview to shell-nav, UP moves back
   if (input.justPressed('DOWN') || (input.isDown('DOWN') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     // Only allow focus area switching if not in a shell surface

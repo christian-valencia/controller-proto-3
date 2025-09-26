@@ -28,6 +28,39 @@ const appNames = ['green', 'blue', 'orange']
 const input = new InputManager()
 // const hud = createHud() // Hidden for clean UI experience
 
+// Direct B button handler for shell library (backup for InputManager)
+let lastBKeyPress = 0
+window.addEventListener('keydown', (e) => {
+  if ((e.key.toLowerCase() === 's' || e.key.toLowerCase() === 'l') && 
+      currentUIState === UI_STATES.SHELL) {
+    const now = Date.now()
+    if (now - lastBKeyPress > 200) { // 200ms debounce
+      const shellLibrary = document.getElementById('shell-library')
+      const shellSettings = document.getElementById('shell-settings')
+      const shellNotifications = document.getElementById('shell-notifications')
+      const shellGallery = document.getElementById('shell-gallery')
+      
+      if (shellLibrary && shellLibrary.classList.contains('visible')) {
+        console.log('Direct B button handler - closing library')
+        hideShellLibrary()
+        lastBKeyPress = now
+      } else if (shellSettings && shellSettings.classList.contains('visible')) {
+        console.log('Direct B button handler - closing settings')
+        hideShellSettings()
+        lastBKeyPress = now
+      } else if (shellNotifications && shellNotifications.classList.contains('visible')) {
+        console.log('Direct B button handler - closing notifications')
+        hideShellNotifications()
+        lastBKeyPress = now
+      } else if (shellGallery && shellGallery.classList.contains('visible')) {
+        console.log('Direct B button handler - closing gallery')
+        hideShellGallery()
+        lastBKeyPress = now
+      }
+    }
+  }
+})
+
 // UI State Management
 const UI_STATES = {
   LOCKED: 'locked',
@@ -48,12 +81,12 @@ let isPreviewScaled = false
 let lastAButtonPress = 0
 const A_BUTTON_DEBOUNCE = 300 // 300ms debounce for A button
 
-// Focus Navigation State
-let focusArea = 'preview' // 'preview' or 'shell-nav'
+// Focus Navigation State  
+let focusArea = 'preview' // 'preview', 'shell-nav', or 'shell-surface'
 let selectedNavIndex = 0 // 0=library, 1=settings, 2=notifications, 3=gallery
-const navItems = ['library', 'settings', 'notifications', 'gallery']
-
-// Press and hold state
+let previousFocusState = { area: 'preview', navIndex: 0, appIndex: 0 } // Store previous focus state
+let currentShellSurface = null // Track which shell surface is currently open
+const navItems = ['library', 'settings', 'notifications', 'gallery']// Press and hold state
 let isHolding = false
 let holdStartTime = 0
 const HOLD_DURATION = 700 // 0.7 seconds in milliseconds
@@ -529,6 +562,161 @@ function updateFocusPosition() {
   }
 }
 
+function positionFocusUnderHeader() {
+  const focusContainer = document.getElementById('focus')
+  if (!focusContainer) return
+  
+  // Position focus container under the h1 header (48px from left, 92px from top)
+  focusContainer.classList.remove('focus-preview', 'focus-nav')
+  focusContainer.classList.add('focus-shell-surface')
+  focusContainer.style.width = '200px'
+  focusContainer.style.height = '32px'
+  focusContainer.style.top = '92px' // 36px (h1 top) + 36px (h1 height) + 20px margin
+  focusContainer.style.left = '48px' // Same as h1 left position (corrected from 36px)
+  focusContainer.style.transform = 'none'
+}
+
+function restorePreviousFocus() {
+  // Restore previous focus state
+  focusArea = previousFocusState.area
+  selectedAppIndex = previousFocusState.appIndex
+  selectedNavIndex = previousFocusState.navIndex
+  updateFocusPosition()
+}
+
+// Shell Library Functions
+function showShellLibrary() {
+  // Store current focus state before opening
+  previousFocusState = {
+    area: focusArea,
+    navIndex: selectedNavIndex,
+    appIndex: selectedAppIndex
+  }
+  
+  const shellLibrary = document.getElementById('shell-library')
+  if (shellLibrary) {
+    shellLibrary.classList.add('visible')
+    console.log('Shell Library sliding in from left')
+    // Set focus area to shell surface and track which surface is open
+    focusArea = 'shell-surface'
+    currentShellSurface = 'library'
+    // Position focus under header
+    positionFocusUnderHeader()
+  }
+}
+
+function hideShellLibrary() {
+  const shellLibrary = document.getElementById('shell-library')
+  
+  if (shellLibrary) {
+    shellLibrary.classList.remove('visible')
+    console.log('Shell Library sliding out to left')
+    // Clear shell surface state
+    currentShellSurface = null
+    // Restore previous focus position
+    restorePreviousFocus()
+  }
+}
+
+function showShellSettings() {
+  // Store current focus state before opening
+  previousFocusState = {
+    area: focusArea,
+    navIndex: selectedNavIndex,
+    appIndex: selectedAppIndex
+  }
+  
+  const shellSettings = document.getElementById('shell-settings')
+  if (shellSettings) {
+    shellSettings.classList.add('visible')
+    console.log('Shell Settings sliding in from left')
+    // Set focus area to shell surface and track which surface is open
+    focusArea = 'shell-surface'
+    currentShellSurface = 'settings'
+    // Position focus under header
+    positionFocusUnderHeader()
+  }
+}
+
+function hideShellSettings() {
+  const shellSettings = document.getElementById('shell-settings')
+  
+  if (shellSettings) {
+    shellSettings.classList.remove('visible')
+    console.log('Shell Settings sliding out to left')
+    // Clear shell surface state
+    currentShellSurface = null
+    // Restore previous focus position
+    restorePreviousFocus()
+  }
+}
+
+function showShellNotifications() {
+  // Store current focus state before opening
+  previousFocusState = {
+    area: focusArea,
+    navIndex: selectedNavIndex,
+    appIndex: selectedAppIndex
+  }
+  
+  const shellNotifications = document.getElementById('shell-notifications')
+  if (shellNotifications) {
+    shellNotifications.classList.add('visible')
+    console.log('Shell Notifications sliding in from left')
+    // Set focus area to shell surface and track which surface is open
+    focusArea = 'shell-surface'
+    currentShellSurface = 'notifications'
+    // Position focus under header
+    positionFocusUnderHeader()
+  }
+}
+
+function hideShellNotifications() {
+  const shellNotifications = document.getElementById('shell-notifications')
+  
+  if (shellNotifications) {
+    shellNotifications.classList.remove('visible')
+    console.log('Shell Notifications sliding out to left')
+    // Clear shell surface state
+    currentShellSurface = null
+    // Restore previous focus position
+    restorePreviousFocus()
+  }
+}
+
+function showShellGallery() {
+  // Store current focus state before opening
+  previousFocusState = {
+    area: focusArea,
+    navIndex: selectedNavIndex,
+    appIndex: selectedAppIndex
+  }
+  
+  const shellGallery = document.getElementById('shell-gallery')
+  if (shellGallery) {
+    shellGallery.classList.add('visible')
+    console.log('Shell Gallery sliding in from left')
+    // Set focus area to shell surface and track which surface is open
+    focusArea = 'shell-surface'
+    currentShellSurface = 'gallery'
+    // Position focus under header
+    positionFocusUnderHeader()
+  }
+}
+
+function hideShellGallery() {
+  const shellGallery = document.getElementById('shell-gallery')
+  
+  if (shellGallery) {
+    shellGallery.classList.remove('visible')
+    console.log('Shell Gallery sliding out to left')
+    // Clear shell surface state
+    currentShellSurface = null
+    // Restore previous focus position
+    restorePreviousFocus()
+  }
+}
+
 // Interaction Handler Functions
 function handleShellInputs() {
   console.log('Shell inputs active - ready for desktop interactions!')
@@ -566,88 +754,125 @@ function handleShellInputs() {
   // Horizontal Navigation - D-pad left/right (check both justPressed and isDown)
   if (input.justPressed('LEFT') || (input.isDown('LEFT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     console.log('LEFT input detected')
-    if (focusArea === 'preview') {
-      console.log('Navigating apps left')
-      navigateApps('left')
-    } else if (focusArea === 'shell-nav') {
-      console.log('Navigating shell-nav left')
-      navigateShellNav('left')
+    // Only allow navigation if not in a shell surface
+    if (focusArea !== 'shell-surface') {
+      if (focusArea === 'preview') {
+        console.log('Navigating apps left')
+        navigateApps('left')
+      } else if (focusArea === 'shell-nav') {
+        console.log('Navigating shell-nav left')
+        navigateShellNav('left')
+      }
+      lastStickNavTime = now
+    } else {
+      console.log('LEFT navigation blocked - currently in shell surface:', currentShellSurface)
+      // Future: Handle shell surface internal navigation
     }
-    lastStickNavTime = now
   }
   if (input.justPressed('RIGHT') || (input.isDown('RIGHT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     console.log('RIGHT input detected')
-    if (focusArea === 'preview') {
-      console.log('Navigating apps right')
-      navigateApps('right')
-    } else if (focusArea === 'shell-nav') {
-      console.log('Navigating shell-nav right')
-      navigateShellNav('right')
+    // Only allow navigation if not in a shell surface
+    if (focusArea !== 'shell-surface') {
+      if (focusArea === 'preview') {
+        console.log('Navigating apps right')
+        navigateApps('right')
+      } else if (focusArea === 'shell-nav') {
+        console.log('Navigating shell-nav right')
+        navigateShellNav('right')
+      }
+      lastStickNavTime = now
+    } else {
+      console.log('RIGHT navigation blocked - currently in shell surface:', currentShellSurface)
+      // Future: Handle shell surface internal navigation
     }
-    lastStickNavTime = now
   }
   
   // Horizontal Navigation - Shoulder buttons (check both justPressed and isDown)
   if (input.justPressed('LB') || (input.isDown('LB') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     console.log('LB input detected')
-    if (focusArea === 'preview') {
-      console.log('Navigating apps left')
-      navigateApps('left')
-    } else if (focusArea === 'shell-nav') {
-      console.log('Navigating shell-nav left')
-      navigateShellNav('left')
+    // Only allow navigation if not in a shell surface
+    if (focusArea !== 'shell-surface') {
+      if (focusArea === 'preview') {
+        console.log('Navigating apps left')
+        navigateApps('left')
+      } else if (focusArea === 'shell-nav') {
+        console.log('Navigating shell-nav left')
+        navigateShellNav('left')
+      }
+      lastStickNavTime = now
+    } else {
+      console.log('LB navigation blocked - currently in shell surface:', currentShellSurface)
     }
-    lastStickNavTime = now
   }
   if (input.justPressed('RB') || (input.isDown('RB') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     console.log('RB input detected')
-    if (focusArea === 'preview') {
-      console.log('Navigating apps right')
-      navigateApps('right')
-    } else if (focusArea === 'shell-nav') {
-      console.log('Navigating shell-nav right')
-      navigateShellNav('right')
+    // Only allow navigation if not in a shell surface
+    if (focusArea !== 'shell-surface') {
+      if (focusArea === 'preview') {
+        console.log('Navigating apps right')
+        navigateApps('right')
+      } else if (focusArea === 'shell-nav') {
+        console.log('Navigating shell-nav right')
+        navigateShellNav('right')
+      }
+      lastStickNavTime = now
+    } else {
+      console.log('RB navigation blocked - currently in shell surface:', currentShellSurface)
     }
-    lastStickNavTime = now
   }
   
   // Horizontal Navigation - Left stick horizontal
   const leftStick = input.getStick('LEFT')
   const currentTime = Date.now()
   if (leftStick.magnitude > 0.6 && currentTime - lastStickNavTime > STICK_NAV_DELAY) {
-    if (leftStick.x > 0.6) {
-      if (focusArea === 'preview') {
-        navigateApps('right')
-      } else if (focusArea === 'shell-nav') {
-        navigateShellNav('right')
+    // Only allow navigation if not in a shell surface
+    if (focusArea !== 'shell-surface') {
+      if (leftStick.x > 0.6) {
+        if (focusArea === 'preview') {
+          navigateApps('right')
+        } else if (focusArea === 'shell-nav') {
+          navigateShellNav('right')
+        }
+        lastStickNavTime = currentTime
+      } else if (leftStick.x < -0.6) {
+        if (focusArea === 'preview') {
+          navigateApps('left')
+        } else if (focusArea === 'shell-nav') {
+          navigateShellNav('left')
+        }
+        lastStickNavTime = currentTime
       }
-      lastStickNavTime = currentTime
-    } else if (leftStick.x < -0.6) {
-      if (focusArea === 'preview') {
-        navigateApps('left')
-      } else if (focusArea === 'shell-nav') {
-        navigateShellNav('left')
-      }
-      lastStickNavTime = currentTime
+    } else {
+      console.log('Stick navigation blocked - currently in shell surface:', currentShellSurface)
     }
   }
   
   // Focus area navigation - DOWN moves from preview to shell-nav, UP moves back
   if (input.justPressed('DOWN') || (input.isDown('DOWN') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('DOWN input detected - moving focus to shell-nav')
-    if (focusArea === 'preview') {
-      focusArea = 'shell-nav'
-      selectedNavIndex = 0 // Start at library
-      updateFocusPosition()
-      lastStickNavTime = now
+    // Only allow focus area switching if not in a shell surface
+    if (focusArea !== 'shell-surface') {
+      console.log('DOWN input detected - moving focus to shell-nav')
+      if (focusArea === 'preview') {
+        focusArea = 'shell-nav'
+        selectedNavIndex = 0 // Start at library
+        updateFocusPosition()
+        lastStickNavTime = now
+      }
+    } else {
+      console.log('DOWN input blocked - currently in shell surface:', currentShellSurface)
     }
   }
   if (input.justPressed('UP') || (input.isDown('UP') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('UP input detected - moving focus back to preview')
-    if (focusArea === 'shell-nav') {
-      focusArea = 'preview'
-      updateFocusPosition()
-      lastStickNavTime = now
+    // Only allow focus area switching if not in a shell surface
+    if (focusArea !== 'shell-surface') {
+      console.log('UP input detected - moving focus back to preview')
+      if (focusArea === 'shell-nav') {
+        focusArea = 'preview'
+        updateFocusPosition()
+        lastStickNavTime = now
+      }
+    } else {
+      console.log('UP input blocked - currently in shell surface:', currentShellSurface)
     }
   }
   
@@ -670,14 +895,65 @@ function handleShellInputs() {
       // A button only scales previews when focus is on preview area
       togglePreviewScaling()
     } else if (focusArea === 'shell-nav') {
-      // A button reserved for future shell-nav actions
-      console.log('Shell Nav: A button - Reserved for shell navigation action')
-      RumbleFeedback.confirmation()
+      // A button actions based on selected nav item
+      if (selectedNavIndex === 0) { // Library selected
+        console.log('Opening Library...')
+        showShellLibrary()
+        RumbleFeedback.confirmation()
+      } else if (selectedNavIndex === 1) { // Settings selected
+        console.log('Opening Settings...')
+        showShellSettings()
+        RumbleFeedback.confirmation()
+      } else if (selectedNavIndex === 2) { // Notifications selected
+        console.log('Opening Notifications...')
+        showShellNotifications()
+        RumbleFeedback.confirmation()
+      } else if (selectedNavIndex === 3) { // Gallery selected
+        console.log('Opening Gallery...')
+        showShellGallery()
+        RumbleFeedback.confirmation()
+      }
+    } else if (focusArea === 'shell-surface') {
+      // A button actions within shell surface (future functionality)
+      console.log('A button pressed in shell surface:', currentShellSurface)
+      // Future: Handle shell surface internal actions
+      RumbleFeedback.lightTap()
     }
   }
+  // B button handling with InputManager fallback
   if (input.justPressed('B')) {
-    console.log('Shell: B button - Back/Cancel')
-    RumbleFeedback.lightTap()
+    const shellLibrary = document.getElementById('shell-library')
+    const shellSettings = document.getElementById('shell-settings')
+    const shellNotifications = document.getElementById('shell-notifications')
+    const shellGallery = document.getElementById('shell-gallery')
+    
+    console.log('B button pressed via InputManager')
+    
+    if (shellLibrary && shellLibrary.classList.contains('visible')) {
+      // Hide shell library if it's visible
+      console.log('Shell: B button - Closing Library')
+      hideShellLibrary()
+      RumbleFeedback.lightTap()
+    } else if (shellSettings && shellSettings.classList.contains('visible')) {
+      // Hide shell settings if it's visible
+      console.log('Shell: B button - Closing Settings')
+      hideShellSettings()
+      RumbleFeedback.lightTap()
+    } else if (shellNotifications && shellNotifications.classList.contains('visible')) {
+      // Hide shell notifications if it's visible
+      console.log('Shell: B button - Closing Notifications')
+      hideShellNotifications()
+      RumbleFeedback.lightTap()
+    } else if (shellGallery && shellGallery.classList.contains('visible')) {
+      // Hide shell gallery if it's visible
+      console.log('Shell: B button - Closing Gallery')
+      hideShellGallery()
+      RumbleFeedback.lightTap()
+    } else {
+      // Default B button behavior
+      console.log('Shell: B button - Back/Cancel')
+      RumbleFeedback.lightTap()
+    }
   }
   if (input.justPressed('X')) {
     console.log('Shell: X button - Context action')

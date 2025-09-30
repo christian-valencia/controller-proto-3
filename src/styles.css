@@ -63,19 +63,19 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 /* Running Apps Container */
 #running-apps {
   position: absolute;
-  bottom: 0;
+  top: 720px; /* Start below the screen (hidden on lock screen) */
   left: 0;
   width: 100%;
   height: 84px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: bottom 0.2s ease;
+  transition: top 0.4s ease;
 }
 
-/* Running Apps Unlocked State - Move to Top */
+/* Running Apps Unlocked State - Move to visible position */
 #switcher.unlocked #running-apps {
-  bottom: calc(100% - 84px);
+  top: 0; /* Move to top when unlocked */
 }
 
 /* App Container Base Style */
@@ -436,13 +436,13 @@ button:active { transform: translateY(1px); }
 
 /* Focus Mode States */
 #focus.focus-preview {
-  border-width: 4px;
+  border-width: 2px;
   border-radius: 12px;
 }
 
 #focus.focus-nav {
-  border-width: 3px;
-  border-radius: 8px;
+  border-width: 2px;
+  border-radius: 12px;
 }
 
 #focus.focus-shell-surface {

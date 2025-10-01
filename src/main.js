@@ -89,7 +89,7 @@ let currentShellSurface = null // Track which shell surface is currently open
 const navItems = ['library', 'settings', 'notifications', 'gallery']// Press and hold state (for lock screen)
 let isHolding = false
 let holdStartTime = 0
-const HOLD_DURATION = 800 // 0.8 seconds in milliseconds
+const HOLD_DURATION = 700 // 0.7 seconds in milliseconds
 
 // VIEW button press and hold state (for scaling down preview)
 let isViewHolding = false

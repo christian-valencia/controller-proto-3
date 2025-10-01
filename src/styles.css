@@ -153,7 +153,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   z-index: 1;
   opacity: 0; /* Hidden by default */
   visibility: hidden; /* Hidden by default */
-  transform: translate(calc(100vw - 50%), -50%); /* Start from right edge of screen */
+  transform: translate(-50%, calc(100vh - 50%)); /* Start from bottom edge of screen */
   transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease, width 0.4s ease, height 0.4s ease; /* Smooth transition with slide animation and scaling */
 }
 
@@ -229,7 +229,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   right: 0;
   width: 240px;
   height: 84px;
-  z-index: 100;
+  z-index: 1000;
   display: flex;
   align-items: stretch;
   justify-content: flex-end;
@@ -242,6 +242,9 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 
 #system-tray.unlocked {
   justify-content: flex-start;
+  top: 0;
+  margin: 0;
+  padding: 0;
 }
 
 /* WiFi Volume Battery Container */
@@ -415,10 +418,10 @@ button:active { transform: translateY(1px); }
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 50vw;
-  height: 50vh;
+  width: 100vw;
+  height: 100vh;
   border: 4px solid rgba(255, 255, 255, 0.8);
-  border-radius: 12px;
+  border-radius: 0;
   background: none;
   pointer-events: none;
   z-index: 1000;
@@ -438,22 +441,20 @@ button:active { transform: translateY(1px); }
 #focus.focus-preview {
   border-width: 2px;
   border-radius: 12px;
+  /* Size will be set dynamically by JavaScript */
 }
 
 #focus.focus-nav {
   border-width: 2px;
   border-radius: 12px;
+  /* Size will be set dynamically by JavaScript */
 }
 
 #focus.focus-shell-surface {
   border-width: 2px;
-  border-radius: 12px;
+  border-radius: 6px;
   border-color: rgba(255, 255, 255, 0.9);
-}
-
-/* Focus in fullscreen preview mode - no border radius */
-#focus.focus-preview[style*="width: 100vw"] {
-  border-radius: 0;
+  /* Remove fixed dimensions to allow JavaScript to control sizing */
 }
 
 /* Shell Library Container */

@@ -86,10 +86,15 @@ let focusArea = 'preview' // 'preview', 'shell-nav', or 'shell-surface'
 let selectedNavIndex = 0 // 0=library, 1=settings, 2=notifications, 3=gallery
 let previousFocusState = { area: 'preview', navIndex: 0, appIndex: 0 } // Store previous focus state
 let currentShellSurface = null // Track which shell surface is currently open
-const navItems = ['library', 'settings', 'notifications', 'gallery']// Press and hold state
+const navItems = ['library', 'settings', 'notifications', 'gallery']// Press and hold state (for lock screen)
 let isHolding = false
 let holdStartTime = 0
-const HOLD_DURATION = 700 // 0.7 seconds in milliseconds
+const HOLD_DURATION = 800 // 0.8 seconds in milliseconds
+
+// VIEW button press and hold state (for scaling down preview)
+let isViewHolding = false
+let viewHoldStartTime = 0
+const VIEW_HOLD_DURATION = 1000 // 1 second to scale down preview
 
 // Lock screen state (legacy - will be replaced by UI_STATES)
 let isLockScreenUnlocked = false
@@ -142,6 +147,8 @@ function handleInputActions() {
       console.log('Handling SHELL state inputs')
       // Shell/desktop interactions
       handleShellInputs()
+      // Handle VIEW button press and hold for preview scaling
+      handleViewButtonHold()
       break
       
     case UI_STATES.MENU:
@@ -227,14 +234,22 @@ function onHoldComplete() {
     shellNav.classList.add('visible')
   }
   
-  // Show focus container with active preview highlighting
+  // Show focus container and auto-scale green preview
+  selectedAppIndex = 0 // Ensure green preview is selected
+  focusArea = 'preview' // Ensure focus is in preview mode
+  
   const focusContainer = document.getElementById('focus')
+  const greenPreview = document.getElementById('green-preview')
+  
+  if (greenPreview) {
+    greenPreview.classList.add('preview-scaled') // Scale green preview first
+    isPreviewScaled = true
+  }
+  
   if (focusContainer) {
     focusContainer.classList.add('visible')
-    // Update position after a brief delay to ensure previews are positioned
-    setTimeout(() => {
-      updateFocusPosition()
-    }, 100)
+    // Update focus to match the scaled preview
+    updateFocusPosition()
   }
   
   // Fade out the auth container
@@ -260,6 +275,61 @@ function resetHold() {
     progressCircle.style.transition = 'stroke-dashoffset 0.2s ease' // Smooth reset
     progressCircle.style.strokeDashoffset = '100.53'
   }
+}
+
+function handleViewButtonHold() {
+  // Only handle VIEW hold when in shell state and green preview is scaled
+  if (currentUIState !== UI_STATES.SHELL || !isPreviewScaled || focusArea !== 'preview') return
+  
+  const isViewPressed = input.isDown('VIEW')
+  
+  if (isViewPressed && !isViewHolding) {
+    // Start holding VIEW button
+    isViewHolding = true
+    viewHoldStartTime = Date.now()
+    console.log('VIEW button hold started - will scale down preview in', VIEW_HOLD_DURATION + 'ms')
+  } else if (isViewPressed && isViewHolding) {
+    // Continue holding - check if hold is complete
+    const elapsed = Date.now() - viewHoldStartTime
+    
+    if (elapsed >= VIEW_HOLD_DURATION) {
+      // Hold complete - scale down the preview
+      onViewHoldComplete()
+    }
+  } else if (!isViewPressed && isViewHolding) {
+    // Released before completion
+    resetViewHold()
+  }
+}
+
+function onViewHoldComplete() {
+  console.log('VIEW button hold complete! Scaling down green preview.')
+  
+  // Scale down the currently active preview (should be green/index 0)
+  const previewContainers = [
+    document.getElementById('green-preview'),
+    document.getElementById('blue-preview'),
+    document.getElementById('orange-preview')
+  ]
+  
+  const activePreview = previewContainers[selectedAppIndex]
+  if (activePreview && activePreview.classList.contains('preview-scaled')) {
+    activePreview.classList.remove('preview-scaled')
+    isPreviewScaled = false
+    
+    // Update focus to match the smaller preview
+    updateFocusPosition()
+    
+    // Success feedback
+    RumbleFeedback.confirmation()
+  }
+  
+  resetViewHold()
+}
+
+function resetViewHold() {
+  isViewHolding = false
+  viewHoldStartTime = 0
 }
 
 function updateVisualFeedback() {
@@ -478,7 +548,7 @@ function updatePreviewPositions() {
   updateFocusPosition()
 }
 
-function togglePreviewScaling() {
+function scaleUpPreview() {
   const previewContainers = [
     document.getElementById('green-preview'),
     document.getElementById('blue-preview'),
@@ -488,20 +558,20 @@ function togglePreviewScaling() {
   const activePreview = previewContainers[selectedAppIndex]
   if (!activePreview) return
   
-  if (isPreviewScaled) {
-    // Scale back down to 50%
-    activePreview.classList.remove('preview-scaled')
-    isPreviewScaled = false
-  } else {
+  // Only scale up if not already scaled
+  if (!isPreviewScaled) {
     // Scale up to 100%
     activePreview.classList.add('preview-scaled')
     isPreviewScaled = true
+    
+    // Update focus container to match new size
+    updateFocusPosition()
+    
+    RumbleFeedback.confirmation()
+  } else {
+    // Already scaled - do nothing (scaling down is handled by VIEW button hold)
+    console.log('Preview already scaled up. Use VIEW button hold to scale down.')
   }
-  
-  // Update focus container to match new size
-  updateFocusPosition()
-  
-  RumbleFeedback.confirmation()
 }
 
 function updateFocusPosition() {
@@ -559,6 +629,9 @@ function updateFocusPosition() {
     focusContainer.style.top = `${rect.top - shellRect.top + rect.height/2}px`
     focusContainer.style.left = `${rect.left - shellRect.left + rect.width/2}px`
     focusContainer.style.transform = 'translate(-50%, -50%)'
+  } else if (focusArea === 'shell-surface') {
+    // Focus in shell surface - use the dedicated positioning function
+    positionFocusUnderHeader()
   }
 }
 
@@ -574,6 +647,12 @@ function positionFocusUnderHeader() {
   focusContainer.style.top = '92px' // 36px (h1 top) + 36px (h1 height) + 20px margin
   focusContainer.style.left = '48px' // Same as h1 left position (corrected from 36px)
   focusContainer.style.transform = 'none'
+  
+  // Reset any existing inline styles that might interfere
+  focusContainer.style.maxWidth = 'none'
+  focusContainer.style.maxHeight = 'none'
+  focusContainer.style.minWidth = 'none'
+  focusContainer.style.minHeight = 'none'
 }
 
 function restorePreviousFocus() {
@@ -862,7 +941,8 @@ function handleShellInputs() {
         console.log('Analog stick DOWN detected - moving focus to shell-nav')
         if (focusArea === 'preview') {
           focusArea = 'shell-nav'
-          selectedNavIndex = 0 // Start at library
+          // Always reset selectedNavIndex to 0 (library) when moving down from preview
+          selectedNavIndex = 0
           updateFocusPosition()
           lastStickNavTime = currentTime
         }
@@ -879,7 +959,8 @@ function handleShellInputs() {
       console.log('DOWN input detected - moving focus to shell-nav')
       if (focusArea === 'preview') {
         focusArea = 'shell-nav'
-        selectedNavIndex = 0 // Start at library
+        // Always reset selectedNavIndex to 0 (library) when moving down from preview
+        selectedNavIndex = 0
         updateFocusPosition()
         lastStickNavTime = now
       }
@@ -917,8 +998,8 @@ function handleShellInputs() {
   if (input.isDown('A') && (buttonTime - lastAButtonPress) > A_BUTTON_DEBOUNCE) {
     lastAButtonPress = buttonTime
     if (focusArea === 'preview') {
-      // A button only scales previews when focus is on preview area
-      togglePreviewScaling()
+      // A button only scales UP previews when focus is on preview area
+      scaleUpPreview()
     } else if (focusArea === 'shell-nav') {
       // A button actions based on selected nav item
       if (selectedNavIndex === 0) { // Library selected

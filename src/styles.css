@@ -271,7 +271,22 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 
 #green-preview {
   background-color: rgb(26, 102, 26);
-  /* Centered by default positioning */
+  background-image: url('/assets/images/garrison.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* Override default positioning for simple bottom-to-top animation */
+  transform: translate(-50%, 100vh); /* Start below screen, centered horizontally */
+  width: 1280px;
+  height: 720px;
+  transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease, width 0.4s ease, height 0.4s ease; /* Match other preview transitions */
+}
+
+/* Green preview unlocked state - slide up to center (but allow dynamic classes to override) */
+.unlocked #green-preview:not(.preview-left):not(.preview-right):not(.preview-far-left):not(.preview-far-right) {
+  transform: translate(-50%, -50%); /* Move to center of screen */
+  width: 1280px;
+  height: 720px;
 }
 
 #blue-preview {

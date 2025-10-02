@@ -13,6 +13,12 @@
       <div id="windows-shell">
         <!-- Lock Screen Container -->
         <div id="lock-screen">
+          <!-- Background Container -->
+          <div id="lock-background"></div>
+          
+          <!-- Smoke Container -->
+          <div id="smoke"></div>
+          
           <!-- Clock Container -->
           <div id="clock">
             
@@ -27,7 +33,7 @@
             <div id="progress-ring">
               <svg width="36" height="36">
                 <circle cx="18" cy="18" r="16" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/>
-                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="white" stroke-width="2" fill="none" 
+                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="rgb(255, 149, 0)" stroke-width="2" fill="none" 
                         stroke-dasharray="100.53" stroke-dashoffset="100.53" transform="rotate(-90 18 18)"
                         style="transition: stroke-dashoffset 0.05s linear;"/>
                 <text x="18" y="20" text-anchor="middle" dominant-baseline="middle" 
@@ -44,15 +50,18 @@
         <div id="system-tray">
           <!-- WiFi, Volume, Battery Container -->
           <div id="wifi-volume-battery">
-            <div class="status-icon" id="wifi-icon"></div>
-            <div class="status-icon" id="volume-icon"></div>
-            <div class="status-icon" id="battery-icon"></div>
+            <img src="/assets/icons/wifi-volume-battery.png" alt="WiFi, Volume, Battery" />
           </div>
           
           <!-- Clock 2 Container -->
           <div id="clock2">
             
           </div>
+        </div>
+        
+        <!-- Blur Container -->
+        <div id="blur-container">
+          <img src="/assets/images/blur.png" alt="Blur Effect" />
         </div>
         
         <!-- Switcher Container -->
@@ -105,21 +114,21 @@
               <h1>Gallery</h1>
             </div>
           </div>
-        </div>
-        
-        <!-- Shell Navigation Container -->
-        <div id="shell-nav">
-          <div id="library" class="nav-item">
-            <img src="/assets/icons/library.svg" alt="Library" width="24" height="24" />
-          </div>
-          <div id="settings" class="nav-item">
-            <img src="/assets/icons/settings.svg" alt="Settings" width="24" height="24" />
-          </div>
-          <div id="notifications" class="nav-item">
-            <img src="/assets/icons/notifications.svg" alt="Notifications" width="24" height="24" />
-          </div>
-          <div id="gallery" class="nav-item">
-            <img src="/assets/icons/gallery.svg" alt="Gallery" width="24" height="24" />
+          
+          <!-- Shell Navigation Container -->
+          <div id="shell-nav">
+            <div id="library" class="nav-item">
+              <img src="/assets/icons/library.svg" alt="Library" width="24" height="24" />
+            </div>
+            <div id="settings" class="nav-item">
+              <img src="/assets/icons/settings.svg" alt="Settings" width="24" height="24" />
+            </div>
+            <div id="notifications" class="nav-item">
+              <img src="/assets/icons/notifications.svg" alt="Notifications" width="24" height="24" />
+            </div>
+            <div id="gallery" class="nav-item">
+              <img src="/assets/icons/gallery.svg" alt="Gallery" width="24" height="24" />
+            </div>
           </div>
         </div>
         

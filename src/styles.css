@@ -24,6 +24,64 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   height: 100%;
 }
 
+/* Lock Screen Background Container */
+#lock-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/assets/images/valorant.jpeg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+/* Blur Container */
+#blur-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease;
+  z-index: 0.5;
+  pointer-events: none; /* Allow interactions to pass through */
+}
+
+/* Blur Container Image */
+#blur-container img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  object-fit: none;
+}
+
+/* Blur Container Visible State */
+#blur-container.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+
+
+
+
+/* Smoke Container */
+#smoke {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+  z-index: 0.1;
+}
+
 /* Clock Container */
 #clock {
   position: absolute;
@@ -37,11 +95,15 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   line-height: 1;
   display: inline-block;
   white-space: nowrap;
+  z-index: 2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: top 0.5s ease, opacity 0.5s ease;
 }
 
 /* Clock Hidden State */
-#clock.hidden {
-  display: none;
+#clock.slide-out {
+  top: -200px; /* Move off-screen to the top */
+  opacity: 0;
 }
 
 /* Switcher Container */
@@ -50,20 +112,14 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 84px;
-  z-index: 100;
-  transition: height 0.4s ease;
-}
-
-/* Switcher Unlocked State - Full Height */
-#switcher.unlocked {
   height: 100%;
+  z-index: 0;
 }
 
 /* Running Apps Container */
 #running-apps {
   position: absolute;
-  top: 720px; /* Start below the screen (hidden on lock screen) */
+  top: -84px; /* Start off-screen at the top (default hidden state) */
   left: 0;
   width: 100%;
   height: 84px;
@@ -71,11 +127,12 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   align-items: center;
   justify-content: center;
   transition: top 0.5s ease;
+  z-index: 10;
 }
 
-/* Running Apps Unlocked State - Move to visible position */
-#switcher.unlocked #running-apps {
-  top: 0; /* Move to top when unlocked */
+/* Running Apps Visible State - Move to top edge */
+#running-apps.visible {
+  top: 0; /* Move to top edge when visible */
 }
 
 /* App Container Base Style */
@@ -138,7 +195,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 }
 
 .orange-icon {
-  background-color: rgb(184, 124, 13);
+  background-color: rgb(255, 149, 0);
   /* Future: background-image: url('/path/to/orange-app-icon.png'); */
 }
 
@@ -150,7 +207,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   border-radius: 12px; /* Match focus border-radius for consistency */
   top: 50%;
   left: 50%;
-  z-index: 1;
+  z-index: 5;
   opacity: 0; /* Hidden by default */
   visibility: hidden; /* Hidden by default */
   transform: translate(-50%, calc(100vh - 50%)); /* Start from bottom edge of screen */
@@ -222,7 +279,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 }
 
 #orange-preview {
-  background-color: rgb(184, 124, 13);
+  background-color: rgb(255, 149, 0);
 }
 
 /* System Tray Container */
@@ -246,6 +303,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 #system-tray.unlocked {
   justify-content: flex-start;
   top: 0;
+  right: 0;
   margin: 0;
   padding: 0;
 }
@@ -257,9 +315,14 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   flex-shrink: 0;
   order: 1;
+}
+
+/* WiFi Volume Battery Image */
+#wifi-volume-battery img {
+  height: 48px;
+  object-fit: contain;
 }
 
 /* Status Icon Styling */
@@ -287,6 +350,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   white-space: nowrap;
   flex-shrink: 0;
   order: 2;
+  margin: 0;
 }
 
 /* Clock2 Hidden State */
@@ -299,7 +363,9 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 /* Clock2 Visible State */
 #system-tray.unlocked #clock2 {
   opacity: 1;
-  width: 96px;
+  width: 86px;
+  margin-right: 0;
+  padding-right: 0;
 }
 
 /* Auth Container */
@@ -314,10 +380,12 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   justify-content: center;
   gap: 8px;
   opacity: 1;
-  transition: opacity 0.1s ease;
+  transition: top 0.3s ease, opacity 0.3s ease;
+  z-index: 2;
 }
 
-#auth.fade-out {
+#auth.slide-out {
+  top: -84px; /* Move off-screen to the top */
   opacity: 0;
   pointer-events: none;
 }
@@ -329,6 +397,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   font-size: 18px;
   font-weight: 400;
   opacity: 0.9;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* Progress Ring */
@@ -338,6 +407,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   opacity: 1;
   transition: opacity 0.2s ease;
   flex-shrink: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
 #progress-ring.active {
@@ -368,9 +438,9 @@ button:active { transform: translateY(1px); }
 /* Shell Navigation Container */
 #shell-nav {
   position: absolute;
-  bottom: 28px;
+  bottom: -92px; /* Start off-screen below bottom edge (height + bottom margin) */
   left: 50%;
-  transform: translateX(-50%) translateY(120px); /* Start off-screen below */
+  transform: translateX(-50%);
   width: 320px;
   height: 64px;
   background: rgba(255, 255, 255, 0.05);
@@ -380,16 +450,13 @@ button:active { transform: translateY(1px); }
   justify-content: space-evenly;
   padding: 0 20px;
   box-sizing: border-box;
-  opacity: 0;
-  visibility: hidden;
-  transition: transform 0.5s ease-out, opacity 0.5s ease-out, visibility 0.5s ease-out;
+  transition: bottom 0.5s ease;
+  z-index: 2;
 }
 
 /* Shell Navigation Visible State */
 #shell-nav.visible {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-  visibility: visible;
+  bottom: 28px; /* Slide up to visible position */
 }
 
 /* Navigation Items */
@@ -474,7 +541,7 @@ button:active { transform: translateY(1px); }
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0px;
-  z-index: 500;
+  z-index: 20;
   transition: top 0.4s ease;
   overflow: hidden;
 }
@@ -513,7 +580,7 @@ button:active { transform: translateY(1px); }
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0px;
-  z-index: 500;
+  z-index: 20;
   transition: top 0.4s ease;
   overflow: hidden;
 }
@@ -552,7 +619,7 @@ button:active { transform: translateY(1px); }
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0px;
-  z-index: 500;
+  z-index: 20;
   transition: top 0.4s ease;
   overflow: hidden;
 }
@@ -591,7 +658,7 @@ button:active { transform: translateY(1px); }
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0px;
-  z-index: 500;
+  z-index: 20;
   transition: top 0.4s ease;
   overflow: hidden;
 }

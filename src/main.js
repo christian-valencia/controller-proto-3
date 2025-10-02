@@ -103,12 +103,14 @@ let isPreviewScaled = false
 let lastAButtonPress = 0
 const A_BUTTON_DEBOUNCE = 300 // 300ms debounce for A button
 
-// Focus Navigation State  
+// Focus Navigation State
 let focusArea = 'preview' // 'preview', 'shell-nav', or 'shell-surface'
 let selectedNavIndex = 0 // 0=library, 1=settings, 2=notifications, 3=gallery
 let previousFocusState = { area: 'preview', navIndex: 0, appIndex: 0 } // Store previous focus state
 let currentShellSurface = null // Track which shell surface is currently open
-const navItems = ['library', 'settings', 'notifications', 'gallery']// Press and hold state (for lock screen)
+const navItems = ['library', 'settings', 'notifications', 'gallery']
+
+// Press and hold state (for lock screen)
 let isHolding = false
 let holdStartTime = 0
 const HOLD_DURATION = 700 // 0.7 seconds in milliseconds
@@ -186,7 +188,7 @@ function handleInputActions() {
   
   // Global inputs (always available)
   if (input.justPressed('VIEW')) {
-    console.log('View button pressed - global action')
+
     toggleFullscreen()
   }
   
@@ -201,7 +203,7 @@ function handlePressAndHold() {
   if (currentUIState !== UI_STATES.LOCKED) return
   
   const isYPressed = input.isDown('Y')
-  console.log('🔓 Unlock check - input.isDown("Y"):', isYPressed)
+
   
   if (isYPressed && !isHolding) {
     // Start holding
@@ -245,12 +247,6 @@ function onHoldComplete() {
   // Ensure preview containers are positioned correctly
   updateAppStates()
   
-  // Show shell navigation with slide-up animation
-  const shellNav = document.getElementById('shell-nav')
-  if (shellNav) {
-    shellNav.classList.add('visible')
-  }
-  
   // Show focus container and auto-scale green preview
   selectedAppIndex = 0 // Ensure green preview is selected
   focusArea = 'preview' // Ensure focus is in preview mode
@@ -269,9 +265,9 @@ function onHoldComplete() {
     updateFocusPosition()
   }
   
-  // Fade out the auth container
+  // Slide out the auth container
   if (auth) {
-    auth.classList.add('fade-out')
+    auth.classList.add('slide-out')
   }
   
   resetHold()
@@ -331,6 +327,18 @@ function onXHoldComplete() {
   if (activePreview && activePreview.classList.contains('preview-scaled')) {
     activePreview.classList.remove('preview-scaled')
     isPreviewScaled = false
+    
+    // Animate running apps back down from top
+    const runningApps = document.getElementById('running-apps')
+    if (runningApps) {
+      runningApps.classList.add('visible')
+    }
+    
+    // Animate shell-nav back up from bottom
+    const shellNav = document.getElementById('shell-nav')
+    if (shellNav) {
+      shellNav.classList.add('visible')
+    }
     
     // If the selected app is not already at index 0, reorder the arrays
     if (selectedAppIndex !== 0) {
@@ -410,9 +418,9 @@ function updateSystemTrayState() {
   // Hide/show main clock based on lock state
   if (clock) {
     if (isUnlocked) {
-      clock.classList.add('hidden')
+      clock.classList.add('slide-out')
     } else {
-      clock.classList.remove('hidden')
+      clock.classList.remove('slide-out')
     }
   }
 }
@@ -489,6 +497,18 @@ function changeUIState(newState) {
   
   // Update legacy flag for compatibility
   isLockScreenUnlocked = (newState !== UI_STATES.LOCKED)
+  
+  // Show/hide blur container based on unlock state
+  const blurContainer = document.getElementById('blur-container')
+  if (blurContainer) {
+    if (newState !== UI_STATES.LOCKED) {
+      // System is unlocked - show blur
+      blurContainer.classList.add('visible')
+    } else {
+      // System is locked - hide blur
+      blurContainer.classList.remove('visible')
+    }
+  }
   
   // Trigger visual updates
   updateSystemTrayState()
@@ -600,6 +620,18 @@ function scaleUpPreview() {
     // Scale up to 100%
     activePreview.classList.add('preview-scaled')
     isPreviewScaled = true
+    
+    // Hide running apps when going fullscreen
+    const runningApps = document.getElementById('running-apps')
+    if (runningApps) {
+      runningApps.classList.remove('visible')
+    }
+    
+    // Hide shell-nav when going fullscreen
+    const shellNav = document.getElementById('shell-nav')
+    if (shellNav) {
+      shellNav.classList.remove('visible')
+    }
     
     // Update focus container to match new size
     updateFocusPosition()

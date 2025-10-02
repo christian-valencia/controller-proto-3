@@ -185,18 +185,24 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 
 /* Individual App Icon Colors */
 .green-icon {
-  background-color: rgb(26, 102, 26);
-  /* Future: background-image: url('/path/to/green-app-icon.png'); */
+  background-image: url('/assets/icons/xbox.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .blue-icon {
-  background-color: rgb(40, 40, 122);
-  /* Future: background-image: url('/path/to/blue-app-icon.png'); */
+  background-image: url('/assets/icons/silksong.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .orange-icon {
-  background-color: rgb(255, 149, 0);
-  /* Future: background-image: url('/path/to/orange-app-icon.png'); */
+  background-image: url('/assets/icons/discord.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* Preview Containers */
@@ -291,10 +297,18 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 
 #blue-preview {
   background-color: rgb(40, 40, 122);
+  background-image: url('/assets/images/silksong-gameplay.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 #orange-preview {
   background-color: rgb(255, 149, 0);
+  background-image: url('/assets/images/discord-app.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* System Tray Container */
@@ -547,6 +561,24 @@ button:active { transform: translateY(1px); }
   /* Remove fixed dimensions to allow JavaScript to control sizing */
 }
 
+/* Focus when Shell Library is visible - Use class-based approach */
+#focus.focus-shell-library {
+  top: 306px !important;
+  left: 100px !important;
+  width: 256px !important;
+  height: 256px !important;
+  transform: none !important; /* Remove centering transform */
+}
+
+/* Focus when Shell Settings is visible */
+#focus.focus-shell-settings {
+  top: 124px !important;
+  left: 352px !important;
+  width: 848px !important;
+  height: 56px !important;
+  transform: none !important; /* Remove centering transform */
+}
+
 /* Shell Library Container */
 #shell-library {
   position: absolute;
@@ -555,6 +587,10 @@ button:active { transform: translateY(1px); }
   width: 1280px;
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
+  background-image: url('/assets/images/library.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: 0px;
   z-index: 20;
   transition: top 0.4s ease;
@@ -594,6 +630,10 @@ button:active { transform: translateY(1px); }
   width: 1280px;
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
+  background-image: url('/assets/images/settings.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: 0px;
   z-index: 20;
   transition: top 0.4s ease;

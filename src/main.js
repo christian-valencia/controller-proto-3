@@ -741,12 +741,17 @@ function showShellLibrary() {
   }
   
   const shellLibrary = document.getElementById('shell-library')
+  const focusContainer = document.getElementById('focus')
   if (shellLibrary) {
     shellLibrary.classList.add('visible')
     console.log('Shell Library sliding in from bottom')
     // Set focus area to shell surface and track which surface is open
     focusArea = 'shell-surface'
     currentShellSurface = 'library'
+    // Add CSS class for shell library focus positioning
+    if (focusContainer) {
+      focusContainer.classList.add('focus-shell-library')
+    }
     // Position focus under header
     positionFocusUnderHeader()
   }
@@ -754,10 +759,15 @@ function showShellLibrary() {
 
 function hideShellLibrary() {
   const shellLibrary = document.getElementById('shell-library')
+  const focusContainer = document.getElementById('focus')
   
   if (shellLibrary) {
     shellLibrary.classList.remove('visible')
     console.log('Shell Library sliding out to bottom')
+    // Remove CSS class for shell library focus positioning
+    if (focusContainer) {
+      focusContainer.classList.remove('focus-shell-library')
+    }
     // Clear shell surface state
     currentShellSurface = null
     // Restore previous focus position
@@ -774,12 +784,17 @@ function showShellSettings() {
   }
   
   const shellSettings = document.getElementById('shell-settings')
+  const focusContainer = document.getElementById('focus')
   if (shellSettings) {
     shellSettings.classList.add('visible')
     console.log('Shell Settings sliding in from bottom')
     // Set focus area to shell surface and track which surface is open
     focusArea = 'shell-surface'
     currentShellSurface = 'settings'
+    // Add CSS class for shell settings focus positioning
+    if (focusContainer) {
+      focusContainer.classList.add('focus-shell-settings')
+    }
     // Position focus under header
     positionFocusUnderHeader()
   }
@@ -787,10 +802,15 @@ function showShellSettings() {
 
 function hideShellSettings() {
   const shellSettings = document.getElementById('shell-settings')
+  const focusContainer = document.getElementById('focus')
   
   if (shellSettings) {
     shellSettings.classList.remove('visible')
     console.log('Shell Settings sliding out to bottom')
+    // Remove CSS class for shell settings focus positioning
+    if (focusContainer) {
+      focusContainer.classList.remove('focus-shell-settings')
+    }
     // Clear shell surface state
     currentShellSurface = null
     // Restore previous focus position

@@ -28,6 +28,28 @@ let appNames = ['green', 'blue', 'orange']
 const input = new InputManager()
 // const hud = createHud() // Hidden for clean UI experience
 
+// Expose controller debugging globally
+window.checkControllers = () => {
+  input.gamepadManager.logControllers()
+}
+
+// Add continuous controller monitoring
+setInterval(() => {
+  const pads = navigator.getGamepads()
+  let hasController = false
+  for (const pad of pads) {
+    if (pad) {
+      hasController = true
+      break
+    }
+  }
+  if (hasController && !window.controllerDetected) {
+    console.log('🎮 CONTROLLER DETECTED!')
+    window.controllerDetected = true
+    window.checkControllers()
+  }
+}, 1000)
+
 // Direct B button handler for shell library (backup for InputManager)
 let lastBKeyPress = 0
 window.addEventListener('keydown', (e) => {

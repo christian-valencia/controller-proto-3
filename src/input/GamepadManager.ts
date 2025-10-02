@@ -24,10 +24,13 @@ export class GamepadManager {
   private indexOfFirst: number | null = null
 
   constructor() {
+    console.log('🎮 GamepadManager initialized')
     window.addEventListener('gamepadconnected', (e) => {
+      console.log('🎮 GAMEPAD CONNECTED:', (e as GamepadEvent).gamepad.id)
       if (this.indexOfFirst === null) this.indexOfFirst = (e as GamepadEvent).gamepad.index
     })
     window.addEventListener('gamepaddisconnected', (e) => {
+      console.log('🎮 GAMEPAD DISCONNECTED:', (e as GamepadEvent).gamepad.id)
       const idx = (e as GamepadEvent).gamepad.index
       if (this.indexOfFirst === idx) this.indexOfFirst = null
     })
@@ -39,11 +42,32 @@ export class GamepadManager {
     return null
   }
 
+  // Debug method to check for controllers
+  logControllers() {
+    const pads = navigator.getGamepads()
+    console.log('🎮 Checking for controllers...')
+    console.log('🎮 navigator.getGamepads():', pads)
+    for (let i = 0; i < pads.length; i++) {
+      const pad = pads[i]
+      if (pad) {
+        console.log(`🎮 Controller ${i}:`, pad.id, 'buttons:', pad.buttons.length)
+      }
+    }
+  }
+
   update() {
     this.prev = new Map(this.now)
     this.now.clear()
     const pads = navigator.getGamepads()
-    for (const g of pads) if (g) this.now.set(g.index, g)
+    for (const g of pads) {
+      if (g) {
+        this.now.set(g.index, g)
+        // Debug: Check if Y button is pressed
+        if (g.buttons[3] && g.buttons[3].pressed) {
+          console.log('🎮 GAMEPAD Y BUTTON PRESSED!', g.id)
+        }
+      }
+    }
   }
 
   private btnValue(g: Gamepad, name: keyof typeof BUTTON): number {

@@ -201,6 +201,7 @@ function handlePressAndHold() {
   if (currentUIState !== UI_STATES.LOCKED) return
   
   const isYPressed = input.isDown('Y')
+  console.log('🔓 Unlock check - input.isDown("Y"):', isYPressed)
   
   if (isYPressed && !isHolding) {
     // Start holding

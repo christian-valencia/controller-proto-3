@@ -81,18 +81,73 @@ export class GamepadManager {
   }
 
   isDown(name: ButtonName, padIndex = 0): boolean {
-    const g = this.now.get(padIndex); if (!g) return false
-    return this.btnValue(g, name as any) > 0
+    // First try the requested index
+    let g = this.now.get(padIndex); 
+    if (!g) {
+      // If not found at requested index, try to find any connected gamepad
+      for (const [index, gamepad] of this.now.entries()) {
+        if (gamepad) {
+          g = gamepad;
+          if (name === 'Y') {
+            console.log('🎮 GamepadManager.isDown - Found gamepad at index', index, 'instead of', padIndex)
+          }
+          break;
+        }
+      }
+    }
+    
+    if (!g) {
+      if (name === 'Y') {
+        console.log('🎮 GamepadManager.isDown - No gamepad found at any index')
+      }
+      return false
+    }
+    
+    const result = this.btnValue(g, name as any) > 0
+    if (name === 'Y') {
+      console.log('🎮 GamepadManager.isDown("Y") =', result, 'btnValue =', this.btnValue(g, name as any))
+    }
+    return result
   }
   justPressed(name: ButtonName, padIndex = 0): boolean {
-    const gNow = this.now.get(padIndex); const gPrev = this.prev.get(padIndex)
+    // Find gamepad at any index
+    let gNow = this.now.get(padIndex);
+    let gPrev = this.prev.get(padIndex);
+    let actualIndex = padIndex;
+    
+    if (!gNow) {
+      for (const [index, gamepad] of this.now.entries()) {
+        if (gamepad) {
+          gNow = gamepad;
+          gPrev = this.prev.get(index);
+          actualIndex = index;
+          break;
+        }
+      }
+    }
+    
     if (!gNow) return false
     const now = this.btnValue(gNow, name as any) > 0
     const was = gPrev ? this.btnValue(gPrev, name as any) > 0 : false
     return now && !was
   }
   justReleased(name: ButtonName, padIndex = 0): boolean {
-    const gNow = this.now.get(padIndex); const gPrev = this.prev.get(padIndex)
+    // Find gamepad at any index  
+    let gNow = this.now.get(padIndex);
+    let gPrev = this.prev.get(padIndex);
+    let actualIndex = padIndex;
+    
+    if (!gNow) {
+      for (const [index, gamepad] of this.now.entries()) {
+        if (gamepad) {
+          gNow = gamepad;
+          gPrev = this.prev.get(index);
+          actualIndex = index;
+          break;
+        }
+      }
+    }
+    
     if (!gNow) return false
     const now = this.btnValue(gNow, name as any) > 0
     const was = gPrev ? this.btnValue(gPrev, name as any) > 0 : false
@@ -100,7 +155,20 @@ export class GamepadManager {
   }
 
   getStick(which: StickName, padIndex = 0): {x:number,y:number, magnitude:number} {
-    const g = this.now.get(padIndex); if (!g) return {x:0,y:0,magnitude:0}
+    // First try the requested index
+    let g = this.now.get(padIndex);
+    if (!g) {
+      // If not found at requested index, try to find any connected gamepad
+      for (const [index, gamepad] of this.now.entries()) {
+        if (gamepad) {
+          g = gamepad;
+          break;
+        }
+      }
+    }
+    
+    if (!g) return {x:0,y:0,magnitude:0}
+    
     const axX = which === 'LEFT' ? AXIS.LS_X : AXIS.RS_X
     const axY = which === 'LEFT' ? AXIS.LS_Y : AXIS.RS_Y
     let x = g.axes[axX] ?? 0

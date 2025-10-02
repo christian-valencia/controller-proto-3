@@ -92,9 +92,9 @@ let holdStartTime = 0
 const HOLD_DURATION = 700 // 0.7 seconds in milliseconds
 
 // VIEW button press and hold state (for scaling down preview)
-let isViewHolding = false
-let viewHoldStartTime = 0
-const VIEW_HOLD_DURATION = 1000 // 1 second to scale down preview
+let isXHolding = false
+let xHoldStartTime = 0
+const X_HOLD_DURATION = 700 // 0.7 second to scale down preview
 
 // Lock screen state (legacy - will be replaced by UI_STATES)
 let isLockScreenUnlocked = false
@@ -143,8 +143,8 @@ function handleInputActions() {
     case UI_STATES.SHELL:
       // Shell/desktop interactions
       handleShellInputs()
-      // Handle VIEW button press and hold for preview scaling
-      handleViewButtonHold()
+      // Handle X button press and hold for preview scaling
+      handleXButtonHold()
       break
       
     case UI_STATES.MENU:
@@ -271,33 +271,33 @@ function resetHold() {
   }
 }
 
-function handleViewButtonHold() {
-  // Only handle VIEW hold when in shell state and green preview is scaled
+function handleXButtonHold() {
+  // Only handle X hold when in shell state and a preview is scaled
   if (currentUIState !== UI_STATES.SHELL || !isPreviewScaled || focusArea !== 'preview') return
   
-  const isViewPressed = input.isDown('VIEW')
+  const isXPressed = input.isDown('X')
   
-  if (isViewPressed && !isViewHolding) {
-    // Start holding VIEW button
-    isViewHolding = true
-    viewHoldStartTime = Date.now()
-    console.log('VIEW button hold started - will scale down preview in', VIEW_HOLD_DURATION + 'ms')
-  } else if (isViewPressed && isViewHolding) {
+  if (isXPressed && !isXHolding) {
+    // Start holding X button
+    isXHolding = true
+    xHoldStartTime = Date.now()
+    console.log('X button hold started - will scale down preview in', X_HOLD_DURATION + 'ms')
+  } else if (isXPressed && isXHolding) {
     // Continue holding - check if hold is complete
-    const elapsed = Date.now() - viewHoldStartTime
+    const elapsed = Date.now() - xHoldStartTime
     
-    if (elapsed >= VIEW_HOLD_DURATION) {
+    if (elapsed >= X_HOLD_DURATION) {
       // Hold complete - scale down the preview
-      onViewHoldComplete()
+      onXHoldComplete()
     }
-  } else if (!isViewPressed && isViewHolding) {
+  } else if (!isXPressed && isXHolding) {
     // Released before completion
-    resetViewHold()
+    resetXHold()
   }
 }
 
-function onViewHoldComplete() {
-  console.log('VIEW button hold complete! Scaling down preview and reordering to leftmost position.')
+function onXHoldComplete() {
+  console.log('X button hold complete! Scaling down preview and reordering to leftmost position.')
   
   // Get preview containers based on current app order
   const previewContainers = appNames.map(name => 
@@ -352,12 +352,12 @@ function onViewHoldComplete() {
     RumbleFeedback.confirmation()
   }
   
-  resetViewHold()
+  resetXHold()
 }
 
-function resetViewHold() {
-  isViewHolding = false
-  viewHoldStartTime = 0
+function resetXHold() {
+  isXHolding = false
+  xHoldStartTime = 0
 }
 
 function updateVisualFeedback() {
@@ -1072,10 +1072,7 @@ function handleShellInputs() {
       RumbleFeedback.lightTap()
     }
   }
-  if (input.justPressed('X')) {
-    console.log('Shell: X button - Context action')
-    RumbleFeedback.lightTap()
-  }
+  // X button is now used for hold-to-scale-down (handled in handleXButtonHold)
   if (input.justPressed('Y')) {
     console.log('Shell: Y button - Alternative action')
     RumbleFeedback.lightTap()

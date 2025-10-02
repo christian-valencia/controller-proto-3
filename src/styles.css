@@ -70,7 +70,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: top 0.4s ease;
+  transition: top 0.5s ease;
 }
 
 /* Running Apps Unlocked State - Move to visible position */
@@ -465,21 +465,20 @@ button:active { transform: translateY(1px); }
 /* Shell Library Container */
 #shell-library {
   position: absolute;
-  top: 0;
+  top: 720px;
   left: 0;
   width: 1280px;
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0px;
   z-index: 500;
-  transform: translateX(-1280px); /* Start off-screen to the left */
-  transition: transform 0.4s ease;
+  transition: top 0.4s ease;
   overflow: hidden;
 }
 
 /* Shell Library Visible State */
 #shell-library.visible {
-  transform: translateX(0); /* Slide in to normal position */
+  top: 0; /* Slide up to normal position */
 }
 
 /* Library Content Styling */
@@ -505,21 +504,20 @@ button:active { transform: translateY(1px); }
 /* Shell Settings Container */
 #shell-settings {
   position: absolute;
-  top: 0;
+  top: 720px;
   left: 0;
   width: 1280px;
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0px;
   z-index: 500;
-  transform: translateX(-1280px); /* Start off-screen to the left */
-  transition: transform 0.4s ease;
+  transition: top 0.4s ease;
   overflow: hidden;
 }
 
 /* Shell Settings Visible State */
 #shell-settings.visible {
-  transform: translateX(0); /* Slide in to normal position */
+  top: 0; /* Slide up to normal position */
 }
 
 /* Settings Content Styling */
@@ -545,21 +543,20 @@ button:active { transform: translateY(1px); }
 /* Shell Notifications Container */
 #shell-notifications {
   position: absolute;
-  top: 0;
+  top: 720px;
   left: 0;
   width: 1280px;
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0px;
   z-index: 500;
-  transform: translateX(-1280px); /* Start off-screen to the left */
-  transition: transform 0.4s ease;
+  transition: top 0.4s ease;
   overflow: hidden;
 }
 
 /* Shell Notifications Visible State */
 #shell-notifications.visible {
-  transform: translateX(0); /* Slide in to normal position */
+  top: 0; /* Slide up to normal position */
 }
 
 /* Notifications Content Styling */
@@ -585,21 +582,20 @@ button:active { transform: translateY(1px); }
 /* Shell Gallery Container */
 #shell-gallery {
   position: absolute;
-  top: 0;
+  top: 720px;
   left: 0;
   width: 1280px;
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0px;
   z-index: 500;
-  transform: translateX(-1280px); /* Start off-screen to the left */
-  transition: transform 0.4s ease;
+  transition: top 0.4s ease;
   overflow: hidden;
 }
 
 /* Shell Gallery Visible State */
 #shell-gallery.visible {
-  transform: translateX(0); /* Slide in to normal position */
+  top: 0; /* Slide up to normal position */
 }
 
 /* Gallery Content Styling */

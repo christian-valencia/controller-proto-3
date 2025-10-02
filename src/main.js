@@ -21,8 +21,8 @@ const debugContainer = document.getElementById('debug-container')
 const greenApp = document.getElementById('green')
 const blueApp = document.getElementById('blue')
 const orangeApp = document.getElementById('orange')
-const appContainers = [greenApp, blueApp, orangeApp]
-const appNames = ['green', 'blue', 'orange']
+let appContainers = [greenApp, blueApp, orangeApp]
+let appNames = ['green', 'blue', 'orange']
 
 // Initialize input and HUD systems
 const input = new InputManager()
@@ -133,18 +133,14 @@ function loop() {
 }
 
 function handleInputActions() {
-  console.log(`handleInputActions called - currentUIState: ${currentUIState}`)
-  
   // State-based input routing
   switch (currentUIState) {
     case UI_STATES.LOCKED:
-      console.log('Handling LOCKED state inputs')
       // Lock screen is active - handle press and hold for unlock
       handlePressAndHold()
       break
       
     case UI_STATES.SHELL:
-      console.log('Handling SHELL state inputs')
       // Shell/desktop interactions
       handleShellInputs()
       // Handle VIEW button press and hold for preview scaling
@@ -152,13 +148,11 @@ function handleInputActions() {
       break
       
     case UI_STATES.MENU:
-      console.log('Handling MENU state inputs')
       // Menu system interactions
       handleMenuInputs()
       break
       
     case UI_STATES.APP:
-      console.log('Handling APP state inputs')
       // App-specific interactions
       handleAppInputs()
       break
@@ -303,19 +297,53 @@ function handleViewButtonHold() {
 }
 
 function onViewHoldComplete() {
-  console.log('VIEW button hold complete! Scaling down green preview.')
+  console.log('VIEW button hold complete! Scaling down preview and reordering to leftmost position.')
   
-  // Scale down the currently active preview (should be green/index 0)
-  const previewContainers = [
-    document.getElementById('green-preview'),
-    document.getElementById('blue-preview'),
-    document.getElementById('orange-preview')
-  ]
+  // Get preview containers based on current app order
+  const previewContainers = appNames.map(name => 
+    document.getElementById(`${name}-preview`)
+  )
   
   const activePreview = previewContainers[selectedAppIndex]
   if (activePreview && activePreview.classList.contains('preview-scaled')) {
     activePreview.classList.remove('preview-scaled')
     isPreviewScaled = false
+    
+    // If the selected app is not already at index 0, reorder the arrays
+    if (selectedAppIndex !== 0) {
+      console.log(`Reordering: Moving ${appNames[selectedAppIndex]} to leftmost position`)
+      
+      // Store the selected app info
+      const selectedAppContainer = appContainers[selectedAppIndex]
+      const selectedAppName = appNames[selectedAppIndex]
+      
+      // Remove from current position
+      appContainers.splice(selectedAppIndex, 1)
+      appNames.splice(selectedAppIndex, 1)
+      
+      // Insert at the beginning (leftmost)
+      appContainers.unshift(selectedAppContainer)
+      appNames.unshift(selectedAppName)
+      
+      // Update the DOM order to match the new array order
+      const runningApps = document.getElementById('running-apps')
+      if (runningApps) {
+        // Clear and rebuild in new order
+        runningApps.innerHTML = ''
+        appContainers.forEach(container => {
+          if (container) runningApps.appendChild(container)
+        })
+      }
+      
+      // Set selectedAppIndex to 0 since we moved it to the front
+      selectedAppIndex = 0
+      
+      console.log('New app order:', appNames)
+    }
+    
+    // Update preview positions and app states
+    updatePreviewPositions()
+    updateAppStates()
     
     // Update focus to match the smaller preview
     updateFocusPosition()
@@ -446,9 +474,6 @@ function changeUIState(newState) {
 
 // App Navigation Functions
 function navigateApps(direction) {
-  console.log(`navigateApps called with direction: ${direction}`)
-  console.log(`Current state: ${currentUIState}, selectedAppIndex: ${selectedAppIndex}`)
-  
   const previousApp = selectedAppIndex
   
   if (direction === 'right') {
@@ -463,9 +488,6 @@ function navigateApps(direction) {
 }
 
 function navigateShellNav(direction) {
-  console.log(`navigateShellNav called with direction: ${direction}`)
-  console.log(`Current selectedNavIndex: ${selectedNavIndex} (${navItems[selectedNavIndex]})`)
-  
   const previousNav = selectedNavIndex
   
   if (direction === 'right') {
@@ -480,22 +502,17 @@ function navigateShellNav(direction) {
 }
 
 function updateAppStates() {
-  console.log(`updateAppStates called - currentUIState: ${currentUIState}, selectedAppIndex: ${selectedAppIndex}`)
-  
   // Only update app states when in shell mode and unlocked
   if (currentUIState !== UI_STATES.SHELL) {
-    console.log('Not updating app states - not in SHELL state')
     return
   }
   
   appContainers.forEach((container, index) => {
     if (container) {
       if (index === selectedAppIndex) {
-        console.log(`Setting ${appNames[index]} to active`)
         container.classList.add('app-active')
         container.classList.remove('app-rest')
       } else {
-        console.log(`Setting ${appNames[index]} to rest`)
         container.classList.add('app-rest')
         container.classList.remove('app-active')
       }
@@ -507,13 +524,10 @@ function updateAppStates() {
 }
 
 function updatePreviewPositions() {
-  console.log(`updatePreviewPositions called - selectedAppIndex: ${selectedAppIndex}`)
-  
-  const previewContainers = [
-    document.getElementById('green-preview'),
-    document.getElementById('blue-preview'),
-    document.getElementById('orange-preview')
-  ]
+  // Get preview containers based on current app order
+  const previewContainers = appNames.map(name => 
+    document.getElementById(`${name}-preview`)
+  )
   
   // Remove all positioning classes and scaling first
   previewContainers.forEach(container => {
@@ -526,21 +540,22 @@ function updatePreviewPositions() {
   isPreviewScaled = false
   
   // Add positioning classes based on selected app
+  // The selectedAppIndex now refers to position in the reordered array
   switch (selectedAppIndex) {
-    case 0: // Green active
-      previewContainers[0]?.classList.add('preview-center')  // Green in center
-      previewContainers[1]?.classList.add('preview-right')   // Blue to the right
-      previewContainers[2]?.classList.add('preview-far-right') // Orange far right
+    case 0: // First app in array (leftmost)
+      previewContainers[0]?.classList.add('preview-center')  // First app in center
+      previewContainers[1]?.classList.add('preview-right')   // Second app to the right
+      previewContainers[2]?.classList.add('preview-far-right') // Third app far right
       break
-    case 1: // Blue active  
-      previewContainers[0]?.classList.add('preview-left')    // Green to the left
-      previewContainers[1]?.classList.add('preview-center')  // Blue in center
-      previewContainers[2]?.classList.add('preview-right')   // Orange to the right
+    case 1: // Second app in array
+      previewContainers[0]?.classList.add('preview-left')    // First app to the left
+      previewContainers[1]?.classList.add('preview-center')  // Second app in center
+      previewContainers[2]?.classList.add('preview-right')   // Third app to the right
       break
-    case 2: // Orange active
-      previewContainers[0]?.classList.add('preview-far-left') // Green far left
-      previewContainers[1]?.classList.add('preview-left')    // Blue to the left
-      previewContainers[2]?.classList.add('preview-center')  // Orange in center
+    case 2: // Third app in array (rightmost)
+      previewContainers[0]?.classList.add('preview-far-left') // First app far left
+      previewContainers[1]?.classList.add('preview-left')    // Second app to the left
+      previewContainers[2]?.classList.add('preview-center')  // Third app in center
       break
   }
   
@@ -549,11 +564,10 @@ function updatePreviewPositions() {
 }
 
 function scaleUpPreview() {
-  const previewContainers = [
-    document.getElementById('green-preview'),
-    document.getElementById('blue-preview'),
-    document.getElementById('orange-preview')
-  ]
+  // Get preview containers based on current app order
+  const previewContainers = appNames.map(name => 
+    document.getElementById(`${name}-preview`)
+  )
   
   const activePreview = previewContainers[selectedAppIndex]
   if (!activePreview) return
@@ -583,11 +597,10 @@ function updateFocusPosition() {
     focusContainer.classList.remove('focus-nav')
     focusContainer.classList.add('focus-preview')
     
-    const previewContainers = [
-      document.getElementById('green-preview'),
-      document.getElementById('blue-preview'),
-      document.getElementById('orange-preview')
-    ]
+    // Get preview containers based on current app order
+    const previewContainers = appNames.map(name => 
+      document.getElementById(`${name}-preview`)
+    )
     
     const activePreview = previewContainers[selectedAppIndex]
     if (!activePreview) return
@@ -675,7 +688,7 @@ function showShellLibrary() {
   const shellLibrary = document.getElementById('shell-library')
   if (shellLibrary) {
     shellLibrary.classList.add('visible')
-    console.log('Shell Library sliding in from left')
+    console.log('Shell Library sliding in from bottom')
     // Set focus area to shell surface and track which surface is open
     focusArea = 'shell-surface'
     currentShellSurface = 'library'
@@ -689,7 +702,7 @@ function hideShellLibrary() {
   
   if (shellLibrary) {
     shellLibrary.classList.remove('visible')
-    console.log('Shell Library sliding out to left')
+    console.log('Shell Library sliding out to bottom')
     // Clear shell surface state
     currentShellSurface = null
     // Restore previous focus position
@@ -708,7 +721,7 @@ function showShellSettings() {
   const shellSettings = document.getElementById('shell-settings')
   if (shellSettings) {
     shellSettings.classList.add('visible')
-    console.log('Shell Settings sliding in from left')
+    console.log('Shell Settings sliding in from bottom')
     // Set focus area to shell surface and track which surface is open
     focusArea = 'shell-surface'
     currentShellSurface = 'settings'
@@ -722,7 +735,7 @@ function hideShellSettings() {
   
   if (shellSettings) {
     shellSettings.classList.remove('visible')
-    console.log('Shell Settings sliding out to left')
+    console.log('Shell Settings sliding out to bottom')
     // Clear shell surface state
     currentShellSurface = null
     // Restore previous focus position
@@ -741,7 +754,7 @@ function showShellNotifications() {
   const shellNotifications = document.getElementById('shell-notifications')
   if (shellNotifications) {
     shellNotifications.classList.add('visible')
-    console.log('Shell Notifications sliding in from left')
+    console.log('Shell Notifications sliding in from bottom')
     // Set focus area to shell surface and track which surface is open
     focusArea = 'shell-surface'
     currentShellSurface = 'notifications'
@@ -755,7 +768,7 @@ function hideShellNotifications() {
   
   if (shellNotifications) {
     shellNotifications.classList.remove('visible')
-    console.log('Shell Notifications sliding out to left')
+    console.log('Shell Notifications sliding out to bottom')
     // Clear shell surface state
     currentShellSurface = null
     // Restore previous focus position
@@ -774,7 +787,7 @@ function showShellGallery() {
   const shellGallery = document.getElementById('shell-gallery')
   if (shellGallery) {
     shellGallery.classList.add('visible')
-    console.log('Shell Gallery sliding in from left')
+    console.log('Shell Gallery sliding in from bottom')
     // Set focus area to shell surface and track which surface is open
     focusArea = 'shell-surface'
     currentShellSurface = 'gallery'
@@ -788,7 +801,7 @@ function hideShellGallery() {
   
   if (shellGallery) {
     shellGallery.classList.remove('visible')
-    console.log('Shell Gallery sliding out to left')
+    console.log('Shell Gallery sliding out to bottom')
     // Clear shell surface state
     currentShellSurface = null
     // Restore previous focus position
@@ -941,8 +954,7 @@ function handleShellInputs() {
         console.log('Analog stick DOWN detected - moving focus to shell-nav')
         if (focusArea === 'preview') {
           focusArea = 'shell-nav'
-          // Always reset selectedNavIndex to 0 (library) when moving down from preview
-          selectedNavIndex = 0
+          // Keep current selectedNavIndex - don't reset to 0
           updateFocusPosition()
           lastStickNavTime = currentTime
         }
@@ -959,8 +971,7 @@ function handleShellInputs() {
       console.log('DOWN input detected - moving focus to shell-nav')
       if (focusArea === 'preview') {
         focusArea = 'shell-nav'
-        // Always reset selectedNavIndex to 0 (library) when moving down from preview
-        selectedNavIndex = 0
+        // Keep current selectedNavIndex - don't reset to 0
         updateFocusPosition()
         lastStickNavTime = now
       }

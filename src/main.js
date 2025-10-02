@@ -1,5 +1,4 @@
 import { InputManager } from './input/InputManager'
-import { createHud } from './ui/Hud'
 
 // DOM ELEMENT SELECTION ONLY - No DOM creation here
 const windowsShell = document.getElementById('windows-shell')
@@ -13,7 +12,6 @@ const authTextLeft = document.getElementById('auth-text-left')
 const authTextRight = document.getElementById('auth-text-right')
 const progressRing = document.getElementById('progress-ring')
 const progressCircle = document.getElementById('progress-circle')
-const hudContainer = document.getElementById('hud-container')
 const statusContainer = document.getElementById('status-container')
 const debugContainer = document.getElementById('debug-container')
 
@@ -24,61 +22,22 @@ const orangeApp = document.getElementById('orange')
 let appContainers = [greenApp, blueApp, orangeApp]
 let appNames = ['green', 'blue', 'orange']
 
-// Initialize input and HUD systems
+// Initialize input system
 const input = new InputManager()
-// const hud = createHud() // Hidden for clean UI experience
 
-// Expose controller debugging globally
-window.checkControllers = () => {
-  input.gamepadManager.logControllers()
-}
+// Debug helper for checking connected controllers
+window.checkControllers = () => input.gamepadManager.logControllers()
 
-// Add continuous controller monitoring
-setInterval(() => {
-  const pads = navigator.getGamepads()
-  let hasController = false
-  for (const pad of pads) {
-    if (pad) {
-      hasController = true
-      break
-    }
-  }
-  if (hasController && !window.controllerDetected) {
-    console.log('🎮 CONTROLLER DETECTED!')
-    window.controllerDetected = true
-    window.checkControllers()
-  }
-}, 1000)
-
-// Direct B button handler for shell library (backup for InputManager)
+// Direct B button handler for closing shell containers (backup for InputManager)
 let lastBKeyPress = 0
 window.addEventListener('keydown', (e) => {
   if ((e.key.toLowerCase() === 's' || e.key.toLowerCase() === 'l') && 
-      currentUIState === UI_STATES.SHELL) {
+      currentUIState === UI_STATES.SHELL && currentShellSurface) {
     const now = Date.now()
     if (now - lastBKeyPress > 200) { // 200ms debounce
-      const shellLibrary = document.getElementById('shell-library')
-      const shellSettings = document.getElementById('shell-settings')
-      const shellNotifications = document.getElementById('shell-notifications')
-      const shellGallery = document.getElementById('shell-gallery')
-      
-      if (shellLibrary && shellLibrary.classList.contains('visible')) {
-        console.log('Direct B button handler - closing library')
-        hideShellLibrary()
-        lastBKeyPress = now
-      } else if (shellSettings && shellSettings.classList.contains('visible')) {
-        console.log('Direct B button handler - closing settings')
-        hideShellSettings()
-        lastBKeyPress = now
-      } else if (shellNotifications && shellNotifications.classList.contains('visible')) {
-        console.log('Direct B button handler - closing notifications')
-        hideShellNotifications()
-        lastBKeyPress = now
-      } else if (shellGallery && shellGallery.classList.contains('visible')) {
-        console.log('Direct B button handler - closing gallery')
-        hideShellGallery()
-        lastBKeyPress = now
-      }
+      console.log(`Direct B button handler - closing ${currentShellSurface}`)
+      hideShellContainer(currentShellSurface)
+      lastBKeyPress = now
     }
   }
 })
@@ -148,10 +107,6 @@ function loop() {
   // Update visual feedback
   updateVisualFeedback()
   
-  // Render HUD
-  // hud.render(input) // Hidden for clean UI experience
-  // Clear any existing HUD content
-  // if (hudContainer) hudContainer.innerHTML = ''
   
   requestAnimationFrame(loop)
 }
@@ -647,10 +602,18 @@ function updateFocusPosition() {
   const focusContainer = document.getElementById('focus')
   if (!focusContainer) return
   
+  // Clean up ALL focus-related classes first
+  focusContainer.classList.remove(
+    'focus-preview', 
+    'focus-nav', 
+    'focus-shell-surface',
+    'focus-shell-library',
+    'focus-shell-settings'
+  )
+  
   if (focusArea === 'preview') {
-    // Focus on preview area
-    focusContainer.classList.remove('focus-nav')
-    focusContainer.classList.add('focus-preview')
+    // Focus on preview area - hide all nav labels
+    updateNavLabels()
     
     // Get preview containers based on current app order
     const previewContainers = appNames.map(name => 
@@ -678,10 +641,10 @@ function updateFocusPosition() {
     focusContainer.style.top = '50%'
     focusContainer.style.left = '50%'
     focusContainer.style.transform = 'translate(-50%, -50%)'
+    focusContainer.classList.add('focus-preview')
     
   } else if (focusArea === 'shell-nav') {
-    // Focus on shell navigation area
-    focusContainer.classList.remove('focus-preview')
+    // Focus on shell navigation area - update nav labels
     focusContainer.classList.add('focus-nav')
     
     const navItemElement = document.getElementById(navItems[selectedNavIndex])
@@ -697,10 +660,72 @@ function updateFocusPosition() {
     focusContainer.style.top = `${rect.top - shellRect.top + rect.height/2}px`
     focusContainer.style.left = `${rect.left - shellRect.left + rect.width/2}px`
     focusContainer.style.transform = 'translate(-50%, -50%)'
+    
+    // Update nav labels to show active one
+    updateNavLabels(navItems[selectedNavIndex])
   } else if (focusArea === 'shell-surface') {
+    // Focus in shell surface - hide all nav labels
+    updateNavLabels()
+    
     // Focus in shell surface - use the dedicated positioning function
     positionFocusUnderHeader()
   }
+}
+
+function updateNavLabels(activeNavItem = null) {
+  const labels = {
+    'library': document.getElementById('label-library'),
+    'settings': document.getElementById('label-settings'),
+    'notifications': document.getElementById('label-notifications'),
+    'gallery': document.getElementById('label-gallery')
+  }
+  
+  const shellNav = document.getElementById('shell-nav')
+  
+  // If no active nav item, hide all labels
+  if (!activeNavItem || !shellNav) {
+    Object.values(labels).forEach(label => {
+      if (label) {
+        label.classList.remove('active', 'faded')
+      }
+    })
+    return
+  }
+  
+  // Get the actual nav item element position (relative to shell-nav now)
+  const navItemElement = document.getElementById(activeNavItem)
+  if (!navItemElement) return
+  
+  const navItemRect = navItemElement.getBoundingClientRect()
+  const shellNavRect = shellNav.getBoundingClientRect()
+  
+  // Calculate position relative to shell-nav
+  const navItemTop = navItemRect.top - shellNavRect.top
+  const navItemLeft = navItemRect.left - shellNavRect.left
+  const navItemWidth = navItemRect.width
+  
+  // Update each label
+  Object.entries(labels).forEach(([navId, label]) => {
+    if (!label) return
+    
+    if (navId === activeNavItem) {
+      // Active label - position above the specific nav item with more spacing
+      label.classList.add('active')
+      label.classList.remove('faded')
+      
+      // Position label centered above this specific nav item (relative to shell-nav)
+      const labelTop = navItemTop - 14 - 20 // 14px gap + approximate label height
+      const labelLeft = navItemLeft + (navItemWidth / 2)
+      
+      label.style.top = `${labelTop}px`
+      label.style.left = `${labelLeft}px`
+      label.style.transform = 'translateX(-50%)'
+    } else {
+      // Other labels - fade them out
+      label.classList.remove('active')
+      label.classList.add('faded')
+    }
+  })
 }
 
 function positionFocusUnderHeader() {
@@ -732,7 +757,8 @@ function restorePreviousFocus() {
 }
 
 // Shell Library Functions
-function showShellLibrary() {
+// Consolidated Shell Container Functions
+function showShellContainer(containerName) {
   // Store current focus state before opening
   previousFocusState = {
     area: focusArea,
@@ -740,149 +766,69 @@ function showShellLibrary() {
     appIndex: selectedAppIndex
   }
   
-  const shellLibrary = document.getElementById('shell-library')
+  const container = document.getElementById(`shell-${containerName}`)
   const focusContainer = document.getElementById('focus')
-  if (shellLibrary) {
-    shellLibrary.classList.add('visible')
-    console.log('Shell Library sliding in from bottom')
-    // Set focus area to shell surface and track which surface is open
-    focusArea = 'shell-surface'
-    currentShellSurface = 'library'
-    // Add CSS class for shell library focus positioning
-    if (focusContainer) {
-      focusContainer.classList.add('focus-shell-library')
-    }
-    // Position focus under header
-    positionFocusUnderHeader()
+  const runningApps = document.getElementById('running-apps')
+  
+  if (!container) return
+  
+  container.classList.add('visible')
+  console.log(`Shell ${containerName.charAt(0).toUpperCase() + containerName.slice(1)} sliding in from bottom`)
+  
+  // Hide running apps when shell surface opens (keep shell-nav visible)
+  if (runningApps) {
+    runningApps.classList.remove('visible')
   }
+  
+  // Set focus area to shell surface and track which surface is open
+  focusArea = 'shell-surface'
+  currentShellSurface = containerName
+  
+  // Add CSS class for focus positioning (library and settings have custom positioning)
+  if (focusContainer && (containerName === 'library' || containerName === 'settings')) {
+    focusContainer.classList.add(`focus-shell-${containerName}`)
+  }
+  
+  // Position focus under header
+  positionFocusUnderHeader()
 }
 
-function hideShellLibrary() {
-  const shellLibrary = document.getElementById('shell-library')
+function hideShellContainer(containerName) {
+  const container = document.getElementById(`shell-${containerName}`)
   const focusContainer = document.getElementById('focus')
+  const runningApps = document.getElementById('running-apps')
   
-  if (shellLibrary) {
-    shellLibrary.classList.remove('visible')
-    console.log('Shell Library sliding out to bottom')
-    // Remove CSS class for shell library focus positioning
-    if (focusContainer) {
-      focusContainer.classList.remove('focus-shell-library')
-    }
-    // Clear shell surface state
-    currentShellSurface = null
-    // Restore previous focus position
-    restorePreviousFocus()
+  if (!container) return
+  
+  container.classList.remove('visible')
+  console.log(`Shell ${containerName.charAt(0).toUpperCase() + containerName.slice(1)} sliding out to bottom`)
+  
+  // Restore running apps when shell surface closes (shell-nav stays visible)
+  if (runningApps) {
+    runningApps.classList.add('visible')
   }
+  
+  // Remove CSS class for focus positioning
+  if (focusContainer && (containerName === 'library' || containerName === 'settings')) {
+    focusContainer.classList.remove(`focus-shell-${containerName}`)
+  }
+  
+  // Clear shell surface state
+  currentShellSurface = null
+  
+  // Restore previous focus position
+  restorePreviousFocus()
 }
 
-function showShellSettings() {
-  // Store current focus state before opening
-  previousFocusState = {
-    area: focusArea,
-    navIndex: selectedNavIndex,
-    appIndex: selectedAppIndex
-  }
-  
-  const shellSettings = document.getElementById('shell-settings')
-  const focusContainer = document.getElementById('focus')
-  if (shellSettings) {
-    shellSettings.classList.add('visible')
-    console.log('Shell Settings sliding in from bottom')
-    // Set focus area to shell surface and track which surface is open
-    focusArea = 'shell-surface'
-    currentShellSurface = 'settings'
-    // Add CSS class for shell settings focus positioning
-    if (focusContainer) {
-      focusContainer.classList.add('focus-shell-settings')
-    }
-    // Position focus under header
-    positionFocusUnderHeader()
-  }
-}
-
-function hideShellSettings() {
-  const shellSettings = document.getElementById('shell-settings')
-  const focusContainer = document.getElementById('focus')
-  
-  if (shellSettings) {
-    shellSettings.classList.remove('visible')
-    console.log('Shell Settings sliding out to bottom')
-    // Remove CSS class for shell settings focus positioning
-    if (focusContainer) {
-      focusContainer.classList.remove('focus-shell-settings')
-    }
-    // Clear shell surface state
-    currentShellSurface = null
-    // Restore previous focus position
-    restorePreviousFocus()
-  }
-}
-
-function showShellNotifications() {
-  // Store current focus state before opening
-  previousFocusState = {
-    area: focusArea,
-    navIndex: selectedNavIndex,
-    appIndex: selectedAppIndex
-  }
-  
-  const shellNotifications = document.getElementById('shell-notifications')
-  if (shellNotifications) {
-    shellNotifications.classList.add('visible')
-    console.log('Shell Notifications sliding in from bottom')
-    // Set focus area to shell surface and track which surface is open
-    focusArea = 'shell-surface'
-    currentShellSurface = 'notifications'
-    // Position focus under header
-    positionFocusUnderHeader()
-  }
-}
-
-function hideShellNotifications() {
-  const shellNotifications = document.getElementById('shell-notifications')
-  
-  if (shellNotifications) {
-    shellNotifications.classList.remove('visible')
-    console.log('Shell Notifications sliding out to bottom')
-    // Clear shell surface state
-    currentShellSurface = null
-    // Restore previous focus position
-    restorePreviousFocus()
-  }
-}
-
-function showShellGallery() {
-  // Store current focus state before opening
-  previousFocusState = {
-    area: focusArea,
-    navIndex: selectedNavIndex,
-    appIndex: selectedAppIndex
-  }
-  
-  const shellGallery = document.getElementById('shell-gallery')
-  if (shellGallery) {
-    shellGallery.classList.add('visible')
-    console.log('Shell Gallery sliding in from bottom')
-    // Set focus area to shell surface and track which surface is open
-    focusArea = 'shell-surface'
-    currentShellSurface = 'gallery'
-    // Position focus under header
-    positionFocusUnderHeader()
-  }
-}
-
-function hideShellGallery() {
-  const shellGallery = document.getElementById('shell-gallery')
-  
-  if (shellGallery) {
-    shellGallery.classList.remove('visible')
-    console.log('Shell Gallery sliding out to bottom')
-    // Clear shell surface state
-    currentShellSurface = null
-    // Restore previous focus position
-    restorePreviousFocus()
-  }
-}
+// Wrapper functions for backwards compatibility
+function showShellLibrary() { showShellContainer('library') }
+function hideShellLibrary() { hideShellContainer('library') }
+function showShellSettings() { showShellContainer('settings') }
+function hideShellSettings() { hideShellContainer('settings') }
+function showShellNotifications() { showShellContainer('notifications') }
+function hideShellNotifications() { hideShellContainer('notifications') }
+function showShellGallery() { showShellContainer('gallery') }
+function hideShellGallery() { hideShellContainer('gallery') }
 
 // Interaction Handler Functions
 function handleShellInputs() {

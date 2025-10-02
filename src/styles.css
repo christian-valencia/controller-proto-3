@@ -147,7 +147,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   position: absolute;
   width: 50vw; /* 50% of window width */
   height: 50vh; /* 50% of window height */
-  border-radius: 8px;
+  border-radius: 12px; /* Match focus border-radius for consistency */
   top: 50%;
   left: 50%;
   z-index: 1;
@@ -161,6 +161,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 .unlocked .preview-container {
   opacity: 1;
   visibility: visible;
+  border-radius: 12px !important; /* Ensure 12px border-radius is maintained when unlocked */
 }
 
 /* Dynamic Preview Positioning Classes */
@@ -168,6 +169,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   transform: translate(-50%, -50%) !important; /* Centered */
   z-index: 5 !important; /* Active/centered preview on top */
   width: 50vw !important; /* Keep full size for active preview */
+  border-radius: 12px !important; /* Maintain consistent border-radius when centered */
   height: 50vh !important;
 }
 
@@ -205,6 +207,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 .preview-container.preview-scaled {
   width: 100vw !important; /* Full window width */
   height: 100vh !important; /* Full window height */
+  border-radius: 0 !important; /* Remove border radius when fullscreen to match focus behavior */
   transform: translate(-50%, -50%) !important; /* Always centered when scaled */
   z-index: 999 !important; /* Bring to front when scaled - above all other elements */
 }

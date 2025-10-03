@@ -1,0 +1,5 @@
+{
+    "appService.showBuildDuringDeployPrompt": false,
+    "appService.defaultWebAppToDeploy": "/subscriptions/c79776a9-bd7b-43eb-b97a-6bef76fb148c/resourceGroups/Controller-proto-1_group/providers/Microsoft.Web/sites/Controller-proto-1",
+    "appService.deploySubpath": "."
+}

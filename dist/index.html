@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Windows Gaming Shell v1.0</title>
-    <script type="module" crossorigin src="/assets/index-arjZqL_W.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Cn2ElmIA.css">
+    <title>Windows Gaming Shell v1.0</title>
+    <script type="module" crossorigin src="/assets/index-CyiuDUgC.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Y8JibRfM.css">
   </head>
   <body>
     <!-- Main App Container -->
@@ -14,6 +14,12 @@
       <div id="windows-shell">
         <!-- Lock Screen Container -->
         <div id="lock-screen">
+          <!-- Background Container -->
+          <div id="lock-background"></div>
+          
+          <!-- Smoke Container -->
+          <div id="smoke"></div>
+          
           <!-- Clock Container -->
           <div id="clock">
             
@@ -45,15 +51,18 @@
         <div id="system-tray">
           <!-- WiFi, Volume, Battery Container -->
           <div id="wifi-volume-battery">
-            <div class="status-icon" id="wifi-icon"></div>
-            <div class="status-icon" id="volume-icon"></div>
-            <div class="status-icon" id="battery-icon"></div>
+            <img src="/assets/icons/wifi-volume-battery.png" alt="WiFi, Volume, Battery" />
           </div>
           
           <!-- Clock 2 Container -->
           <div id="clock2">
             
           </div>
+        </div>
+        
+        <!-- Blur Container -->
+        <div id="blur-container">
+          <img src="/assets/images/blur.png" alt="Blur Effect" />
         </div>
         
         <!-- Switcher Container -->
@@ -79,25 +88,59 @@
           <div id="blue-preview" class="preview-container"></div>
           <div id="orange-preview" class="preview-container"></div>
           
-          <!-- Focus Container -->
-          <div id="focus"></div>
+          <!-- Shell Library Container -->
+          <div id="shell-library">
+            <div class="library-content">
+            </div>
+          </div>
+          
+          <!-- Shell Settings Container -->
+          <div id="shell-settings">
+            <div class="settings-content">
+            </div>
+          </div>
+          
+          <!-- Shell Notifications Container -->
+          <div id="shell-notifications">
+            <div class="notifications-content">
+              <h1>Notifications</h1>
+            </div>
+          </div>
+          
+          <!-- Shell Gallery Container -->
+          <div id="shell-gallery">
+            <div class="gallery-content">
+              <h1>Gallery</h1>
+            </div>
+          </div>
+          
+          <!-- Shell Navigation Container -->
+          <div id="shell-nav">
+            <div id="library" class="nav-item">
+              <img src="/assets/icons/library.svg" alt="Library" width="24" height="24" />
+            </div>
+            <div id="settings" class="nav-item">
+              <img src="/assets/icons/settings.svg" alt="Settings" width="24" height="24" />
+            </div>
+            <div id="notifications" class="nav-item">
+              <img src="/assets/icons/notifications.svg" alt="Notifications" width="24" height="24" />
+            </div>
+            <div id="gallery" class="nav-item">
+              <img src="/assets/icons/gallery.svg" alt="Gallery" width="24" height="24" />
+            </div>
+            
+            <!-- Shell Nav Labels (inside shell-nav) -->
+            <div id="shell-nav-labels">
+              <div id="label-library" class="nav-label">Library</div>
+              <div id="label-settings" class="nav-label">Settings</div>
+              <div id="label-notifications" class="nav-label">Notifications</div>
+              <div id="label-gallery" class="nav-label">Gallery</div>
+            </div>
+          </div>
         </div>
         
-        <!-- Shell Navigation Container -->
-        <div id="shell-nav">
-          <div id="library" class="nav-item">
-            <div class="nav-circle"></div>
-          </div>
-          <div id="settings" class="nav-item">
-            <div class="nav-circle"></div>
-          </div>
-          <div id="notifications" class="nav-item">
-            <div class="nav-circle"></div>
-          </div>
-          <div id="gallery" class="nav-item">
-            <div class="nav-circle"></div>
-          </div>
-        </div>
+        <!-- Focus Container -->
+        <div id="focus"></div>
         
         <!-- Future containers will go here -->
         
@@ -112,6 +155,6 @@
       <!-- Debug Container -->
       <div id="debug-container"></div>
     </div>
-
+
   </body>
 </html>

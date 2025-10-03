@@ -8,12 +8,8 @@ const switcher = document.getElementById('switcher')
 const clock = document.getElementById('clock')
 const clock2 = document.getElementById('clock2')
 const auth = document.getElementById('auth')
-const authTextLeft = document.getElementById('auth-text-left')
-const authTextRight = document.getElementById('auth-text-right')
 const progressRing = document.getElementById('progress-ring')
 const progressCircle = document.getElementById('progress-circle')
-const statusContainer = document.getElementById('status-container')
-const debugContainer = document.getElementById('debug-container')
 
 // App containers
 const greenApp = document.getElementById('green')
@@ -24,9 +20,6 @@ let appNames = ['green', 'blue', 'orange']
 
 // Initialize input system
 const input = new InputManager()
-
-// Debug helper for checking connected controllers
-window.checkControllers = () => input.gamepadManager.logControllers()
 
 // Direct B button handler for closing shell containers (backup for InputManager)
 let lastBKeyPress = 0

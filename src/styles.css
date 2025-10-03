@@ -307,6 +307,18 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   z-index: 999 !important; /* Bring to front when scaled - above all other elements */
 }
 
+/* Hide titlebar when preview is scaled to full screen */
+.preview-container.preview-scaled .preview-titlebar {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Show titlebar when preview is scaled down */
+.preview-container:not(.preview-scaled) .preview-titlebar {
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
 #green-preview {
   background-color: rgb(26, 102, 26);
   background-image: url('/assets/images/garrison.png');

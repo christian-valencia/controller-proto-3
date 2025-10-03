@@ -220,6 +220,35 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease, width 0.4s ease, height 0.4s ease; /* Smooth transition with slide animation and scaling */
 }
 
+/* Titlebar at top of each preview */
+.preview-titlebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 64px;
+  background-color: rgba(0, 0, 0, 0.9); /* 90% opacity black */
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  display: flex;
+  align-items: center;
+  pointer-events: none; /* Allow clicks to pass through */
+}
+
+.titlebar-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  margin-left: 16px;
+}
+
+.titlebar-text {
+  margin-left: 12px;
+  color: white;
+  font-size: 24px;
+  font-weight: 400;
+}
+
 /* Show preview containers when unlocked */
 .unlocked .preview-container {
   opacity: 1;
@@ -473,7 +502,7 @@ button:active { transform: translateY(1px); }
 
 /* Shell Navigation Visible State */
 #shell-nav.visible {
-  bottom: 28px; /* Slide up to visible position */
+  bottom: 20px; /* 20px margin from bottom edge */
 }
 
 /* Navigation Items */
@@ -616,13 +645,16 @@ button:active { transform: translateY(1px); }
   background-repeat: no-repeat;
   border-radius: 0px;
   z-index: 20;
-  transition: top 0.4s ease;
+  transform: scale(0.3);
+  transform-origin: center bottom;
+  transition: top 0.4s ease, transform 0.4s ease;
   overflow: hidden;
 }
 
 /* Shell Library Visible State */
 #shell-library.visible {
   top: 0; /* Slide up to normal position */
+  transform: scale(1.0);
 }
 
 /* Library Content Styling */
@@ -659,13 +691,16 @@ button:active { transform: translateY(1px); }
   background-repeat: no-repeat;
   border-radius: 0px;
   z-index: 20;
-  transition: top 0.4s ease;
+  transform: scale(0.3);
+  transform-origin: center bottom;
+  transition: top 0.4s ease, transform 0.4s ease;
   overflow: hidden;
 }
 
 /* Shell Settings Visible State */
 #shell-settings.visible {
   top: 0; /* Slide up to normal position */
+  transform: scale(1.0);
 }
 
 /* Settings Content Styling */
@@ -698,13 +733,16 @@ button:active { transform: translateY(1px); }
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0px;
   z-index: 20;
-  transition: top 0.4s ease;
+  transform: scale(0.3);
+  transform-origin: center bottom;
+  transition: top 0.4s ease, transform 0.4s ease;
   overflow: hidden;
 }
 
 /* Shell Notifications Visible State */
 #shell-notifications.visible {
   top: 0; /* Slide up to normal position */
+  transform: scale(1.0);
 }
 
 /* Notifications Content Styling */
@@ -737,13 +775,16 @@ button:active { transform: translateY(1px); }
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0px;
   z-index: 20;
-  transition: top 0.4s ease;
+  transform: scale(0.3);
+  transform-origin: center bottom;
+  transition: top 0.4s ease, transform 0.4s ease;
   overflow: hidden;
 }
 
 /* Shell Gallery Visible State */
 #shell-gallery.visible {
   top: 0; /* Slide up to normal position */
+  transform: scale(1.0);
 }
 
 /* Gallery Content Styling */

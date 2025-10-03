@@ -707,7 +707,7 @@ function updateNavLabels(activeNavItem = null) {
       label.classList.remove('faded')
       
       // Position label centered above this specific nav item (relative to shell-nav)
-      const labelTop = navItemTop - 14 - 20 // 14px gap + approximate label height
+      const labelTop = navItemTop - 16 - 20 // 16px gap + approximate label height (2px higher)
       const labelLeft = navItemLeft + (navItemWidth / 2)
       
       label.style.top = `${labelTop}px`

@@ -896,6 +896,16 @@ function showShellContainer(containerName) {
     selectedLauncherIndex = 0
     selectedLauncherRow = 0
     updateLauncherFocus()
+    
+    // Fade in library background and blur
+    const libraryBackground = document.querySelector('.library-background-image')
+    const libraryBlur = document.querySelector('.library-blur')
+    if (libraryBackground) {
+      libraryBackground.classList.add('visible')
+    }
+    if (libraryBlur) {
+      libraryBlur.classList.add('visible')
+    }
   }
   
   // Add CSS class for focus positioning (library and settings have custom positioning)
@@ -949,6 +959,16 @@ function hideShellContainer(containerName) {
     // Restore focus opacity
     if (focusContainer) {
       focusContainer.style.opacity = '1'
+    }
+    
+    // Fade out library background and blur when closing
+    const libraryBackground = document.querySelector('.library-background-image')
+    const libraryBlur = document.querySelector('.library-blur')
+    if (libraryBackground) {
+      libraryBackground.classList.remove('visible')
+    }
+    if (libraryBlur) {
+      libraryBlur.classList.remove('visible')
     }
   }
   

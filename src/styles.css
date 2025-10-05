@@ -209,7 +209,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 .preview-container {
   position: absolute;
   width: 50vw; /* 50% of window width */
-  height: 50vh; /* 50% of window height */
+  height: calc(50vh + 64px); /* 50% of window height + 64px */
   border-radius: 12px; /* Match focus border-radius for consistency */
   top: 50%;
   left: 50%;
@@ -217,7 +217,19 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   opacity: 0; /* Hidden by default */
   visibility: hidden; /* Hidden by default */
   transform: translate(-50%, calc(100vh - 50%)); /* Start from bottom edge of screen */
-  transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease, width 0.4s ease, height 0.4s ease; /* Smooth transition with slide animation and scaling */
+  transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease, width 0.4s ease, height 0.4s ease, left 0.4s ease; /* Smooth transition with slide animation and scaling */
+}
+
+/* Move all previews off screen to the right when shell container is active */
+.preview-container.hide-right,
+.preview-container.preview-center.hide-right,
+.preview-container.preview-left.hide-right,
+.preview-container.preview-right.hide-right,
+.preview-container.preview-far-left.hide-right,
+.preview-container.preview-far-right.hide-right,
+.preview-container.preview-scaled.hide-right {
+  left: 200% !important;
+  transform: translate(-50%, -50%) !important;
 }
 
 /* Titlebar at top of each preview */
@@ -262,7 +274,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   z-index: 5 !important; /* Active/centered preview on top */
   width: 50vw !important; /* Keep full size for active preview */
   border-radius: 12px !important; /* Maintain consistent border-radius when centered */
-  height: 50vh !important;
+  height: calc(50vh + 64px) !important;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1) !important; /* Subtle drop shadow for center preview */
 }
 
@@ -270,7 +282,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 .preview-container.preview-right {
   z-index: 3 !important; /* Adjacent previews in middle layer */
   width: 30vw !important; /* Smaller size for non-active previews */
-  height: 30vh !important;
+  height: calc(30vh + 38px) !important; /* Proportionally increased by 64px * 0.6 = ~38px */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08) !important; /* More subtle drop shadow for adjacent previews */
 }
 
@@ -278,7 +290,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 .preview-container.preview-far-right {
   z-index: 2 !important; /* Far previews at bottom layer */
   width: 30vw !important; /* Smaller size for non-active previews */
-  height: 30vh !important;
+  height: calc(30vh + 38px) !important; /* Proportionally increased by 64px * 0.6 = ~38px */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06) !important; /* Very subtle drop shadow for far previews */
 }
 
@@ -329,7 +341,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   transform: translate(-50%, 100vh); /* Start below screen, centered horizontally */
   width: 1280px;
   height: 720px;
-  transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease, width 0.4s ease, height 0.4s ease; /* Match other preview transitions */
+  transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease, width 0.4s ease, height 0.4s ease, left 0.4s ease; /* Added left transition */
 }
 
 /* Green preview unlocked state - slide up to center (but allow dynamic classes to override) */
@@ -337,6 +349,12 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   transform: translate(-50%, -50%); /* Move to center of screen */
   width: 1280px;
   height: 720px;
+}
+
+/* Green preview when hiding to the right */
+.unlocked #green-preview.hide-right {
+  left: 200% !important;
+  transform: translate(-50%, -50%) !important;
 }
 
 #blue-preview {
@@ -651,13 +669,12 @@ button:active { transform: translateY(1px); }
   width: 1280px;
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
-  background-image: url('/assets/images/library.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   border-radius: 0px;
   z-index: 20;
-  transform: scale(0.3);
+  transform: scale(0);
   transform-origin: center bottom;
   transition: top 0.4s ease, transform 0.4s ease;
   overflow: hidden;
@@ -679,14 +696,81 @@ button:active { transform: translateY(1px); }
   height: 100%;
 }
 
-.library-content h1 {
+/* Library Main Title */
+.library-main-title {
   position: absolute;
-  left: 36px;
-  top: 36px;
-  font-size: 36px;
-  font-weight: bold;
+  top: 28px;
+  left: 64px;
+  font-size: 40px;
+  font-weight: 800;
+  color: white;
   margin: 0;
-  color:rgb(255, 255, 255)
+  text-align: left;
+  transition: transform 0.3s ease;
+}
+
+/* Launcher Row Container (includes title + launchers) */
+.launcher-row-container {
+  position: absolute;
+  left: 64px;
+  width: calc(100% - 64px);
+}
+
+/* Position each row container (accounting for h1 as first child) */
+.launcher-row-container:nth-child(2) {
+  top: 126px; /* 40px (h1 top) + 64px (h1 height) + 22px (margin) = 126px */
+}
+
+.launcher-row-container:nth-child(3) {
+  top: calc(126px + 234px + 30px); /* Title (32px) + launchers (174px) + padding (28px) + gap (30px) = 264px per row */
+}
+
+.launcher-row-container:nth-child(4) {
+  top: calc(126px + (234px + 30px) * 2);
+}
+
+.launcher-row-container:nth-child(5) {
+  top: calc(126px + (234px + 30px) * 3);
+}
+
+/* Launcher Row Title */
+.launcher-row-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 16px 0;
+  text-align: left;
+}
+
+/* Launchers Container */
+.launchers {
+  position: relative;
+  width: 100%;
+  height: 174px;
+  background-color: transparent;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+/* Remove old positioning rules */
+
+/* Launcher App Containers */
+.launcher-app {
+  width: 174px;
+  height: 174px;
+  background-color: green;
+  flex-shrink: 0; /* Prevent shrinking */
+  border: 2px solid transparent;
+  border-radius: 12px;
+  box-sizing: border-box;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.launcher-app.focused {
+  /* Visual indication that this launcher has focus */
+  transform: scale(1.1) !important;
+  border-color: white;
 }
 
 /* Shell Settings Container */
@@ -703,7 +787,7 @@ button:active { transform: translateY(1px); }
   background-repeat: no-repeat;
   border-radius: 0px;
   z-index: 20;
-  transform: scale(0.3);
+  transform: scale(0);
   transform-origin: center bottom;
   transition: top 0.4s ease, transform 0.4s ease;
   overflow: hidden;
@@ -745,7 +829,7 @@ button:active { transform: translateY(1px); }
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0px;
   z-index: 20;
-  transform: scale(0.3);
+  transform: scale(0);
   transform-origin: center bottom;
   transition: top 0.4s ease, transform 0.4s ease;
   overflow: hidden;
@@ -787,7 +871,7 @@ button:active { transform: translateY(1px); }
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0px;
   z-index: 20;
-  transform: scale(0.3);
+  transform: scale(0);
   transform-origin: center bottom;
   transition: top 0.4s ease, transform 0.4s ease;
   overflow: hidden;

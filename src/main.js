@@ -56,11 +56,17 @@ let lastAButtonPress = 0
 const A_BUTTON_DEBOUNCE = 300 // 300ms debounce for A button
 
 // Focus Navigation State
-let focusArea = 'preview' // 'preview', 'shell-nav', or 'shell-surface'
+let focusArea = 'preview' // 'preview', 'shell-nav', 'shell-surface', or 'library-launchers'
 let selectedNavIndex = 0 // 0=library, 1=settings, 2=notifications, 3=gallery
 let previousFocusState = { area: 'preview', navIndex: 0, appIndex: 0 } // Store previous focus state
 let currentShellSurface = null // Track which shell surface is currently open
 const navItems = ['library', 'settings', 'notifications', 'gallery']
+
+// Library Launchers Navigation State
+let selectedLauncherIndex = 0 // Index of currently selected launcher app
+let selectedLauncherRow = 0 // Index of currently selected row (0-3)
+const LAUNCHER_ROWS = 4
+const LAUNCHER_COUNTS_PER_ROW = [5, 5, 12, 20] // Number of items in each row
 
 // Press and hold state (for lock screen)
 let isHolding = false
@@ -625,9 +631,9 @@ function updateFocusPosition() {
       focusContainer.style.width = '100vw'
       focusContainer.style.height = '100vh'
     } else {
-      // Normal size - match the centered preview (50vw x 50vh)
+      // Normal size - match the centered preview (50vw x 50vh + 64px)
       focusContainer.style.width = '50vw'
-      focusContainer.style.height = '50vh'
+      focusContainer.style.height = 'calc(50vh + 64px)'
     }
     
     // Center position
@@ -749,6 +755,107 @@ function restorePreviousFocus() {
   updateFocusPosition()
 }
 
+// Library Launchers Navigation Functions
+function updateLauncherFocus() {
+  const focusContainer = document.getElementById('focus')
+  const launcherRowContainers = document.querySelectorAll('.launcher-row-container')
+  const libraryContent = document.querySelector('.library-content')
+  
+  if (!focusContainer || launcherRowContainers.length === 0) return
+  
+  // Hide focus border when in library
+  focusContainer.style.opacity = '0'
+  
+  // Remove focus from all launchers
+  document.querySelectorAll('.launcher-app').forEach(app => app.classList.remove('focused'))
+  
+  // Get the selected row container
+  const selectedRowContainer = launcherRowContainers[selectedLauncherRow]
+  if (selectedRowContainer) {
+    const selectedRow = selectedRowContainer.querySelector('.launchers')
+    const launcherApps = selectedRow.querySelectorAll('.launcher-app')
+    const selectedLauncher = launcherApps[selectedLauncherIndex]
+    
+    if (selectedLauncher) {
+      selectedLauncher.classList.add('focused')
+    }
+    
+    // Handle horizontal scrolling for rows with more than 5 items
+    const itemsInRow = LAUNCHER_COUNTS_PER_ROW[selectedLauncherRow]
+    if (itemsInRow > 5) {
+      // Calculate how many items can fit on screen (approx 5 items visible)
+      const visibleItems = 5
+      let scrollOffset = 0
+      
+      // Start scrolling when we're past the 3rd item (index 2)
+      if (selectedLauncherIndex >= 3) {
+        // Calculate how much to scroll left
+        // Each item is 174px wide + 20px gap = 194px
+        const itemWidth = 174 + 20
+        // Scroll to keep focused item centered (around 3rd position)
+        scrollOffset = -(selectedLauncherIndex - 2) * itemWidth
+        
+        // Don't scroll past the last set of visible items
+        const maxScroll = -(itemsInRow - visibleItems) * itemWidth
+        scrollOffset = Math.max(scrollOffset, maxScroll)
+      }
+      
+      // Apply horizontal scroll to the entire row container
+      selectedRowContainer.style.transition = 'transform 0.3s ease'
+      selectedRowContainer.style.transform = `translateX(${scrollOffset}px) translateY(${selectedLauncherRow >= 2 ? -(234 + 30) * (selectedLauncherRow - 1) : 0}px)`
+    } else {
+      // Reset horizontal scroll for rows with 5 or fewer items
+      selectedRowContainer.style.transition = 'transform 0.3s ease'
+      selectedRowContainer.style.transform = `translateX(0) translateY(${selectedLauncherRow >= 2 ? -(234 + 30) * (selectedLauncherRow - 1) : 0}px)`
+    }
+  }
+  
+  // Vertical scrolling to keep focused row visible
+  if (libraryContent) {
+    let scrollOffset = 0
+    
+    if (selectedLauncherRow >= 2) {
+      scrollOffset = -(234 + 30) * (selectedLauncherRow - 1) // Updated height: 234px (32 title + 12 margin + 174 launchers + 16 padding) + 30px gap
+    }
+    
+    // Apply smooth transform to move all launcher row containers vertically (except the selected row which is handled above)
+    launcherRowContainers.forEach((container, index) => {
+      if (index !== selectedLauncherRow) {
+        container.style.transition = 'transform 0.3s ease'
+        container.style.transform = `translateY(${scrollOffset}px)`
+      }
+    })
+    
+    // Also move the h1 Library title
+    const libraryMainTitle = document.querySelector('.library-main-title')
+    if (libraryMainTitle) {
+      libraryMainTitle.style.transform = `translateY(${scrollOffset}px)`
+    }
+  }
+}
+
+function navigateLaunchers(direction) {
+  const currentRowItemCount = LAUNCHER_COUNTS_PER_ROW[selectedLauncherRow]
+  
+  if (direction === 'left' && selectedLauncherIndex > 0) {
+    selectedLauncherIndex--
+    updateLauncherFocus()
+  } else if (direction === 'right' && selectedLauncherIndex < currentRowItemCount - 1) {
+    selectedLauncherIndex++
+    updateLauncherFocus()
+  } else if (direction === 'up' && selectedLauncherRow > 0) {
+    selectedLauncherRow--
+    // Clamp index to new row's item count
+    selectedLauncherIndex = Math.min(selectedLauncherIndex, LAUNCHER_COUNTS_PER_ROW[selectedLauncherRow] - 1)
+    updateLauncherFocus()
+  } else if (direction === 'down' && selectedLauncherRow < LAUNCHER_ROWS - 1) {
+    selectedLauncherRow++
+    // Clamp index to new row's item count
+    selectedLauncherIndex = Math.min(selectedLauncherIndex, LAUNCHER_COUNTS_PER_ROW[selectedLauncherRow] - 1)
+    updateLauncherFocus()
+  }
+}
+
 // Shell Library Functions
 // Consolidated Shell Container Functions
 function showShellContainer(containerName) {
@@ -773,9 +880,23 @@ function showShellContainer(containerName) {
     runningApps.classList.remove('visible')
   }
   
+  // Move preview containers off screen to the right
+  const previewContainers = document.querySelectorAll('.preview-container')
+  previewContainers.forEach(preview => {
+    preview.classList.add('hide-right')
+  })
+  
   // Set focus area to shell surface and track which surface is open
   focusArea = 'shell-surface'
   currentShellSurface = containerName
+  
+  // If opening library, enter launcher navigation mode
+  if (containerName === 'library') {
+    focusArea = 'library-launchers'
+    selectedLauncherIndex = 0
+    selectedLauncherRow = 0
+    updateLauncherFocus()
+  }
   
   // Add CSS class for focus positioning (library and settings have custom positioning)
   if (focusContainer && (containerName === 'library' || containerName === 'settings')) {
@@ -801,13 +922,35 @@ function hideShellContainer(containerName) {
     runningApps.classList.add('visible')
   }
   
+  // Bring preview containers back from off screen
+  const previewContainers = document.querySelectorAll('.preview-container')
+  previewContainers.forEach(preview => {
+    preview.classList.remove('hide-right')
+  })
+  
   // Remove CSS class for focus positioning
   if (focusContainer && (containerName === 'library' || containerName === 'settings')) {
     focusContainer.classList.remove(`focus-shell-${containerName}`)
   }
   
-  // Clear shell surface state
+  // Clear shell surface state and library launcher focus
   currentShellSurface = null
+  if (focusArea === 'library-launchers') {
+    selectedLauncherIndex = 0
+    selectedLauncherRow = 0
+    // Remove focus from all launchers
+    document.querySelectorAll('.launcher-app').forEach(app => {
+      app.classList.remove('focused')
+    })
+    // Reset scroll position of launcher rows (both horizontal and vertical)
+    document.querySelectorAll('.launchers').forEach(row => {
+      row.style.transform = 'translateX(0) translateY(0)'
+    })
+    // Restore focus opacity
+    if (focusContainer) {
+      focusContainer.style.opacity = '1'
+    }
+  }
   
   // Restore previous focus position
   restorePreviousFocus()
@@ -860,8 +1003,14 @@ function handleShellInputs() {
   // Horizontal Navigation - D-pad left/right (check both justPressed and isDown)
   if (input.justPressed('LEFT') || (input.isDown('LEFT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     console.log('LEFT input detected')
+    // Check if we're in library launchers mode
+    if (focusArea === 'library-launchers') {
+      console.log('Navigating launchers left')
+      navigateLaunchers('left')
+      lastStickNavTime = now
+    }
     // Only allow navigation if not in a shell surface
-    if (focusArea !== 'shell-surface') {
+    else if (focusArea !== 'shell-surface') {
       if (focusArea === 'preview') {
         console.log('Navigating apps left')
         navigateApps('left')
@@ -877,8 +1026,14 @@ function handleShellInputs() {
   }
   if (input.justPressed('RIGHT') || (input.isDown('RIGHT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     console.log('RIGHT input detected')
+    // Check if we're in library launchers mode
+    if (focusArea === 'library-launchers') {
+      console.log('Navigating launchers right')
+      navigateLaunchers('right')
+      lastStickNavTime = now
+    }
     // Only allow navigation if not in a shell surface
-    if (focusArea !== 'shell-surface') {
+    else if (focusArea !== 'shell-surface') {
       if (focusArea === 'preview') {
         console.log('Navigating apps right')
         navigateApps('right')
@@ -980,8 +1135,14 @@ function handleShellInputs() {
   
   // Focus area navigation - DOWN moves from preview to shell-nav, UP moves back
   if (input.justPressed('DOWN') || (input.isDown('DOWN') && now - lastStickNavTime > STICK_NAV_DELAY)) {
+    // Check if we're in library launchers mode
+    if (focusArea === 'library-launchers') {
+      console.log('Navigating launchers down')
+      navigateLaunchers('down')
+      lastStickNavTime = now
+    }
     // Only allow focus area switching if not in a shell surface
-    if (focusArea !== 'shell-surface') {
+    else if (focusArea !== 'shell-surface') {
       console.log('DOWN input detected - moving focus to shell-nav')
       if (focusArea === 'preview') {
         focusArea = 'shell-nav'
@@ -994,8 +1155,14 @@ function handleShellInputs() {
     }
   }
   if (input.justPressed('UP') || (input.isDown('UP') && now - lastStickNavTime > STICK_NAV_DELAY)) {
+    // Check if we're in library launchers mode
+    if (focusArea === 'library-launchers') {
+      console.log('Navigating launchers up')
+      navigateLaunchers('up')
+      lastStickNavTime = now
+    }
     // Only allow focus area switching if not in a shell surface
-    if (focusArea !== 'shell-surface') {
+    else if (focusArea !== 'shell-surface') {
       console.log('UP input detected - moving focus back to preview')
       if (focusArea === 'shell-nav') {
         focusArea = 'preview'

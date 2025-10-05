@@ -335,7 +335,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   background-color: rgb(26, 102, 26);
   background-image: url('/assets/images/garrison.png');
   background-size: contain;
-  background-position: center;
+  background-position: center bottom;
   background-repeat: no-repeat;
   /* Override default positioning for simple bottom-to-top animation */
   transform: translate(-50%, 100vh); /* Start below screen, centered horizontally */
@@ -361,7 +361,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   background-color: rgb(40, 40, 122);
   background-image: url('/assets/images/silksong-gameplay.png');
   background-size: contain;
-  background-position: center;
+  background-position: center bottom;
   background-repeat: no-repeat;
 }
 
@@ -369,7 +369,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   background-color: rgb(255, 149, 0);
   background-image: url('/assets/images/discord-app.png');
   background-size: contain;
-  background-position: center;
+  background-position: center bottom;
   background-repeat: no-repeat;
 }
 
@@ -702,7 +702,7 @@ button:active { transform: translateY(1px); }
   top: 28px;
   left: 64px;
   font-size: 40px;
-  font-weight: 800;
+  font-weight: 700;
   color: white;
   margin: 0;
   text-align: left;

@@ -1086,8 +1086,20 @@ function handleShellInputs() {
   const leftStick = input.getStick('LEFT')
   const currentTime = Date.now()
   if (leftStick.magnitude > 0.6 && currentTime - lastStickNavTime > STICK_NAV_DELAY) {
+    // Check if we're in library launchers mode
+    if (focusArea === 'library-launchers') {
+      if (leftStick.x > 0.6) {
+        console.log('Left stick RIGHT - navigating launchers')
+        navigateLaunchers('right')
+        lastStickNavTime = currentTime
+      } else if (leftStick.x < -0.6) {
+        console.log('Left stick LEFT - navigating launchers')
+        navigateLaunchers('left')
+        lastStickNavTime = currentTime
+      }
+    }
     // Only allow navigation if not in a shell surface
-    if (focusArea !== 'shell-surface') {
+    else if (focusArea !== 'shell-surface') {
       if (leftStick.x > 0.6) {
         if (focusArea === 'preview') {
           navigateApps('right')
@@ -1110,8 +1122,20 @@ function handleShellInputs() {
   
   // Vertical Navigation - Left stick vertical (UP/DOWN focus area switching)
   if (leftStick.magnitude > 0.6 && currentTime - lastStickNavTime > STICK_NAV_DELAY) {
+    // Check if we're in library launchers mode
+    if (focusArea === 'library-launchers') {
+      if (leftStick.y > 0.6) { // Stick pushed UP
+        console.log('Left stick UP - navigating launchers')
+        navigateLaunchers('up')
+        lastStickNavTime = currentTime
+      } else if (leftStick.y < -0.6) { // Stick pushed DOWN
+        console.log('Left stick DOWN - navigating launchers')
+        navigateLaunchers('down')
+        lastStickNavTime = currentTime
+      }
+    }
     // Only allow focus area switching if not in a shell surface
-    if (focusArea !== 'shell-surface') {
+    else if (focusArea !== 'shell-surface') {
       if (leftStick.y > 0.6) { // Stick pushed UP
         console.log('Analog stick UP detected - moving focus back to preview')
         if (focusArea === 'shell-nav') {

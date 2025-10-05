@@ -65,8 +65,8 @@ const navItems = ['library', 'settings', 'notifications', 'gallery']
 // Library Launchers Navigation State
 let selectedLauncherIndex = 0 // Index of currently selected launcher app
 let selectedLauncherRow = 0 // Index of currently selected row (0-3)
-const LAUNCHER_ROWS = 4
-const LAUNCHER_COUNTS_PER_ROW = [5, 5, 12, 20] // Number of items in each row
+const LAUNCHER_ROWS = 3
+const LAUNCHER_COUNTS_PER_ROW = [5, 12, 20] // Number of items in each row (removed Recent row)
 
 // Press and hold state (for lock screen)
 let isHolding = false

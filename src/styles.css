@@ -744,6 +744,20 @@ button:active { transform: translateY(1px); }
   z-index: 3; /* Above background and blur */
 }
 
+/* Legend (top-most layer, bottom right) */
+.legend {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 10; /* Top-most layer */
+}
+
+.legend img {
+  display: block;
+  width: auto;
+  height: auto;
+}
+
 /* Library Main Title */
 .library-main-title {
   position: absolute;

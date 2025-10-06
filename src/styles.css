@@ -374,91 +374,6 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 }
 
 /* System Tray Container */
-#system-tray {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 240px;
-  height: 84px;
-  z-index: 1000;
-  display: flex;
-  align-items: stretch;
-  justify-content: flex-end;
-}
-
-/* System Tray States */
-#system-tray.locked {
-  justify-content: flex-end;
-}
-
-#system-tray.unlocked {
-  justify-content: flex-start;
-  top: 0;
-  right: 0;
-  margin: 0;
-  padding: 0;
-}
-
-/* WiFi Volume Battery Container */
-#wifi-volume-battery {
-  width: 136px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  order: 1;
-}
-
-/* WiFi Volume Battery Image */
-#wifi-volume-battery img {
-  height: 48px;
-  object-fit: contain;
-}
-
-/* Status Icon Styling */
-.status-icon {
-  width: 24px;
-  height: 24px;
-  border: 2px solid white;
-  border-radius: 50%;
-  background: transparent;
-  flex-shrink: 0;
-}
-
-/* Clock2 Container */
-#clock2 {
-  width: 96px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: 500;
-  color: white;
-  text-align: center;
-  line-height: 1;
-  white-space: nowrap;
-  flex-shrink: 0;
-  order: 2;
-  margin: 0;
-}
-
-/* Clock2 Hidden State */
-#system-tray.locked #clock2 {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
-}
-
-/* Clock2 Visible State */
-#system-tray.unlocked #clock2 {
-  opacity: 1;
-  width: 86px;
-  margin-right: 0;
-  padding-right: 0;
-}
-
 /* Auth Container */
 #auth {
   position: absolute;
@@ -803,8 +718,121 @@ button:active { transform: translateY(1px); }
   top: 0;
   width: calc(100% - 280px); /* Fill remaining width */
   height: 100%;
-  background: rgb(121, 120, 120); /* Light grey */
   z-index: 1;
+}
+
+/* Display Settings Container */
+.display-settings {
+  width: 100%;
+  height: 330px;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 32px 40px 0 40px;
+  box-sizing: border-box;
+}
+
+.display-settings h1 {
+  font-size: 28px;
+  font-weight: 500;
+  color: white;
+  margin: 0 0 20px 0;
+}
+
+.brightness-control,
+.scale-switch,
+.resolution-switch {
+  width: 100%;
+  height: 64px;
+  background: rgba(0, 0, 0, 0.1);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: border-color 0.2s ease, border-width 0.2s ease;
+}
+
+.brightness-control.focused,
+.scale-switch.focused,
+.resolution-switch.focused {
+  border: 2px solid white;
+}
+
+.resolution-switch {
+  margin-bottom: 0;
+}
+
+.control-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.control-title {
+  font-size: 18px;
+  font-weight: 400;
+  color: white;
+  line-height: 1.2;
+}
+
+.control-description {
+  font-size: 16px;
+  font-weight: 350;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.2;
+}
+
+/* Slider Control */
+.slider-control {
+  width: 33.333%;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 0 16px;
+}
+
+.slider-track {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.slider-value {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 50%;
+  background: white;
+  border-radius: 2px;
+  z-index: 1;
+}
+
+.slider-knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: width 0.2s ease, height 0.2s ease, background 0.2s ease;
+  z-index: 2;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.brightness-control.focused .slider-knob {
+  width: 32px;
+  height: 32px;
+  background: white url('/assets/images/brightness-knob.png') center/contain no-repeat;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
 }
 
 /* Settings Navigation Styling */
@@ -827,7 +855,7 @@ button:active { transform: translateY(1px); }
   display: flex;
   align-items: center;
   padding-left: 32px;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   color: white;
 }

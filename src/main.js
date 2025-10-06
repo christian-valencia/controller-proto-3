@@ -3,7 +3,6 @@ import { InputManager } from './input/InputManager'
 // DOM ELEMENT SELECTION ONLY - No DOM creation here
 const windowsShell = document.getElementById('windows-shell')
 const lockScreen = document.getElementById('lock-screen')
-const systemTray = document.getElementById('system-tray')
 const switcher = document.getElementById('switcher')
 const clock = document.getElementById('clock')
 const clock2 = document.getElementById('clock2')
@@ -71,6 +70,11 @@ const LAUNCHER_COUNTS_PER_ROW = [5, 12, 20] // Number of items in each row (remo
 // Settings Navigation State
 let selectedSettingsNavIndex = 0 // Index of currently selected settings nav item (0-10)
 const SETTINGS_NAV_ITEMS = 11 // Total number of nav items
+
+// Settings Display Controls State
+let selectedDisplayControlIndex = 0 // Index of currently selected display control (0-2: brightness, scale, resolution)
+const DISPLAY_CONTROLS = 3 // Total number of display controls
+let brightnessValue = 50 // Brightness slider value (0-100)
 
 // Press and hold state (for lock screen)
 let isHolding = false
@@ -362,11 +366,6 @@ function updateVisualFeedback() {
 
 function updateSystemTrayState() {
   const isUnlocked = (currentUIState !== UI_STATES.LOCKED)
-  
-  // Update system tray state
-  if (systemTray) {
-    systemTray.className = isUnlocked ? 'unlocked' : 'locked'
-  }
   
   // Update switcher state
   if (switcher) {
@@ -893,6 +892,76 @@ function navigateSettingsNav(direction) {
   } else if (direction === 'down' && selectedSettingsNavIndex < SETTINGS_NAV_ITEMS - 1) {
     selectedSettingsNavIndex++
     updateSettingsNavFocus()
+  } else if (direction === 'right') {
+    // Clear focus from nav items before switching
+    const navItems = document.querySelectorAll('.nav-page-item')
+    navItems.forEach(item => item.classList.remove('focused'))
+    
+    // Switch to display controls
+    focusArea = 'settings-display-controls'
+    selectedDisplayControlIndex = 0
+    updateDisplayControlFocus()
+  }
+}
+
+// Settings Display Controls Navigation Functions
+function updateDisplayControlFocus() {
+  const controls = [
+    document.querySelector('.brightness-control'),
+    document.querySelector('.scale-switch'),
+    document.querySelector('.resolution-switch')
+  ]
+  
+  if (!controls || controls.length === 0) return
+  
+  // Remove focused class from all controls
+  controls.forEach(control => {
+    if (control) control.classList.remove('focused')
+  })
+  
+  // Add focused class to selected control
+  if (controls[selectedDisplayControlIndex]) {
+    controls[selectedDisplayControlIndex].classList.add('focused')
+  }
+}
+
+function navigateDisplayControls(direction) {
+  if (direction === 'up' && selectedDisplayControlIndex > 0) {
+    selectedDisplayControlIndex--
+    updateDisplayControlFocus()
+  } else if (direction === 'down' && selectedDisplayControlIndex < DISPLAY_CONTROLS - 1) {
+    selectedDisplayControlIndex++
+    updateDisplayControlFocus()
+  } else if (direction === 'left') {
+    // Clear focus from display controls before switching
+    const controls = [
+      document.querySelector('.brightness-control'),
+      document.querySelector('.scale-switch'),
+      document.querySelector('.resolution-switch')
+    ]
+    controls.forEach(control => {
+      if (control) control.classList.remove('focused')
+    })
+    
+    // Switch back to settings nav (keep the previous position)
+    focusArea = 'settings-nav'
+    updateSettingsNavFocus()
+  }
+}
+
+// Update brightness slider position
+function updateBrightnessSlider() {
+  const knob = document.querySelector('.slider-knob')
+  const sliderValue = document.querySelector('.slider-value')
+  
+  if (knob) {
+    // Position is percentage from 0-100
+    knob.style.left = `${brightnessValue}%`
+  }
+  
+  if (sliderValue) {
+    // Fill track from left to knob position
+    sliderValue.style.width = `${brightnessValue}%`
   }
 }
 
@@ -953,6 +1022,9 @@ function showShellContainer(containerName) {
     selectedSettingsNavIndex = 0
     updateSettingsNavFocus()
     
+    // Initialize brightness slider
+    updateBrightnessSlider()
+    
     // Mark first item as selected (Home)
     const navItems = document.querySelectorAll('.nav-page-item')
     if (navItems[0]) {
@@ -1001,12 +1073,17 @@ function hideShellContainer(containerName) {
   }
   
   // Clear settings navigation state
-  if (focusArea === 'settings-nav') {
+  if (focusArea === 'settings-nav' || focusArea === 'settings-display-controls') {
     selectedSettingsNavIndex = 0
+    selectedDisplayControlIndex = 0
     // Remove focused and selected class from all nav items
     document.querySelectorAll('.nav-page-item').forEach(item => {
       item.classList.remove('focused')
       item.classList.remove('selected')
+    })
+    // Remove focused class from all display controls
+    document.querySelectorAll('.brightness-control, .scale-switch, .resolution-switch').forEach(control => {
+      control.classList.remove('focused')
     })
   }
   
@@ -1067,6 +1144,12 @@ function handleShellInputs() {
       navigateLaunchers('left')
       lastStickNavTime = now
     }
+    // Check if we're in settings display controls mode
+    else if (focusArea === 'settings-display-controls') {
+      console.log('Navigating back to settings nav from display controls')
+      navigateDisplayControls('left')
+      lastStickNavTime = now
+    }
     // Only allow navigation if not in a shell surface
     else if (focusArea !== 'shell-surface') {
       if (focusArea === 'preview') {
@@ -1088,6 +1171,12 @@ function handleShellInputs() {
     if (focusArea === 'library-launchers') {
       console.log('Navigating launchers right')
       navigateLaunchers('right')
+      lastStickNavTime = now
+    }
+    // Check if we're in settings nav mode
+    else if (focusArea === 'settings-nav') {
+      console.log('Navigating to display controls from settings nav')
+      navigateSettingsNav('right')
       lastStickNavTime = now
     }
     // Only allow navigation if not in a shell surface
@@ -1156,6 +1245,22 @@ function handleShellInputs() {
         lastStickNavTime = currentTime
       }
     }
+    // Check if we're in settings nav mode - allow right to go to display controls
+    else if (focusArea === 'settings-nav') {
+      if (leftStick.x > 0.6) {
+        console.log('Left stick RIGHT - navigating to display controls')
+        navigateSettingsNav('right')
+        lastStickNavTime = currentTime
+      }
+    }
+    // Check if we're in settings display controls mode - allow left to go back to nav
+    else if (focusArea === 'settings-display-controls') {
+      if (leftStick.x < -0.6) {
+        console.log('Left stick LEFT - navigating back to settings nav')
+        navigateDisplayControls('left')
+        lastStickNavTime = currentTime
+      }
+    }
     // Only allow navigation if not in a shell surface
     else if (focusArea !== 'shell-surface') {
       if (leftStick.x > 0.6) {
@@ -1201,6 +1306,18 @@ function handleShellInputs() {
       } else if (leftStick.y < -0.6) { // Stick pushed DOWN
         console.log('Left stick DOWN - navigating settings')
         navigateSettingsNav('down')
+        lastStickNavTime = currentTime
+      }
+    }
+    // Check if we're in settings display controls mode
+    else if (focusArea === 'settings-display-controls') {
+      if (leftStick.y > 0.6) { // Stick pushed UP
+        console.log('Left stick UP - navigating display controls')
+        navigateDisplayControls('up')
+        lastStickNavTime = currentTime
+      } else if (leftStick.y < -0.6) { // Stick pushed DOWN
+        console.log('Left stick DOWN - navigating display controls')
+        navigateDisplayControls('down')
         lastStickNavTime = currentTime
       }
     }
@@ -1261,6 +1378,12 @@ function handleShellInputs() {
       navigateSettingsNav('up')
       lastStickNavTime = now
     }
+    // Check if we're in settings display controls mode
+    else if (focusArea === 'settings-display-controls') {
+      console.log('Navigating display controls up')
+      navigateDisplayControls('up')
+      lastStickNavTime = now
+    }
     // Only allow focus area switching if not in a shell surface
     else if (focusArea !== 'shell-surface') {
       console.log('UP input detected - moving focus back to preview')
@@ -1280,6 +1403,12 @@ function handleShellInputs() {
     if (focusArea === 'settings-nav') {
       console.log('Navigating settings down')
       navigateSettingsNav('down')
+      lastStickNavTime = now
+    }
+    // Check if we're in settings display controls mode
+    else if (focusArea === 'settings-display-controls') {
+      console.log('Navigating display controls down')
+      navigateDisplayControls('down')
       lastStickNavTime = now
     }
   }
@@ -1371,7 +1500,21 @@ function handleShellInputs() {
   
   // Right stick for scrolling (future use)
   const rightStick = input.getStick('RIGHT')
-  if (rightStick.magnitude > 0.3) {
+  
+  // Right stick for brightness slider control when focused on brightness control
+  if (focusArea === 'settings-display-controls' && selectedDisplayControlIndex === 0) {
+    if (rightStick.magnitude > 0.3) {
+      // Adjust brightness value based on horizontal stick movement
+      const adjustSpeed = 2 // Adjust by 2% per frame when stick is held
+      brightnessValue += rightStick.x * adjustSpeed
+      
+      // Clamp between 0 and 100
+      brightnessValue = Math.max(0, Math.min(100, brightnessValue))
+      
+      // Update the slider visual
+      updateBrightnessSlider()
+    }
+  } else if (rightStick.magnitude > 0.3) {
     console.log(`Shell: Right stick scrolling - x:${rightStick.x.toFixed(2)}, y:${rightStick.y.toFixed(2)}`)
     // Smooth scrolling without rumble
   }

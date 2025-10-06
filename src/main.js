@@ -666,8 +666,8 @@ function updateFocusPosition() {
     // Focus in shell surface - hide all nav labels
     updateNavLabels()
     
-    // Focus in shell surface - use the dedicated positioning function
-    positionFocusUnderHeader()
+    // Focus stays hidden with opacity 0 when in shell surface
+    // No positioning needed
   }
 }
 
@@ -752,6 +752,17 @@ function restorePreviousFocus() {
   focusArea = previousFocusState.area
   selectedAppIndex = previousFocusState.appIndex
   selectedNavIndex = previousFocusState.navIndex
+  
+  // Always restore focus and shell-nav opacity when closing any shell container
+  const focusContainer = document.getElementById('focus')
+  const shellNav = document.getElementById('shell-nav')
+  if (focusContainer) {
+    focusContainer.style.opacity = '1'
+  }
+  if (shellNav) {
+    shellNav.style.opacity = '1'
+  }
+  
   updateFocusPosition()
 }
 
@@ -890,31 +901,25 @@ function showShellContainer(containerName) {
   focusArea = 'shell-surface'
   currentShellSurface = containerName
   
+  // Hide focus and shell-nav together for all shell containers
+  const shellNav = document.getElementById('shell-nav')
+  if (focusContainer) {
+    focusContainer.style.opacity = '0'
+  }
+  if (shellNav) {
+    shellNav.style.opacity = '0'
+  }
+  
   // If opening library, enter launcher navigation mode
   if (containerName === 'library') {
     focusArea = 'library-launchers'
     selectedLauncherIndex = 0
     selectedLauncherRow = 0
     updateLauncherFocus()
-    
-    // Fade in library background and blur
-    const libraryBackground = document.querySelector('.library-background-image')
-    const libraryBlur = document.querySelector('.library-blur')
-    if (libraryBackground) {
-      libraryBackground.classList.add('visible')
-    }
-    if (libraryBlur) {
-      libraryBlur.classList.add('visible')
-    }
   }
   
-  // Add CSS class for focus positioning (library and settings have custom positioning)
-  if (focusContainer && (containerName === 'library' || containerName === 'settings')) {
-    focusContainer.classList.add(`focus-shell-${containerName}`)
-  }
-  
-  // Position focus under header
-  positionFocusUnderHeader()
+  // Don't position focus since it's hidden with opacity 0
+  // This prevents it from briefly appearing in the upper left
 }
 
 function hideShellContainer(containerName) {
@@ -938,11 +943,6 @@ function hideShellContainer(containerName) {
     preview.classList.remove('hide-right')
   })
   
-  // Remove CSS class for focus positioning
-  if (focusContainer && (containerName === 'library' || containerName === 'settings')) {
-    focusContainer.classList.remove(`focus-shell-${containerName}`)
-  }
-  
   // Clear shell surface state and library launcher focus
   currentShellSurface = null
   if (focusArea === 'library-launchers') {
@@ -956,20 +956,6 @@ function hideShellContainer(containerName) {
     document.querySelectorAll('.launchers').forEach(row => {
       row.style.transform = 'translateX(0) translateY(0)'
     })
-    // Restore focus opacity
-    if (focusContainer) {
-      focusContainer.style.opacity = '1'
-    }
-    
-    // Fade out library background and blur when closing
-    const libraryBackground = document.querySelector('.library-background-image')
-    const libraryBlur = document.querySelector('.library-blur')
-    if (libraryBackground) {
-      libraryBackground.classList.remove('visible')
-    }
-    if (libraryBlur) {
-      libraryBlur.classList.remove('visible')
-    }
   }
   
   // Restore previous focus position

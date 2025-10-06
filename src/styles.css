@@ -526,7 +526,7 @@ button:active { transform: translateY(1px); }
   justify-content: space-evenly;
   padding: 0 20px;
   box-sizing: border-box;
-  transition: bottom 0.5s ease;
+  transition: bottom 0.5s ease, opacity 0.1s ease;
   z-index: 2;
 }
 
@@ -643,24 +643,6 @@ button:active { transform: translateY(1px); }
 }
 
 /* Focus when Shell Library is visible - Use class-based approach */
-#focus.focus-shell-library {
-  top: 204px !important;
-  left: 67px !important;
-  width: 170px !important;
-  height: 170px !important;
-  border-radius: 12px !important;
-  transform: none !important; /* Remove centering transform */
-}
-
-/* Focus when Shell Settings is visible */
-#focus.focus-shell-settings {
-  top: 124px !important;
-  left: 352px !important;
-  width: 848px !important;
-  height: 56px !important;
-  transform: none !important; /* Remove centering transform */
-}
-
 /* Shell Library Container */
 #shell-library {
   position: absolute;
@@ -668,7 +650,6 @@ button:active { transform: translateY(1px); }
   left: 0;
   width: 1280px;
   height: 720px;
-  background: rgba(49, 94, 109, 1.0); /* Light blue background */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -687,52 +668,6 @@ button:active { transform: translateY(1px); }
 }
 
 /* Library Background Image (bottom-most layer) */
-.library-background-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: url('/assets/images/valorant.jpeg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-/* Library Background Image Visible State */
-.library-background-image.visible {
-  opacity: 1;
-}
-
-/* Library Blur (above background) */
-.library-blur {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-/* Library Blur Visible State */
-.library-blur.visible {
-  opacity: 1;
-}
-
-/* Library Blur Image */
-.library-blur img {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  object-fit: none; /* Allow image to expand beyond viewport */
-}
-
 /* Library Content Styling */
 .library-content {
   position: relative;
@@ -826,13 +761,15 @@ button:active { transform: translateY(1px); }
   border: 2px solid transparent;
   border-radius: 12px;
   box-sizing: border-box;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Subtle drop shadow */
 }
 
 .launcher-app.focused {
   /* Visual indication that this launcher has focus */
   transform: scale(1.1) !important;
   border-color: white;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5); /* More dramatic drop shadow when selected */
 }
 
 /* Shell Settings Container */
@@ -842,8 +779,6 @@ button:active { transform: translateY(1px); }
   left: 0;
   width: 1280px;
   height: 720px;
-  background: rgba(49, 94, 109, 1.0); /* Light blue background */
-  background-image: url('/assets/images/settings.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -861,14 +796,56 @@ button:active { transform: translateY(1px); }
   transform: scale(1.0);
 }
 
-/* Settings Content Styling */
-.settings-content {
-  position: relative;
-  padding: 0;
-  color: #1a1a1a;
-  font-size: 24px;
-  width: 100%;
+/* Settings Content Container Styling */
+.settings-content-container {
+  position: absolute;
+  left: 280px; /* To the right of navigation */
+  top: 0;
+  width: calc(100% - 280px); /* Fill remaining width */
   height: 100%;
+  background: rgb(121, 120, 120); /* Light grey */
+  z-index: 1;
+}
+
+/* Settings Navigation Styling */
+.settings-navigation {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 280px;
+  height: 100%;
+  background: rgb(187, 187, 187);
+  z-index: 1;
+}
+
+/* Settings Navigation Title */
+.settings-nav-title {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Settings Navigation Me Control */
+.settings-nav-me-control {
+  position: absolute;
+  top: 36px;
+  left: 0;
+  width: 100%;
+  height: 72px;
+  background: rgba(131, 131, 131, 0.5);
+}
+
+/* Settings Navigation Pages */
+.settings-nav-pages {
+  position: absolute;
+  top: 108px; /* 36px (title) + 72px (me-control) */
+  left: 0;
+  width: 100%;
+  height: calc(100% - 108px); /* Fill remaining height */
+  background: rgba(54, 53, 53, 0.65);
 }
 
 .settings-content h1 {

@@ -814,7 +814,6 @@ button:active { transform: translateY(1px); }
   top: 0;
   width: 280px;
   height: 100%;
-  background: rgb(187, 187, 187);
   z-index: 1;
 }
 
@@ -824,28 +823,101 @@ button:active { transform: translateY(1px); }
   top: 0;
   left: 0;
   width: 100%;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.4);
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding-left: 32px;
+  font-size: 18px;
+  font-weight: 400;
+  color: white;
 }
 
 /* Settings Navigation Me Control */
 .settings-nav-me-control {
   position: absolute;
-  top: 36px;
+  top: 40px;
   left: 0;
   width: 100%;
   height: 72px;
-  background: rgba(131, 131, 131, 0.5);
+  padding-left: 32px;
+  display: flex;
+  align-items: center;
+}
+
+.settings-nav-me-control img {
+  height: 48px;
+  width: 48px;
+  border-radius: 0;
+  object-fit: cover;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  margin-left: 12px;
+  justify-content: center;
+}
+
+.user-name {
+  font-size: 20px;
+  font-weight: 400;
+  color: white;
+  line-height: 1.2;
+}
+
+.user-status {
+  font-size: 18px;
+  font-weight: 350;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.2;
 }
 
 /* Settings Navigation Pages */
 .settings-nav-pages {
   position: absolute;
-  top: 108px; /* 36px (title) + 72px (me-control) */
+  top: 116px; /* 36px (title) + 72px (me-control) */
   left: 0;
   width: 100%;
   height: calc(100% - 108px); /* Fill remaining height */
-  background: rgba(54, 53, 53, 0.65);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-page-item {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  padding-left: 32px;
+  margin: 0 4px;
+  background: rgba(255, 255, 255, 0);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.nav-page-item.selected {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.nav-page-item.focused {
+  border-color: white;
+}
+
+.nav-page-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.nav-page-text {
+  margin-left: 16px;
+  font-size: 20px;
+  font-weight: 350;
+  color: white;
 }
 
 .settings-content h1 {

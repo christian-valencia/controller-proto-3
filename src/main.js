@@ -68,6 +68,10 @@ let selectedLauncherRow = 0 // Index of currently selected row (0-3)
 const LAUNCHER_ROWS = 3
 const LAUNCHER_COUNTS_PER_ROW = [5, 12, 20] // Number of items in each row (removed Recent row)
 
+// Settings Navigation State
+let selectedSettingsNavIndex = 0 // Index of currently selected settings nav item (0-10)
+const SETTINGS_NAV_ITEMS = 11 // Total number of nav items
+
 // Press and hold state (for lock screen)
 let isHolding = false
 let holdStartTime = 0
@@ -867,6 +871,31 @@ function navigateLaunchers(direction) {
   }
 }
 
+// Settings Navigation Functions
+function updateSettingsNavFocus() {
+  const navItems = document.querySelectorAll('.nav-page-item')
+  
+  if (!navItems || navItems.length === 0) return
+  
+  // Remove focused class from all items
+  navItems.forEach(item => item.classList.remove('focused'))
+  
+  // Add focused class to selected item
+  if (navItems[selectedSettingsNavIndex]) {
+    navItems[selectedSettingsNavIndex].classList.add('focused')
+  }
+}
+
+function navigateSettingsNav(direction) {
+  if (direction === 'up' && selectedSettingsNavIndex > 0) {
+    selectedSettingsNavIndex--
+    updateSettingsNavFocus()
+  } else if (direction === 'down' && selectedSettingsNavIndex < SETTINGS_NAV_ITEMS - 1) {
+    selectedSettingsNavIndex++
+    updateSettingsNavFocus()
+  }
+}
+
 // Shell Library Functions
 // Consolidated Shell Container Functions
 function showShellContainer(containerName) {
@@ -918,6 +947,19 @@ function showShellContainer(containerName) {
     updateLauncherFocus()
   }
   
+  // If opening settings, enter settings navigation mode
+  if (containerName === 'settings') {
+    focusArea = 'settings-nav'
+    selectedSettingsNavIndex = 0
+    updateSettingsNavFocus()
+    
+    // Mark first item as selected (Home)
+    const navItems = document.querySelectorAll('.nav-page-item')
+    if (navItems[0]) {
+      navItems[0].classList.add('selected')
+    }
+  }
+  
   // Don't position focus since it's hidden with opacity 0
   // This prevents it from briefly appearing in the upper left
 }
@@ -955,6 +997,16 @@ function hideShellContainer(containerName) {
     // Reset scroll position of launcher rows (both horizontal and vertical)
     document.querySelectorAll('.launchers').forEach(row => {
       row.style.transform = 'translateX(0) translateY(0)'
+    })
+  }
+  
+  // Clear settings navigation state
+  if (focusArea === 'settings-nav') {
+    selectedSettingsNavIndex = 0
+    // Remove focused and selected class from all nav items
+    document.querySelectorAll('.nav-page-item').forEach(item => {
+      item.classList.remove('focused')
+      item.classList.remove('selected')
     })
   }
   
@@ -1140,6 +1192,18 @@ function handleShellInputs() {
         lastStickNavTime = currentTime
       }
     }
+    // Check if we're in settings navigation mode
+    else if (focusArea === 'settings-nav') {
+      if (leftStick.y > 0.6) { // Stick pushed UP
+        console.log('Left stick UP - navigating settings')
+        navigateSettingsNav('up')
+        lastStickNavTime = currentTime
+      } else if (leftStick.y < -0.6) { // Stick pushed DOWN
+        console.log('Left stick DOWN - navigating settings')
+        navigateSettingsNav('down')
+        lastStickNavTime = currentTime
+      }
+    }
     // Only allow focus area switching if not in a shell surface
     else if (focusArea !== 'shell-surface') {
       if (leftStick.y > 0.6) { // Stick pushed UP
@@ -1191,6 +1255,12 @@ function handleShellInputs() {
       navigateLaunchers('up')
       lastStickNavTime = now
     }
+    // Check if we're in settings navigation mode
+    else if (focusArea === 'settings-nav') {
+      console.log('Navigating settings up')
+      navigateSettingsNav('up')
+      lastStickNavTime = now
+    }
     // Only allow focus area switching if not in a shell surface
     else if (focusArea !== 'shell-surface') {
       console.log('UP input detected - moving focus back to preview')
@@ -1204,14 +1274,14 @@ function handleShellInputs() {
     }
   }
   
-  // D-pad vertical navigation (for future use)
-  if (input.justPressed('UP')) {
-    console.log('Navigate UP - future functionality')
-    RumbleFeedback.navigation()
-  }
-  if (input.justPressed('DOWN')) {
-    console.log('Navigate DOWN - future functionality') 
-    RumbleFeedback.navigation()
+  // D-pad DOWN
+  if (input.justPressed('DOWN') || (input.isDown('DOWN') && now - lastStickNavTime > STICK_NAV_DELAY)) {
+    // Check if we're in settings navigation mode
+    if (focusArea === 'settings-nav') {
+      console.log('Navigating settings down')
+      navigateSettingsNav('down')
+      lastStickNavTime = now
+    }
   }
   
   // Face buttons for actions

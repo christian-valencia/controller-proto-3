@@ -27,7 +27,6 @@ window.addEventListener('keydown', (e) => {
       currentUIState === UI_STATES.SHELL && currentShellSurface) {
     const now = Date.now()
     if (now - lastBKeyPress > 200) { // 200ms debounce
-      console.log(`Direct B button handler - closing ${currentShellSurface}`)
       hideShellContainer(currentShellSurface)
       lastBKeyPress = now
     }
@@ -85,9 +84,6 @@ const HOLD_DURATION = 700 // 0.7 seconds in milliseconds
 let isXHolding = false
 let xHoldStartTime = 0
 const X_HOLD_DURATION = 700 // 0.7 second to scale down preview
-
-// Lock screen state (legacy - will be replaced by UI_STATES)
-let isLockScreenUnlocked = false
 
 // Fullscreen toggle via keyboard or View/Menu buttons
 window.addEventListener('keydown', (e) => {
@@ -1108,124 +1104,71 @@ function handleShellInputs() {
   const now = Date.now()
   
   // Simple test for all possible navigation inputs
-  const testInputs = {
-    LEFT: input.isDown('LEFT'),
-    RIGHT: input.isDown('RIGHT'),
-    LB: input.isDown('LB'),
-    RB: input.isDown('RB'),
-    leftJust: input.justPressed('LEFT'),
-    rightJust: input.justPressed('RIGHT'),
-    lbJust: input.justPressed('LB'),
-    rbJust: input.justPressed('RB')
-  }
-  
-  // Log if any input is detected
-  const anyInput = Object.values(testInputs).some(val => val)
-  if (anyInput) {
-    console.log('Input detected:', testInputs)
-  }
-  
-  // Debug: Check input state
-  const leftPressed = input.justPressed('LEFT')
-  const rightPressed = input.justPressed('RIGHT')
-  const lbPressed = input.justPressed('LB')
-  const rbPressed = input.justPressed('RB')
-  
-  if (leftPressed || rightPressed || lbPressed || rbPressed) {
-    console.log('Navigation input detected:', { leftPressed, rightPressed, lbPressed, rbPressed })
-  }
-  
   // Horizontal Navigation - D-pad left/right (check both justPressed and isDown)
   if (input.justPressed('LEFT') || (input.isDown('LEFT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('LEFT input detected')
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
-      console.log('Navigating launchers left')
       navigateLaunchers('left')
       lastStickNavTime = now
     }
     // Check if we're in settings display controls mode
     else if (focusArea === 'settings-display-controls') {
-      console.log('Navigating back to settings nav from display controls')
       navigateDisplayControls('left')
       lastStickNavTime = now
     }
     // Only allow navigation if not in a shell surface
     else if (focusArea !== 'shell-surface') {
       if (focusArea === 'preview') {
-        console.log('Navigating apps left')
         navigateApps('left')
       } else if (focusArea === 'shell-nav') {
-        console.log('Navigating shell-nav left')
         navigateShellNav('left')
       }
       lastStickNavTime = now
-    } else {
-      console.log('LEFT navigation blocked - currently in shell surface:', currentShellSurface)
-      // Future: Handle shell surface internal navigation
     }
   }
   if (input.justPressed('RIGHT') || (input.isDown('RIGHT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('RIGHT input detected')
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
-      console.log('Navigating launchers right')
       navigateLaunchers('right')
       lastStickNavTime = now
     }
     // Check if we're in settings nav mode
     else if (focusArea === 'settings-nav') {
-      console.log('Navigating to display controls from settings nav')
       navigateSettingsNav('right')
       lastStickNavTime = now
     }
     // Only allow navigation if not in a shell surface
     else if (focusArea !== 'shell-surface') {
       if (focusArea === 'preview') {
-        console.log('Navigating apps right')
         navigateApps('right')
       } else if (focusArea === 'shell-nav') {
-        console.log('Navigating shell-nav right')
         navigateShellNav('right')
       }
       lastStickNavTime = now
-    } else {
-      console.log('RIGHT navigation blocked - currently in shell surface:', currentShellSurface)
-      // Future: Handle shell surface internal navigation
     }
   }
   
   // Horizontal Navigation - Shoulder buttons (check both justPressed and isDown)
   if (input.justPressed('LB') || (input.isDown('LB') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('LB input detected')
     // Only allow navigation if not in a shell surface
     if (focusArea !== 'shell-surface') {
       if (focusArea === 'preview') {
-        console.log('Navigating apps left')
         navigateApps('left')
       } else if (focusArea === 'shell-nav') {
-        console.log('Navigating shell-nav left')
         navigateShellNav('left')
       }
       lastStickNavTime = now
-    } else {
-      console.log('LB navigation blocked - currently in shell surface:', currentShellSurface)
     }
   }
   if (input.justPressed('RB') || (input.isDown('RB') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('RB input detected')
     // Only allow navigation if not in a shell surface
     if (focusArea !== 'shell-surface') {
       if (focusArea === 'preview') {
-        console.log('Navigating apps right')
         navigateApps('right')
       } else if (focusArea === 'shell-nav') {
-        console.log('Navigating shell-nav right')
         navigateShellNav('right')
       }
       lastStickNavTime = now
-    } else {
-      console.log('RB navigation blocked - currently in shell surface:', currentShellSurface)
     }
   }
   
@@ -1236,11 +1179,9 @@ function handleShellInputs() {
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
       if (leftStick.x > 0.6) {
-        console.log('Left stick RIGHT - navigating launchers')
         navigateLaunchers('right')
         lastStickNavTime = currentTime
       } else if (leftStick.x < -0.6) {
-        console.log('Left stick LEFT - navigating launchers')
         navigateLaunchers('left')
         lastStickNavTime = currentTime
       }
@@ -1248,7 +1189,6 @@ function handleShellInputs() {
     // Check if we're in settings nav mode - allow right to go to display controls
     else if (focusArea === 'settings-nav') {
       if (leftStick.x > 0.6) {
-        console.log('Left stick RIGHT - navigating to display controls')
         navigateSettingsNav('right')
         lastStickNavTime = currentTime
       }
@@ -1256,7 +1196,6 @@ function handleShellInputs() {
     // Check if we're in settings display controls mode - allow left to go back to nav
     else if (focusArea === 'settings-display-controls') {
       if (leftStick.x < -0.6) {
-        console.log('Left stick LEFT - navigating back to settings nav')
         navigateDisplayControls('left')
         lastStickNavTime = currentTime
       }
@@ -1278,8 +1217,6 @@ function handleShellInputs() {
         }
         lastStickNavTime = currentTime
       }
-    } else {
-      console.log('Stick navigation blocked - currently in shell surface:', currentShellSurface)
     }
   }
   
@@ -1288,11 +1225,9 @@ function handleShellInputs() {
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
       if (leftStick.y > 0.6) { // Stick pushed UP
-        console.log('Left stick UP - navigating launchers')
         navigateLaunchers('up')
         lastStickNavTime = currentTime
       } else if (leftStick.y < -0.6) { // Stick pushed DOWN
-        console.log('Left stick DOWN - navigating launchers')
         navigateLaunchers('down')
         lastStickNavTime = currentTime
       }
@@ -1300,11 +1235,9 @@ function handleShellInputs() {
     // Check if we're in settings navigation mode
     else if (focusArea === 'settings-nav') {
       if (leftStick.y > 0.6) { // Stick pushed UP
-        console.log('Left stick UP - navigating settings')
         navigateSettingsNav('up')
         lastStickNavTime = currentTime
       } else if (leftStick.y < -0.6) { // Stick pushed DOWN
-        console.log('Left stick DOWN - navigating settings')
         navigateSettingsNav('down')
         lastStickNavTime = currentTime
       }
@@ -1312,11 +1245,9 @@ function handleShellInputs() {
     // Check if we're in settings display controls mode
     else if (focusArea === 'settings-display-controls') {
       if (leftStick.y > 0.6) { // Stick pushed UP
-        console.log('Left stick UP - navigating display controls')
         navigateDisplayControls('up')
         lastStickNavTime = currentTime
       } else if (leftStick.y < -0.6) { // Stick pushed DOWN
-        console.log('Left stick DOWN - navigating display controls')
         navigateDisplayControls('down')
         lastStickNavTime = currentTime
       }
@@ -1324,14 +1255,12 @@ function handleShellInputs() {
     // Only allow focus area switching if not in a shell surface
     else if (focusArea !== 'shell-surface') {
       if (leftStick.y > 0.6) { // Stick pushed UP
-        console.log('Analog stick UP detected - moving focus back to preview')
         if (focusArea === 'shell-nav') {
           focusArea = 'preview'
           updateFocusPosition()
           lastStickNavTime = currentTime
         }
       } else if (leftStick.y < -0.6) { // Stick pushed DOWN
-        console.log('Analog stick DOWN detected - moving focus to shell-nav')
         if (focusArea === 'preview') {
           focusArea = 'shell-nav'
           // Keep current selectedNavIndex - don't reset to 0
@@ -1339,8 +1268,6 @@ function handleShellInputs() {
           lastStickNavTime = currentTime
         }
       }
-    } else {
-      console.log('Analog stick vertical navigation blocked - currently in shell surface:', currentShellSurface)
     }
   }
   
@@ -1348,52 +1275,52 @@ function handleShellInputs() {
   if (input.justPressed('DOWN') || (input.isDown('DOWN') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
-      console.log('Navigating launchers down')
       navigateLaunchers('down')
+      lastStickNavTime = now
+    }
+    // Check if we're in settings navigation mode
+    else if (focusArea === 'settings-nav') {
+      navigateSettingsNav('down')
+      lastStickNavTime = now
+    }
+    // Check if we're in settings display controls mode
+    else if (focusArea === 'settings-display-controls') {
+      navigateDisplayControls('down')
       lastStickNavTime = now
     }
     // Only allow focus area switching if not in a shell surface
     else if (focusArea !== 'shell-surface') {
-      console.log('DOWN input detected - moving focus to shell-nav')
       if (focusArea === 'preview') {
         focusArea = 'shell-nav'
         // Keep current selectedNavIndex - don't reset to 0
         updateFocusPosition()
         lastStickNavTime = now
       }
-    } else {
-      console.log('DOWN input blocked - currently in shell surface:', currentShellSurface)
     }
   }
   if (input.justPressed('UP') || (input.isDown('UP') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
-      console.log('Navigating launchers up')
       navigateLaunchers('up')
       lastStickNavTime = now
     }
     // Check if we're in settings navigation mode
     else if (focusArea === 'settings-nav') {
-      console.log('Navigating settings up')
       navigateSettingsNav('up')
       lastStickNavTime = now
     }
     // Check if we're in settings display controls mode
     else if (focusArea === 'settings-display-controls') {
-      console.log('Navigating display controls up')
       navigateDisplayControls('up')
       lastStickNavTime = now
     }
     // Only allow focus area switching if not in a shell surface
     else if (focusArea !== 'shell-surface') {
-      console.log('UP input detected - moving focus back to preview')
       if (focusArea === 'shell-nav') {
         focusArea = 'preview'
         updateFocusPosition()
         lastStickNavTime = now
       }
-    } else {
-      console.log('UP input blocked - currently in shell surface:', currentShellSurface)
     }
   }
   
@@ -1424,26 +1351,20 @@ function handleShellInputs() {
     } else if (focusArea === 'shell-nav') {
       // A button actions based on selected nav item
       if (selectedNavIndex === 0) { // Library selected
-        console.log('Opening Library...')
         showShellLibrary()
         RumbleFeedback.confirmation()
       } else if (selectedNavIndex === 1) { // Settings selected
-        console.log('Opening Settings...')
         showShellSettings()
         RumbleFeedback.confirmation()
       } else if (selectedNavIndex === 2) { // Notifications selected
-        console.log('Opening Notifications...')
         showShellNotifications()
         RumbleFeedback.confirmation()
       } else if (selectedNavIndex === 3) { // Gallery selected
-        console.log('Opening Gallery...')
         showShellGallery()
         RumbleFeedback.confirmation()
       }
     } else if (focusArea === 'shell-surface') {
       // A button actions within shell surface (future functionality)
-      console.log('A button pressed in shell surface:', currentShellSurface)
-      // Future: Handle shell surface internal actions
       RumbleFeedback.lightTap()
     }
   }
@@ -1454,47 +1375,32 @@ function handleShellInputs() {
     const shellNotifications = document.getElementById('shell-notifications')
     const shellGallery = document.getElementById('shell-gallery')
     
-    console.log('B button pressed via InputManager')
-    
     if (shellLibrary && shellLibrary.classList.contains('visible')) {
-      // Hide shell library if it's visible
-      console.log('Shell: B button - Closing Library')
       hideShellLibrary()
       RumbleFeedback.lightTap()
     } else if (shellSettings && shellSettings.classList.contains('visible')) {
-      // Hide shell settings if it's visible
-      console.log('Shell: B button - Closing Settings')
       hideShellSettings()
       RumbleFeedback.lightTap()
     } else if (shellNotifications && shellNotifications.classList.contains('visible')) {
-      // Hide shell notifications if it's visible
-      console.log('Shell: B button - Closing Notifications')
       hideShellNotifications()
       RumbleFeedback.lightTap()
     } else if (shellGallery && shellGallery.classList.contains('visible')) {
-      // Hide shell gallery if it's visible
-      console.log('Shell: B button - Closing Gallery')
       hideShellGallery()
       RumbleFeedback.lightTap()
     } else {
-      // Default B button behavior
-      console.log('Shell: B button - Back/Cancel')
       RumbleFeedback.lightTap()
     }
   }
   // X button is now used for hold-to-scale-down (handled in handleXButtonHold)
   if (input.justPressed('Y')) {
-    console.log('Shell: Y button - Alternative action')
     RumbleFeedback.lightTap()
   }
   
   // Triggers for app switching or other actions
   if (input.justPressed('LT')) {
-    console.log('Shell: LT - Previous app')
     RumbleFeedback.menuToggle()
   }
   if (input.justPressed('RT')) {
-    console.log('Shell: RT - Next app')
     RumbleFeedback.menuToggle()
   }
   
@@ -1514,18 +1420,13 @@ function handleShellInputs() {
       // Update the slider visual
       updateBrightnessSlider()
     }
-  } else if (rightStick.magnitude > 0.3) {
-    console.log(`Shell: Right stick scrolling - x:${rightStick.x.toFixed(2)}, y:${rightStick.y.toFixed(2)}`)
-    // Smooth scrolling without rumble
   }
   
   // Stick clicks
   if (input.justPressed('LS')) {
-    console.log('Shell: Left stick click - Quick action')
     RumbleFeedback.lightTap()
   }
   if (input.justPressed('RS')) {
-    console.log('Shell: Right stick click - Context menu')
     RumbleFeedback.lightTap()
   }
   

@@ -208,15 +208,15 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 /* Preview Containers */
 .preview-container {
   position: absolute;
-  width: 50vw; /* 50% of window width */
-  height: calc(50vh + 64px); /* 50% of window height + 64px */
+  width: 640px; /* 50% of 1280px shell width */
+  height: 424px; /* 50% of 720px shell height (360px) + 64px titlebar */
   border-radius: 12px; /* Match focus border-radius for consistency */
   top: 50%;
   left: 50%;
   z-index: 5;
   opacity: 0; /* Hidden by default */
   visibility: hidden; /* Hidden by default */
-  transform: translate(-50%, calc(100vh - 50%)); /* Start from bottom edge of screen */
+  transform: translate(-50%, calc(100% + 360px)); /* Start from bottom edge of 720px shell */
   transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease, width 0.4s ease, height 0.4s ease, left 0.4s ease; /* Smooth transition with slide animation and scaling */
 }
 
@@ -272,48 +272,48 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 .preview-container.preview-center {
   transform: translate(-50%, -50%) !important; /* Centered */
   z-index: 5 !important; /* Active/centered preview on top */
-  width: 50vw !important; /* Keep full size for active preview */
+  width: 640px !important; /* 50% of shell (640px) */
   border-radius: 12px !important; /* Maintain consistent border-radius when centered */
-  height: calc(50vh + 64px) !important;
+  height: 424px !important; /* 50% of shell + titlebar (360px + 64px) */
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1) !important; /* Subtle drop shadow for center preview */
 }
 
 .preview-container.preview-left,
 .preview-container.preview-right {
   z-index: 3 !important; /* Adjacent previews in middle layer */
-  width: 30vw !important; /* Smaller size for non-active previews */
-  height: calc(30vh + 38px) !important; /* Proportionally increased by 64px * 0.6 = ~38px */
+  width: 384px !important; /* 30% of shell (384px) */
+  height: 280px !important; /* 30% of shell + titlebar (216px + 64px) */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08) !important; /* More subtle drop shadow for adjacent previews */
 }
 
 .preview-container.preview-far-left,
 .preview-container.preview-far-right {
   z-index: 2 !important; /* Far previews at bottom layer */
-  width: 30vw !important; /* Smaller size for non-active previews */
-  height: calc(30vh + 38px) !important; /* Proportionally increased by 64px * 0.6 = ~38px */
+  width: 512px !important; /* 40% of shell (512px) */
+  height: 352px !important; /* 40% of shell + titlebar (288px + 64px) */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06) !important; /* Very subtle drop shadow for far previews */
 }
 
 .preview-container.preview-left {
-  transform: translate(calc(-50% - 40vw - 40px), -50%) !important; /* Left: center - (25vw center + 15vw left) - 40px gap */
+  transform: translate(calc(-50% - 320px - 40px - 192px), -50%) !important; /* Left: -50% - half center (320px) - gap (40px) - half left (192px) */
 }
 
 .preview-container.preview-right {
-  transform: translate(calc(-50% + 40vw + 40px), -50%) !important; /* Right: center + (25vw center + 15vw right) + 40px gap */
+  transform: translate(calc(-50% + 320px + 40px + 192px), -50%) !important; /* Right: -50% + half center (320px) + gap (40px) + half right (192px) */
 }
 
 .preview-container.preview-far-left {
-  transform: translate(calc(-50% - 70vw - 80px), -50%) !important; /* Far left: 40px gap from left preview */
+  transform: translate(calc(-50% - 320px - 40px - 384px - 40px - 256px), -50%) !important; /* Far left: -50% - half center (320px) - gap (40px) - left width (384px) - gap (40px) - half far-left (256px) */
 }
 
 .preview-container.preview-far-right {
-  transform: translate(calc(-50% + 70vw + 80px), -50%) !important; /* Far right: 40px gap from right preview */
+  transform: translate(calc(-50% + 320px + 40px + 384px + 40px + 256px), -50%) !important; /* Far right: -50% + half center (320px) + gap (40px) + right width (384px) + gap (40px) + half far-right (256px) */
 }
 
 /* Preview Container Scaling */
 .preview-container.preview-scaled {
-  width: 100vw !important; /* Full window width */
-  height: 100vh !important; /* Full window height */
+  width: 1280px !important; /* Full shell width */
+  height: 720px !important; /* Full shell height */
   border-radius: 0 !important; /* Remove border radius when fullscreen to match focus behavior */
   transform: translate(-50%, -50%) !important; /* Always centered when scaled */
   z-index: 999 !important; /* Bring to front when scaled - above all other elements */
@@ -540,7 +540,7 @@ button:active { transform: translateY(1px); }
 }
 
 /* Remove border radius when focus is full screen */
-#focus.focus-preview[style*="width: 100vw"] {
+#focus.focus-preview[style*="width: 1280px"] {
   border-radius: 0;
 }
 

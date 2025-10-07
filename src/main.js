@@ -639,13 +639,13 @@ function updateFocusPosition() {
     
     // Match the size of the active preview and center it
     if (isScaled) {
-      // When preview is scaled to 100%
-      focusContainer.style.width = '100vw'
-      focusContainer.style.height = '100vh'
+      // When preview is scaled to full shell size
+      focusContainer.style.width = '1280px'
+      focusContainer.style.height = '720px'
     } else {
-      // Normal size - match the centered preview (50vw x 50vh + 64px)
-      focusContainer.style.width = '50vw'
-      focusContainer.style.height = 'calc(50vh + 64px)'
+      // Normal size - match the center preview (640px x 424px - 50% of shell)
+      focusContainer.style.width = '640px'
+      focusContainer.style.height = '424px'
     }
     
     // Center position

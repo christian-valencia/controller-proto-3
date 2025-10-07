@@ -59,11 +59,10 @@ let currentShellSurface = null // Track which shell surface is currently open
 const navItems = ['library', 'settings', 'notifications', 'gallery']
 
 // Library Launchers Navigation State
-// Library Launchers Navigation State
 let selectedLauncherIndex = 0 // Index of currently selected launcher app
 let selectedLauncherRow = -1 // Index of currently selected row (-1=search box, 0-2=launcher rows)
 const LAUNCHER_ROWS = 3
-const LAUNCHER_COUNTS_PER_ROW = [5, 12, 20] // Number of items in each row
+const LAUNCHER_COUNTS_PER_ROW = [5, 8, 4] // Number of items in each row: Launchers(5), All games(8), All apps(4)
 
 // Settings Navigation State
 let selectedSettingsNavIndex = 0 // Index of currently selected settings nav item (0-10)
@@ -214,6 +213,12 @@ function onHoldComplete() {
   
   // Reset preview scaling state
   isPreviewScaled = false
+  
+  // Stop the lock screen video
+  const lockVideo = document.getElementById('lock-video')
+  if (lockVideo) {
+    lockVideo.pause()
+  }
   
   // Change to shell state
   changeUIState(UI_STATES.SHELL)
@@ -643,9 +648,9 @@ function updateFocusPosition() {
       focusContainer.style.width = '1280px'
       focusContainer.style.height = '720px'
     } else {
-      // Normal size - match the center preview (640px x 424px - 50% of shell)
-      focusContainer.style.width = '640px'
-      focusContainer.style.height = '424px'
+      // Normal size - 8px larger than center preview (648px x 432px)
+      focusContainer.style.width = '648px'
+      focusContainer.style.height = '432px'
     }
     
     // Center position

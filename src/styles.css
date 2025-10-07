@@ -10,7 +10,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   width: 1280px;
   height: 720px;
   background: #1c1f25;
-  border-radius: 0px;
+  border-radius: 0;
   overflow: hidden;
   font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
@@ -31,11 +31,18 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('/assets/images/valorant.jpeg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   z-index: 0;
+  overflow: hidden;
+}
+
+#lock-video {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1344px; /* 105% of 1280px */
+  height: 756px; /* 105% of 720px */
+  object-fit: contain;
 }
 
 /* Blur Container */
@@ -58,7 +65,10 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  object-fit: none;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
 }
 
 /* Blur Container Visible State */
@@ -78,7 +88,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(0, 0, 0, 0.25);
   z-index: 0.1;
 }
 
@@ -208,8 +218,8 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 /* Preview Containers */
 .preview-container {
   position: absolute;
-  width: 640px; /* 50% of 1280px shell width */
-  height: 424px; /* 50% of 720px shell height (360px) + 64px titlebar */
+  width: 384px; /* 30% of shell - base size (will scale up for center/far previews) */
+  height: 280px; /* 30% of shell + titlebar (216px + 64px) */
   border-radius: 12px; /* Match focus border-radius for consistency */
   top: 50%;
   left: 50%;
@@ -289,8 +299,8 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 .preview-container.preview-far-left,
 .preview-container.preview-far-right {
   z-index: 2 !important; /* Far previews at bottom layer */
-  width: 512px !important; /* 40% of shell (512px) */
-  height: 352px !important; /* 40% of shell + titlebar (288px + 64px) */
+  width: 384px !important; /* 30% of shell (384px) - same as left/right */
+  height: 280px !important; /* 30% of shell + titlebar (216px + 64px) - same as left/right */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06) !important; /* Very subtle drop shadow for far previews */
 }
 
@@ -303,11 +313,11 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 }
 
 .preview-container.preview-far-left {
-  transform: translate(calc(-50% - 320px - 40px - 384px - 40px - 256px), -50%) !important; /* Far left: -50% - half center (320px) - gap (40px) - left width (384px) - gap (40px) - half far-left (256px) */
+  transform: translate(calc(-50% - 320px - 40px - 384px - 40px - 192px), -50%) !important; /* Far left: -50% - half center (320px) - gap (40px) - left width (384px) - gap (40px) - half far-left (192px) */
 }
 
 .preview-container.preview-far-right {
-  transform: translate(calc(-50% + 320px + 40px + 384px + 40px + 256px), -50%) !important; /* Far right: -50% + half center (320px) + gap (40px) + right width (384px) + gap (40px) + half far-right (256px) */
+  transform: translate(calc(-50% + 320px + 40px + 384px + 40px + 192px), -50%) !important; /* Far right: -50% + half center (320px) + gap (40px) + right width (384px) + gap (40px) + half far-right (192px) */
 }
 
 /* Preview Container Scaling */
@@ -434,7 +444,6 @@ button:active { transform: translateY(1px); }
   transform: translateX(-50%);
   width: 320px;
   height: 64px;
-  background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -515,7 +524,7 @@ button:active { transform: translateY(1px); }
   left: 50%;
   width: 100vw;
   height: 100vh;
-  border: 4px solid rgba(255, 255, 255, 0.8);
+  border: 4px solid #5DD4C3; /* Teal color from progress indicator */
   border-radius: 0;
   background: none;
   pointer-events: none;
@@ -524,6 +533,7 @@ button:active { transform: translateY(1px); }
   visibility: hidden;
   transition: all 0.4s ease;
   transform: translate(-50%, -50%);
+  filter: drop-shadow(0 4px 8px rgba(93, 212, 195, 0.3)); /* Subtle teal drop shadow */
 }
 
 /* Focus Visible State */
@@ -534,14 +544,15 @@ button:active { transform: translateY(1px); }
 
 /* Focus Mode States */
 #focus.focus-preview {
-  border-width: 2px;
-  border-radius: 12px;
+  border-width: 3px;
+  border-radius: 16px;
   /* Size will be set dynamically by JavaScript */
 }
 
 /* Remove border radius when focus is full screen */
 #focus.focus-preview[style*="width: 1280px"] {
   border-radius: 0;
+  filter: none; /* Remove drop shadow at fullscreen */
 }
 
 #focus.focus-nav {
@@ -553,7 +564,7 @@ button:active { transform: translateY(1px); }
 #focus.focus-shell-surface {
   border-width: 2px;
   border-radius: 6px;
-  border-color: rgba(255, 255, 255, 0.9);
+  border-color: #5DD4C3; /* Teal color */
   /* Remove fixed dimensions to allow JavaScript to control sizing */
 }
 
@@ -568,7 +579,7 @@ button:active { transform: translateY(1px); }
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 0px;
+  border-radius: 0;
   z-index: 20;
   transform: scale(0);
   transform-origin: center bottom;
@@ -614,7 +625,7 @@ button:active { transform: translateY(1px); }
   position: absolute;
   top: 28px;
   left: 64px;
-  width: 320px;
+  width: 400px;
   height: 40px;
   background: rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -639,8 +650,8 @@ button:active { transform: translateY(1px); }
 }
 
 .library-search-box.focused {
-  border: 2px solid white;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  border: 2px solid #5DD4C3; /* Teal color */
+  box-shadow: 0 8px 24px rgba(93, 212, 195, 0.4); /* Teal shadow */
 }
 
 /* Launcher Row Container (includes title + launchers) */
@@ -696,17 +707,125 @@ button:active { transform: translateY(1px); }
   background-color: green;
   flex-shrink: 0; /* Prevent shrinking */
   border: 2px solid transparent;
-  border-radius: 12px;
+  border-radius: 16px;
   box-sizing: border-box;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Subtle drop shadow */
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* First row launcher images */
+.launcher-row-container:nth-child(2) .launcher-app:nth-child(1) {
+  background-image: url('/assets/images/xbox.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(2) .launcher-app:nth-child(2) {
+  background-image: url('/assets/images/steam.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(2) .launcher-app:nth-child(3) {
+  background-image: url('/assets/images/battlenet.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(2) .launcher-app:nth-child(4) {
+  background-image: url('/assets/images/ea.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(2) .launcher-app:nth-child(5) {
+  background-image: url('/assets/images/epic.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+/* Second row game images (All games) */
+.launcher-row-container:nth-child(3) .launcher-app:nth-child(1) {
+  background-image: url('/assets/images/silksong.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(3) .launcher-app:nth-child(2) {
+  background-image: url('/assets/images/halo.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(3) .launcher-app:nth-child(3) {
+  background-image: url('/assets/images/battlefield.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(3) .launcher-app:nth-child(4) {
+  background-image: url('/assets/images/diablo.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(3) .launcher-app:nth-child(5) {
+  background-image: url('/assets/images/33immortals.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(3) .launcher-app:nth-child(6) {
+  background-image: url('/assets/images/deadisland.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(3) .launcher-app:nth-child(7) {
+  background-image: url('/assets/images/avowed.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(3) .launcher-app:nth-child(8) {
+  background-image: url('/assets/images/doom.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+/* Third row app images (All apps) */
+.launcher-row-container:nth-child(4) .launcher-app:nth-child(1) {
+  background-image: url('/assets/images/netflix.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(4) .launcher-app:nth-child(2) {
+  background-image: url('/assets/images/spotify.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(4) .launcher-app:nth-child(3) {
+  background-image: url('/assets/images/youtube.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(4) .launcher-app:nth-child(4) {
+  background-image: url('/assets/images/discord.png');
+  background-color: transparent;
+  background-size: 180px 180px;
 }
 
 .launcher-app.focused {
   /* Visual indication that this launcher has focus */
   transform: scale(1.1) !important;
-  border-color: white;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5); /* More dramatic drop shadow when selected */
+  border-color: #5DD4C3; /* Teal color */
+  box-shadow: 0 8px 16px rgba(93, 212, 195, 0.4); /* Teal shadow */
 }
 
 /* Shell Settings Container */
@@ -719,7 +838,7 @@ button:active { transform: translateY(1px); }
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border-radius: 0px;
+  border-radius: 0;
   z-index: 20;
   transform: scale(0);
   transform-origin: center bottom;
@@ -817,7 +936,8 @@ button:active { transform: translateY(1px); }
 
 .slider-control.focused,
 .cycle-selector.focused {
-  border: 2px solid white;
+  border: 2px solid #5DD4C3; /* Teal color */
+  box-shadow: 0 4px 8px rgba(93, 212, 195, 0.3); /* Subtle teal drop shadow */
 }
 
 .cycle-selector:last-child {
@@ -860,14 +980,13 @@ button:active { transform: translateY(1px); }
   background: rgba(255, 255, 255, 0.2);
   border-radius: 2px;
 }
-
 .slider-value {
   position: absolute;
   top: 0;
   left: 0;
   height: 100%;
   width: 50%;
-  background: white;
+  background: #5DD4C3; /* Teal color */
   border-radius: 2px;
   z-index: 1;
 }
@@ -1042,7 +1161,8 @@ button:active { transform: translateY(1px); }
 }
 
 .nav-page-item.focused {
-  border-color: white;
+  border-color: #5DD4C3; /* Teal color */
+  box-shadow: 0 4px 8px rgba(93, 212, 195, 0.3); /* Subtle teal drop shadow */
 }
 
 .nav-page-icon {
@@ -1078,7 +1198,7 @@ button:active { transform: translateY(1px); }
   width: 1280px;
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
-  border-radius: 0px;
+  border-radius: 0;
   z-index: 20;
   transform: scale(0);
   transform-origin: center bottom;
@@ -1120,7 +1240,7 @@ button:active { transform: translateY(1px); }
   width: 1280px;
   height: 720px;
   background: rgba(49, 94, 109, 1.0); /* Light blue background */
-  border-radius: 0px;
+  border-radius: 0;
   z-index: 20;
   transform: scale(0);
   transform-origin: center bottom;

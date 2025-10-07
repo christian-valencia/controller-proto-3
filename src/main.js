@@ -75,6 +75,12 @@ let selectedDisplayControlIndex = 0 // Index of currently selected display contr
 const DISPLAY_CONTROLS = 3 // Total number of display controls
 let brightnessValue = 50 // Brightness slider value (0-100)
 
+// Scale cycle selector state
+let scaleValues = ['Value 1', 'Value 2', 'Value 3']
+let selectedScaleIndex = 0 // Index of currently selected scale value (0-2)
+let lastCycleTime = 0 // Debounce for cycling
+const CYCLE_DELAY = 300 // 300ms delay between cycles
+
 // Press and hold state (for lock screen)
 let isHolding = false
 let holdStartTime = 0
@@ -958,6 +964,14 @@ function updateBrightnessSlider() {
   }
 }
 
+// Update scale cycle selector display
+function updateScaleCycleSelector() {
+  const cycleValue = document.querySelector('.cycle-value')
+  if (cycleValue) {
+    cycleValue.textContent = scaleValues[selectedScaleIndex]
+  }
+}
+
 // Shell Library Functions
 // Consolidated Shell Container Functions
 function showShellContainer(containerName) {
@@ -1017,6 +1031,9 @@ function showShellContainer(containerName) {
     
     // Initialize brightness slider
     updateBrightnessSlider()
+    
+    // Initialize scale cycle selector
+    updateScaleCycleSelector()
     
     // Mark first item as selected (Home)
     const navItems = document.querySelectorAll('.nav-page-item')
@@ -1416,6 +1433,23 @@ function handleShellInputs() {
       
       // Update the slider visual
       updateBrightnessSlider()
+    }
+  }
+  // Right stick for scale cycle selector when focused on scale control
+  else if (focusArea === 'settings-display-controls' && selectedDisplayControlIndex === 1) {
+    const currentTime = Date.now()
+    if (rightStick.magnitude > 0.6 && currentTime - lastCycleTime > CYCLE_DELAY) {
+      if (rightStick.x > 0.6) {
+        // Cycle right (next value)
+        selectedScaleIndex = (selectedScaleIndex + 1) % scaleValues.length
+        updateScaleCycleSelector()
+        lastCycleTime = currentTime
+      } else if (rightStick.x < -0.6) {
+        // Cycle left (previous value)
+        selectedScaleIndex = (selectedScaleIndex - 1 + scaleValues.length) % scaleValues.length
+        updateScaleCycleSelector()
+        lastCycleTime = currentTime
+      }
     }
   }
   

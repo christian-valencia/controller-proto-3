@@ -725,7 +725,6 @@ button:active { transform: translateY(1px); }
 .display-settings {
   width: 100%;
   height: 330px;
-  background: rgba(0, 0, 0, 0.1);
   padding: 32px 40px 0 40px;
   box-sizing: border-box;
 }
@@ -833,6 +832,51 @@ button:active { transform: translateY(1px); }
   height: 32px;
   background: white url('/assets/images/brightness-knob.png') center/contain no-repeat;
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+/* Cycle Selector */
+.cycle-selector {
+  width: 33.333%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-left: auto;
+  padding: 0 16px;
+}
+
+.chevron-left,
+.chevron-right {
+  width: 20px;
+  height: 20px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.5;
+  transition: opacity 0.2s ease, width 0.2s ease, height 0.2s ease;
+}
+
+.chevron-left {
+  background-image: url('/assets/images/chevron-left.png');
+}
+
+.chevron-right {
+  background-image: url('/assets/images/chevron-right.png');
+}
+
+.cycle-value {
+  font-size: 16px;
+  color: white;
+  font-weight: 400;
+  text-align: center;
+  flex: 1;
+  margin: 0 12px;
+}
+
+.scale-switch.focused .chevron-left,
+.scale-switch.focused .chevron-right {
+  width: 28px;
+  height: 28px;
+  opacity: 1;
 }
 
 /* Settings Navigation Styling */

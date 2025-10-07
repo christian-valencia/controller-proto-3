@@ -448,9 +448,6 @@ function changeUIState(newState) {
   console.log(`UI State: ${currentUIState} → ${newState}`)
   currentUIState = newState
   
-  // Update legacy flag for compatibility
-  isLockScreenUnlocked = (newState !== UI_STATES.LOCKED)
-  
   // Show/hide blur container based on unlock state
   const blurContainer = document.getElementById('blur-container')
   if (blurContainer) {

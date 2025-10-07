@@ -719,26 +719,45 @@ button:active { transform: translateY(1px); }
   width: calc(100% - 280px); /* Fill remaining width */
   height: 100%;
   z-index: 1;
+  overflow-y: auto; /* Enable vertical scrolling */
+  scroll-behavior: smooth; /* Smooth scrolling animation */
 }
 
-/* Display Settings Container */
-.display-settings {
+/* Hide scrollbar but keep functionality */
+.settings-content-container::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.settings-content-container {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.settings-content-container > h1 {
+  font-size: 32px;
+  font-weight: 500;
+  color: white;
+  margin: 32px 0 0 40px;
+}
+
+/* Section Settings Container */
+.section-settings {
   width: 100%;
-  height: 330px;
+  height: 290px;
   padding: 32px 40px 0 40px;
   box-sizing: border-box;
 }
 
-.display-settings h1 {
-  font-size: 28px;
+.section-settings h1 {
+  font-size: 20px;
   font-weight: 500;
   color: white;
-  margin: 0 0 20px 0;
+  margin: 0 0 12px 0;
 }
 
-.brightness-control,
-.scale-switch,
-.resolution-switch {
+.slider-control,
+.cycle-selector {
   width: 100%;
   height: 64px;
   background: rgba(0, 0, 0, 0.1);
@@ -752,13 +771,12 @@ button:active { transform: translateY(1px); }
   transition: border-color 0.2s ease, border-width 0.2s ease;
 }
 
-.brightness-control.focused,
-.scale-switch.focused,
-.resolution-switch.focused {
+.slider-control.focused,
+.cycle-selector.focused {
   border: 2px solid white;
 }
 
-.resolution-switch {
+.cycle-selector:last-child {
   margin-bottom: 0;
 }
 
@@ -769,7 +787,7 @@ button:active { transform: translateY(1px); }
 }
 
 .control-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   color: white;
   line-height: 1.2;
@@ -782,8 +800,8 @@ button:active { transform: translateY(1px); }
   line-height: 1.2;
 }
 
-/* Slider Control */
-.slider-control {
+/* Slider Knob Container */
+.slider-knob-container {
   width: 33.333%;
   display: flex;
   align-items: center;
@@ -827,15 +845,15 @@ button:active { transform: translateY(1px); }
   background-repeat: no-repeat;
 }
 
-.brightness-control.focused .slider-knob {
+.slider-control.focused .slider-knob {
   width: 32px;
   height: 32px;
   background: white url('/assets/images/brightness-knob.png') center/contain no-repeat;
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
 }
 
-/* Cycle Selector */
-.cycle-selector {
+/* Cycle Text Container */
+.cycle-text {
   width: 33.333%;
   display: flex;
   align-items: center;
@@ -872,8 +890,8 @@ button:active { transform: translateY(1px); }
   margin: 0 12px;
 }
 
-.scale-switch.focused .chevron-left,
-.scale-switch.focused .chevron-right {
+.cycle-selector.focused .chevron-left,
+.cycle-selector.focused .chevron-right {
   width: 28px;
   height: 28px;
   opacity: 1;
@@ -886,7 +904,13 @@ button:active { transform: translateY(1px); }
   top: 0;
   width: 280px;
   height: 100%;
-  z-index: 1;
+  z-index: 2; /* Above content container */
+  background: transparent;
+  pointer-events: none; /* Allow clicks to pass through empty space */
+}
+
+.settings-navigation > * {
+  pointer-events: auto; /* Re-enable clicks on actual nav elements */
 }
 
 /* Settings Navigation Title */

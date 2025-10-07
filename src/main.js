@@ -71,8 +71,8 @@ let selectedSettingsNavIndex = 0 // Index of currently selected settings nav ite
 const SETTINGS_NAV_ITEMS = 11 // Total number of nav items
 
 // Settings Display Controls State
-let selectedDisplayControlIndex = 0 // Index of currently selected display control (0-2: brightness, scale, resolution)
-const DISPLAY_CONTROLS = 3 // Total number of display controls
+let selectedDisplayControlIndex = 0 // Index of currently selected display control (0-8: 3 controls per section × 3 sections)
+const DISPLAY_CONTROLS = 9 // Total number of display controls (3 sections × 3 controls each)
 let brightnessValue = 50 // Brightness slider value (0-100)
 
 // Scale cycle selector state
@@ -905,22 +905,47 @@ function navigateSettingsNav(direction) {
 
 // Settings Display Controls Navigation Functions
 function updateDisplayControlFocus() {
-  const controls = [
-    document.querySelector('.brightness-control'),
-    document.querySelector('.scale-switch'),
-    document.querySelector('.resolution-switch')
-  ]
+  // Get all controls from all sections
+  const sections = document.querySelectorAll('.section-settings')
+  const allControls = []
   
-  if (!controls || controls.length === 0) return
+  sections.forEach(section => {
+    const sliderControl = section.querySelector('.slider-control')
+    const cycleSelectors = section.querySelectorAll('.cycle-selector')
+    
+    if (sliderControl) allControls.push(sliderControl)
+    cycleSelectors.forEach(control => allControls.push(control))
+  })
+  
+  if (!allControls || allControls.length === 0) return
   
   // Remove focused class from all controls
-  controls.forEach(control => {
+  allControls.forEach(control => {
     if (control) control.classList.remove('focused')
   })
   
   // Add focused class to selected control
-  if (controls[selectedDisplayControlIndex]) {
-    controls[selectedDisplayControlIndex].classList.add('focused')
+  if (allControls[selectedDisplayControlIndex]) {
+    allControls[selectedDisplayControlIndex].classList.add('focused')
+    
+    // Handle scrolling based on which section we're in
+    const contentContainer = document.querySelector('.settings-content-container')
+    
+    if (selectedDisplayControlIndex <= 2) {
+      // First section (indices 0-2): Scroll to top (initial position showing section 1 & 2)
+      if (contentContainer) {
+        contentContainer.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    } else if (selectedDisplayControlIndex >= 6) {
+      // Third section (indices 6-8): Scroll to show section 2 & 3
+      const thirdSection = sections[2] // Third section (index 2)
+      if (thirdSection && contentContainer) {
+        // Calculate the position of the third section relative to content container
+        const sectionTop = thirdSection.offsetTop
+        contentContainer.scrollTo({ top: sectionTop, behavior: 'smooth' })
+      }
+    }
+    // Second section (indices 3-5): No scroll, stays at initial position showing section 1 & 2
   }
 }
 
@@ -933,12 +958,18 @@ function navigateDisplayControls(direction) {
     updateDisplayControlFocus()
   } else if (direction === 'left') {
     // Clear focus from display controls before switching
-    const controls = [
-      document.querySelector('.brightness-control'),
-      document.querySelector('.scale-switch'),
-      document.querySelector('.resolution-switch')
-    ]
-    controls.forEach(control => {
+    const sections = document.querySelectorAll('.section-settings')
+    const allControls = []
+    
+    sections.forEach(section => {
+      const sliderControl = section.querySelector('.slider-control')
+      const cycleSelectors = section.querySelectorAll('.cycle-selector')
+      
+      if (sliderControl) allControls.push(sliderControl)
+      cycleSelectors.forEach(control => allControls.push(control))
+    })
+    
+    allControls.forEach(control => {
       if (control) control.classList.remove('focused')
     })
     
@@ -1092,7 +1123,7 @@ function hideShellContainer(containerName) {
       item.classList.remove('selected')
     })
     // Remove focused class from all display controls
-    document.querySelectorAll('.brightness-control, .scale-switch, .resolution-switch').forEach(control => {
+    document.querySelectorAll('.slider-control, .cycle-selector').forEach(control => {
       control.classList.remove('focused')
     })
   }
@@ -1421,8 +1452,8 @@ function handleShellInputs() {
   // Right stick for scrolling (future use)
   const rightStick = input.getStick('RIGHT')
   
-  // Right stick for brightness slider control when focused on brightness control
-  if (focusArea === 'settings-display-controls' && selectedDisplayControlIndex === 0) {
+  // Right stick for brightness slider control when focused on slider controls (indices 0, 3, 6)
+  if (focusArea === 'settings-display-controls' && [0, 3, 6].includes(selectedDisplayControlIndex)) {
     if (rightStick.magnitude > 0.3) {
       // Adjust brightness value based on horizontal stick movement
       const adjustSpeed = 2 // Adjust by 2% per frame when stick is held
@@ -1435,8 +1466,8 @@ function handleShellInputs() {
       updateBrightnessSlider()
     }
   }
-  // Right stick for scale cycle selector when focused on scale control
-  else if (focusArea === 'settings-display-controls' && selectedDisplayControlIndex === 1) {
+  // Right stick for cycle selector when focused on cycle controls (indices 1, 2, 4, 5, 7, 8)
+  else if (focusArea === 'settings-display-controls' && [1, 2, 4, 5, 7, 8].includes(selectedDisplayControlIndex)) {
     const currentTime = Date.now()
     if (rightStick.magnitude > 0.6 && currentTime - lastCycleTime > CYCLE_DELAY) {
       if (rightStick.x > 0.6) {

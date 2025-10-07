@@ -609,16 +609,38 @@ button:active { transform: translateY(1px); }
 }
 
 /* Library Main Title */
-.library-main-title {
+/* Library Search Box */
+.library-search-box {
   position: absolute;
   top: 28px;
   left: 64px;
-  font-size: 40px;
-  font-weight: 700;
-  color: white;
-  margin: 0;
-  text-align: left;
-  transition: transform 0.3s ease;
+  width: 320px;
+  height: 40px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 40px;
+  padding: 0 16px;
+  font-size: 16px;
+  font-weight: 400;
+  color: rgba(33, 33, 33, 0.6);
+  outline: none;
+  box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.2s ease, border-width 0.2s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.library-search-box::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.library-search-box:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.library-search-box.focused {
+  border: 2px solid white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
 /* Launcher Row Container (includes title + launchers) */
@@ -628,21 +650,21 @@ button:active { transform: translateY(1px); }
   width: calc(100% - 64px);
 }
 
-/* Position each row container (accounting for h1 as first child) */
+/* Position each row container (accounting for search box as first child) */
 .launcher-row-container:nth-child(2) {
-  top: 126px; /* 40px (h1 top) + 64px (h1 height) + 22px (margin) = 126px */
+  top: 116px; /* 28px (search box top) + 40px (search box height) + 48px (margin) = 116px */
 }
 
 .launcher-row-container:nth-child(3) {
-  top: calc(126px + 234px + 30px); /* Title (32px) + launchers (174px) + padding (28px) + gap (30px) = 264px per row */
+  top: calc(116px + 234px + 30px); /* First row + Title (32px) + launchers (174px) + padding (28px) + gap (30px) = 264px per row */
 }
 
 .launcher-row-container:nth-child(4) {
-  top: calc(126px + (234px + 30px) * 2);
+  top: calc(116px + (234px + 30px) * 2);
 }
 
 .launcher-row-container:nth-child(5) {
-  top: calc(126px + (234px + 30px) * 3);
+  top: calc(116px + (234px + 30px) * 3);
 }
 
 /* Launcher Row Title */
@@ -741,12 +763,34 @@ button:active { transform: translateY(1px); }
   margin: 32px 0 0 40px;
 }
 
+/* Settings Legend */
+.settings-legend {
+  position: absolute;
+  bottom: 0px;
+  right: 16px;
+  width: 360px;
+  height: 72px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.settings-legend img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 /* Section Settings Container */
 .section-settings {
   width: 100%;
   height: 290px;
   padding: 32px 40px 0 40px;
   box-sizing: border-box;
+}
+
+/* Add bottom margin only to the last section */
+.section-settings:last-child {
+  margin-bottom: 72px;
 }
 
 .section-settings h1 {

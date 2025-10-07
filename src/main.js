@@ -26,7 +26,7 @@ window.addEventListener('keydown', (e) => {
   if ((e.key.toLowerCase() === 's' || e.key.toLowerCase() === 'l') && 
       currentUIState === UI_STATES.SHELL && currentShellSurface) {
     const now = Date.now()
-    if (now - lastBKeyPress > 200) { // 200ms debounce
+    if (now - lastBKeyPress > B_BUTTON_DEBOUNCE) {
       hideShellContainer(currentShellSurface)
       lastBKeyPress = now
     }
@@ -46,12 +46,10 @@ let currentUIState = UI_STATES.LOCKED
 // App Navigation State
 let selectedAppIndex = 0 // 0=green, 1=blue, 2=orange
 let lastStickNavTime = 0
-const STICK_NAV_DELAY = 300 // 300ms delay between stick navigation
 
 // Preview Scaling State
 let isPreviewScaled = false
 let lastAButtonPress = 0
-const A_BUTTON_DEBOUNCE = 300 // 300ms debounce for A button
 
 // Focus Navigation State
 let focusArea = 'preview' // 'preview', 'shell-nav', 'shell-surface', or 'library-launchers'
@@ -61,10 +59,11 @@ let currentShellSurface = null // Track which shell surface is currently open
 const navItems = ['library', 'settings', 'notifications', 'gallery']
 
 // Library Launchers Navigation State
+// Library Launchers Navigation State
 let selectedLauncherIndex = 0 // Index of currently selected launcher app
-let selectedLauncherRow = 0 // Index of currently selected row (0-3)
+let selectedLauncherRow = -1 // Index of currently selected row (-1=search box, 0-2=launcher rows)
 const LAUNCHER_ROWS = 3
-const LAUNCHER_COUNTS_PER_ROW = [5, 12, 20] // Number of items in each row (removed Recent row)
+const LAUNCHER_COUNTS_PER_ROW = [5, 12, 20] // Number of items in each row
 
 // Settings Navigation State
 let selectedSettingsNavIndex = 0 // Index of currently selected settings nav item (0-10)
@@ -73,23 +72,34 @@ const SETTINGS_NAV_ITEMS = 11 // Total number of nav items
 // Settings Display Controls State
 let selectedDisplayControlIndex = 0 // Index of currently selected display control (0-8: 3 controls per section × 3 sections)
 const DISPLAY_CONTROLS = 9 // Total number of display controls (3 sections × 3 controls each)
-let brightnessValue = 50 // Brightness slider value (0-100)
 
-// Scale cycle selector state
-let scaleValues = ['Value 1', 'Value 2', 'Value 3']
-let selectedScaleIndex = 0 // Index of currently selected scale value (0-2)
-let lastCycleTime = 0 // Debounce for cycling
-const CYCLE_DELAY = 300 // 300ms delay between cycles
+// Individual slider values for each slider control (indices 0, 3, 6)
+let sliderValues = [50, 50, 50] // Three independent slider values (0-100)
+
+// Individual cycle selector states for each cycle control (indices 1, 2, 4, 5, 7, 8)
+let cycleValues = ['Value 1', 'Value 2', 'Value 3']
+let cycleSelectedIndices = [0, 0, 0, 0, 0, 0] // Six independent cycle selector indices
+let lastCycleTime = 0
 
 // Press and hold state (for lock screen)
 let isHolding = false
 let holdStartTime = 0
-const HOLD_DURATION = 700 // 0.7 seconds in milliseconds
 
 // VIEW button press and hold state (for scaling down preview)
 let isXHolding = false
 let xHoldStartTime = 0
-const X_HOLD_DURATION = 700 // 0.7 second to scale down preview
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+const STICK_NAV_DELAY = 300
+const A_BUTTON_DEBOUNCE = 300
+const CYCLE_DELAY = 300
+const HOLD_DURATION = 700
+const X_HOLD_DURATION = 700
+const B_BUTTON_DEBOUNCE = 200
+const STICK_THRESHOLD = 0.6
+const SLIDER_STICK_THRESHOLD = 0.3
 
 // Fullscreen toggle via keyboard or View/Menu buttons
 window.addEventListener('keydown', (e) => {
@@ -771,16 +781,33 @@ function restorePreviousFocus() {
 // Library Launchers Navigation Functions
 function updateLauncherFocus() {
   const focusContainer = document.getElementById('focus')
+  const searchBox = document.querySelector('.library-search-box')
   const launcherRowContainers = document.querySelectorAll('.launcher-row-container')
   const libraryContent = document.querySelector('.library-content')
   
-  if (!focusContainer || launcherRowContainers.length === 0) return
+  if (!focusContainer) return
   
   // Hide focus border when in library
   focusContainer.style.opacity = '0'
   
-  // Remove focus from all launchers
+  // Remove focus from all elements
   document.querySelectorAll('.launcher-app').forEach(app => app.classList.remove('focused'))
+  if (searchBox) {
+    searchBox.classList.remove('focused')
+  }
+  
+  // Handle search box focus (row -1)
+  if (selectedLauncherRow === -1) {
+    if (searchBox) {
+      searchBox.classList.add('focused')
+    }
+    // Reset scroll for search box
+    launcherRowContainers.forEach((container) => {
+      container.style.transition = 'transform 0.3s ease'
+      container.style.transform = 'translateY(0)'
+    })
+    return
+  }
   
   // Get the selected row container
   const selectedRowContainer = launcherRowContainers[selectedLauncherRow]
@@ -839,15 +866,26 @@ function updateLauncherFocus() {
       }
     })
     
-    // Also move the h1 Library title
-    const libraryMainTitle = document.querySelector('.library-main-title')
-    if (libraryMainTitle) {
-      libraryMainTitle.style.transform = `translateY(${scrollOffset}px)`
+    // Move the search box
+    if (searchBox) {
+      searchBox.style.transition = 'transform 0.3s ease'
+      searchBox.style.transform = `translateY(${scrollOffset}px)`
     }
   }
 }
 
 function navigateLaunchers(direction) {
+  // Handle search box row (-1)
+  if (selectedLauncherRow === -1) {
+    if (direction === 'down') {
+      selectedLauncherRow = 0
+      selectedLauncherIndex = 0
+      updateLauncherFocus()
+    }
+    // No left/right/up navigation from search box
+    return
+  }
+  
   const currentRowItemCount = LAUNCHER_COUNTS_PER_ROW[selectedLauncherRow]
   
   if (direction === 'left' && selectedLauncherIndex > 0) {
@@ -856,11 +894,18 @@ function navigateLaunchers(direction) {
   } else if (direction === 'right' && selectedLauncherIndex < currentRowItemCount - 1) {
     selectedLauncherIndex++
     updateLauncherFocus()
-  } else if (direction === 'up' && selectedLauncherRow > 0) {
-    selectedLauncherRow--
-    // Clamp index to new row's item count
-    selectedLauncherIndex = Math.min(selectedLauncherIndex, LAUNCHER_COUNTS_PER_ROW[selectedLauncherRow] - 1)
-    updateLauncherFocus()
+  } else if (direction === 'up') {
+    if (selectedLauncherRow > 0) {
+      selectedLauncherRow--
+      // Clamp index to new row's item count
+      selectedLauncherIndex = Math.min(selectedLauncherIndex, LAUNCHER_COUNTS_PER_ROW[selectedLauncherRow] - 1)
+      updateLauncherFocus()
+    } else if (selectedLauncherRow === 0) {
+      // Go back to search box
+      selectedLauncherRow = -1
+      selectedLauncherIndex = 0
+      updateLauncherFocus()
+    }
   } else if (direction === 'down' && selectedLauncherRow < LAUNCHER_ROWS - 1) {
     selectedLauncherRow++
     // Clamp index to new row's item count
@@ -885,6 +930,7 @@ function updateSettingsNavFocus() {
 }
 
 function navigateSettingsNav(direction) {
+  console.log('navigateSettingsNav called with direction:', direction, 'current index:', selectedSettingsNavIndex, 'focusArea:', focusArea)
   if (direction === 'up' && selectedSettingsNavIndex > 0) {
     selectedSettingsNavIndex--
     updateSettingsNavFocus()
@@ -900,6 +946,8 @@ function navigateSettingsNav(direction) {
     focusArea = 'settings-display-controls'
     selectedDisplayControlIndex = 0
     updateDisplayControlFocus()
+  } else if (direction === 'left') {
+    console.log('Left navigation in settings nav - no action')
   }
 }
 
@@ -979,27 +1027,50 @@ function navigateDisplayControls(direction) {
   }
 }
 
-// Update brightness slider position
-function updateBrightnessSlider() {
-  const knob = document.querySelector('.slider-knob')
-  const sliderValue = document.querySelector('.slider-value')
+// Update slider position for a specific slider control
+function updateSlider(controlIndex) {
+  // Map control index to slider index (0->0, 3->1, 6->2)
+  const sliderIndex = controlIndex === 0 ? 0 : controlIndex === 3 ? 1 : 2
+  
+  // Get all sections and find the specific slider control
+  const sections = document.querySelectorAll('.section-settings')
+  const section = sections[sliderIndex]
+  if (!section) return
+  
+  const knob = section.querySelector('.slider-knob')
+  const sliderValueEl = section.querySelector('.slider-value')
+  const value = sliderValues[sliderIndex]
   
   if (knob) {
-    // Position is percentage from 0-100
-    knob.style.left = `${brightnessValue}%`
+    knob.style.left = `${value}%`
   }
   
-  if (sliderValue) {
-    // Fill track from left to knob position
-    sliderValue.style.width = `${brightnessValue}%`
+  if (sliderValueEl) {
+    sliderValueEl.style.width = `${value}%`
   }
 }
 
-// Update scale cycle selector display
-function updateScaleCycleSelector() {
-  const cycleValue = document.querySelector('.cycle-value')
-  if (cycleValue) {
-    cycleValue.textContent = scaleValues[selectedScaleIndex]
+// Update cycle selector display for a specific cycle control
+function updateCycleSelector(controlIndex) {
+  // Map control index to cycle index (1->0, 2->1, 4->2, 5->3, 7->4, 8->5)
+  const cycleMapping = { 1: 0, 2: 1, 4: 2, 5: 3, 7: 4, 8: 5 }
+  const cycleIndex = cycleMapping[controlIndex]
+  if (cycleIndex === undefined) return
+  
+  // Get all sections and find the specific cycle control
+  const sections = document.querySelectorAll('.section-settings')
+  const allCycleSelectors = []
+  sections.forEach(section => {
+    const cycleSelectors = section.querySelectorAll('.cycle-selector')
+    cycleSelectors.forEach(selector => allCycleSelectors.push(selector))
+  })
+  
+  const cycleControl = allCycleSelectors[cycleIndex]
+  if (!cycleControl) return
+  
+  const cycleValueEl = cycleControl.querySelector('.cycle-value')
+  if (cycleValueEl) {
+    cycleValueEl.textContent = cycleValues[cycleSelectedIndices[cycleIndex]]
   }
 }
 
@@ -1050,7 +1121,7 @@ function showShellContainer(containerName) {
   if (containerName === 'library') {
     focusArea = 'library-launchers'
     selectedLauncherIndex = 0
-    selectedLauncherRow = 0
+    selectedLauncherRow = -1 // Start at search box
     updateLauncherFocus()
   }
   
@@ -1060,11 +1131,16 @@ function showShellContainer(containerName) {
     selectedSettingsNavIndex = 0
     updateSettingsNavFocus()
     
-    // Initialize brightness slider
-    updateBrightnessSlider()
+    // Initialize all sliders with their current values
+    for (let i = 0; i < 3; i++) {
+      updateSlider(i * 3) // Update sliders at indices 0, 3, 6
+    }
     
-    // Initialize scale cycle selector
-    updateScaleCycleSelector()
+    // Initialize all cycle selectors with their current values
+    const cycleIndices = [1, 2, 4, 5, 7, 8]
+    cycleIndices.forEach(index => {
+      updateCycleSelector(index)
+    })
     
     // Mark first item as selected (Home)
     const navItems = document.querySelectorAll('.nav-page-item')
@@ -1144,16 +1220,20 @@ function hideShellGallery() { hideShellContainer('gallery') }
 
 // Interaction Handler Functions
 function handleShellInputs() {
-  console.log('Shell inputs active - ready for desktop interactions!')
-  
   const now = Date.now()
   
   // Simple test for all possible navigation inputs
   // Horizontal Navigation - D-pad left/right (check both justPressed and isDown)
   if (input.justPressed('LEFT') || (input.isDown('LEFT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
+    console.log('LEFT detected - focusArea:', focusArea)
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
       navigateLaunchers('left')
+      lastStickNavTime = now
+    }
+    // Check if we're in settings nav mode
+    else if (focusArea === 'settings-nav') {
+      navigateSettingsNav('left')
       lastStickNavTime = now
     }
     // Check if we're in settings display controls mode
@@ -1172,6 +1252,7 @@ function handleShellInputs() {
     }
   }
   if (input.justPressed('RIGHT') || (input.isDown('RIGHT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
+    console.log('RIGHT detected - focusArea:', focusArea)
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
       navigateLaunchers('right')
@@ -1180,6 +1261,11 @@ function handleShellInputs() {
     // Check if we're in settings nav mode
     else if (focusArea === 'settings-nav') {
       navigateSettingsNav('right')
+      lastStickNavTime = now
+    }
+    // Check if we're in settings display controls mode
+    else if (focusArea === 'settings-display-controls') {
+      navigateDisplayControls('right')
       lastStickNavTime = now
     }
     // Only allow navigation if not in a shell surface
@@ -1220,41 +1306,41 @@ function handleShellInputs() {
   // Horizontal Navigation - Left stick horizontal
   const leftStick = input.getStick('LEFT')
   const currentTime = Date.now()
-  if (leftStick.magnitude > 0.6 && currentTime - lastStickNavTime > STICK_NAV_DELAY) {
+  if (leftStick.magnitude > STICK_THRESHOLD && currentTime - lastStickNavTime > STICK_NAV_DELAY) {
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
-      if (leftStick.x > 0.6) {
+      if (leftStick.x > STICK_THRESHOLD) {
         navigateLaunchers('right')
         lastStickNavTime = currentTime
-      } else if (leftStick.x < -0.6) {
+      } else if (leftStick.x < -STICK_THRESHOLD) {
         navigateLaunchers('left')
         lastStickNavTime = currentTime
       }
     }
     // Check if we're in settings nav mode - allow right to go to display controls
     else if (focusArea === 'settings-nav') {
-      if (leftStick.x > 0.6) {
+      if (leftStick.x > STICK_THRESHOLD) {
         navigateSettingsNav('right')
         lastStickNavTime = currentTime
       }
     }
     // Check if we're in settings display controls mode - allow left to go back to nav
     else if (focusArea === 'settings-display-controls') {
-      if (leftStick.x < -0.6) {
+      if (leftStick.x < -STICK_THRESHOLD) {
         navigateDisplayControls('left')
         lastStickNavTime = currentTime
       }
     }
     // Only allow navigation if not in a shell surface
     else if (focusArea !== 'shell-surface') {
-      if (leftStick.x > 0.6) {
+      if (leftStick.x > STICK_THRESHOLD) {
         if (focusArea === 'preview') {
           navigateApps('right')
         } else if (focusArea === 'shell-nav') {
           navigateShellNav('right')
         }
         lastStickNavTime = currentTime
-      } else if (leftStick.x < -0.6) {
+      } else if (leftStick.x < -STICK_THRESHOLD) {
         if (focusArea === 'preview') {
           navigateApps('left')
         } else if (focusArea === 'shell-nav') {
@@ -1266,46 +1352,46 @@ function handleShellInputs() {
   }
   
   // Vertical Navigation - Left stick vertical (UP/DOWN focus area switching)
-  if (leftStick.magnitude > 0.6 && currentTime - lastStickNavTime > STICK_NAV_DELAY) {
+  if (leftStick.magnitude > STICK_THRESHOLD && currentTime - lastStickNavTime > STICK_NAV_DELAY) {
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
-      if (leftStick.y > 0.6) { // Stick pushed UP
+      if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
         navigateLaunchers('up')
         lastStickNavTime = currentTime
-      } else if (leftStick.y < -0.6) { // Stick pushed DOWN
+      } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
         navigateLaunchers('down')
         lastStickNavTime = currentTime
       }
     }
     // Check if we're in settings navigation mode
     else if (focusArea === 'settings-nav') {
-      if (leftStick.y > 0.6) { // Stick pushed UP
+      if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
         navigateSettingsNav('up')
         lastStickNavTime = currentTime
-      } else if (leftStick.y < -0.6) { // Stick pushed DOWN
+      } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
         navigateSettingsNav('down')
         lastStickNavTime = currentTime
       }
     }
     // Check if we're in settings display controls mode
     else if (focusArea === 'settings-display-controls') {
-      if (leftStick.y > 0.6) { // Stick pushed UP
+      if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
         navigateDisplayControls('up')
         lastStickNavTime = currentTime
-      } else if (leftStick.y < -0.6) { // Stick pushed DOWN
+      } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
         navigateDisplayControls('down')
         lastStickNavTime = currentTime
       }
     }
     // Only allow focus area switching if not in a shell surface
     else if (focusArea !== 'shell-surface') {
-      if (leftStick.y > 0.6) { // Stick pushed UP
+      if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
         if (focusArea === 'shell-nav') {
           focusArea = 'preview'
           updateFocusPosition()
           lastStickNavTime = currentTime
         }
-      } else if (leftStick.y < -0.6) { // Stick pushed DOWN
+      } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
         if (focusArea === 'preview') {
           focusArea = 'shell-nav'
           // Keep current selectedNavIndex - don't reset to 0
@@ -1318,6 +1404,7 @@ function handleShellInputs() {
   
   // Focus area navigation - DOWN moves from preview to shell-nav, UP moves back
   if (input.justPressed('DOWN') || (input.isDown('DOWN') && now - lastStickNavTime > STICK_NAV_DELAY)) {
+    console.log('DOWN detected - focusArea:', focusArea)
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
       navigateLaunchers('down')
@@ -1344,6 +1431,7 @@ function handleShellInputs() {
     }
   }
   if (input.justPressed('UP') || (input.isDown('UP') && now - lastStickNavTime > STICK_NAV_DELAY)) {
+    console.log('UP detected - focusArea:', focusArea)
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
       navigateLaunchers('up')
@@ -1452,33 +1540,40 @@ function handleShellInputs() {
   // Right stick for scrolling (future use)
   const rightStick = input.getStick('RIGHT')
   
-  // Right stick for brightness slider control when focused on slider controls (indices 0, 3, 6)
+  // Right stick for slider controls (indices 0, 3, 6)
   if (focusArea === 'settings-display-controls' && [0, 3, 6].includes(selectedDisplayControlIndex)) {
-    if (rightStick.magnitude > 0.3) {
-      // Adjust brightness value based on horizontal stick movement
+    if (rightStick.magnitude > SLIDER_STICK_THRESHOLD) {
+      // Map control index to slider index (0->0, 3->1, 6->2)
+      const sliderIndex = selectedDisplayControlIndex === 0 ? 0 : selectedDisplayControlIndex === 3 ? 1 : 2
+      
+      // Adjust slider value based on horizontal stick movement
       const adjustSpeed = 2 // Adjust by 2% per frame when stick is held
-      brightnessValue += rightStick.x * adjustSpeed
+      sliderValues[sliderIndex] += rightStick.x * adjustSpeed
       
       // Clamp between 0 and 100
-      brightnessValue = Math.max(0, Math.min(100, brightnessValue))
+      sliderValues[sliderIndex] = Math.max(0, Math.min(100, sliderValues[sliderIndex]))
       
       // Update the slider visual
-      updateBrightnessSlider()
+      updateSlider(selectedDisplayControlIndex)
     }
   }
-  // Right stick for cycle selector when focused on cycle controls (indices 1, 2, 4, 5, 7, 8)
+  // Right stick for cycle selector controls (indices 1, 2, 4, 5, 7, 8)
   else if (focusArea === 'settings-display-controls' && [1, 2, 4, 5, 7, 8].includes(selectedDisplayControlIndex)) {
     const currentTime = Date.now()
-    if (rightStick.magnitude > 0.6 && currentTime - lastCycleTime > CYCLE_DELAY) {
-      if (rightStick.x > 0.6) {
+    if (rightStick.magnitude > STICK_THRESHOLD && currentTime - lastCycleTime > CYCLE_DELAY) {
+      // Map control index to cycle index (1->0, 2->1, 4->2, 5->3, 7->4, 8->5)
+      const cycleMapping = { 1: 0, 2: 1, 4: 2, 5: 3, 7: 4, 8: 5 }
+      const cycleIndex = cycleMapping[selectedDisplayControlIndex]
+      
+      if (rightStick.x > STICK_THRESHOLD) {
         // Cycle right (next value)
-        selectedScaleIndex = (selectedScaleIndex + 1) % scaleValues.length
-        updateScaleCycleSelector()
+        cycleSelectedIndices[cycleIndex] = (cycleSelectedIndices[cycleIndex] + 1) % cycleValues.length
+        updateCycleSelector(selectedDisplayControlIndex)
         lastCycleTime = currentTime
-      } else if (rightStick.x < -0.6) {
+      } else if (rightStick.x < -STICK_THRESHOLD) {
         // Cycle left (previous value)
-        selectedScaleIndex = (selectedScaleIndex - 1 + scaleValues.length) % scaleValues.length
-        updateScaleCycleSelector()
+        cycleSelectedIndices[cycleIndex] = (cycleSelectedIndices[cycleIndex] - 1 + cycleValues.length) % cycleValues.length
+        updateCycleSelector(selectedDisplayControlIndex)
         lastCycleTime = currentTime
       }
     }

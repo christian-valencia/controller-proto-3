@@ -95,7 +95,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 /* Clock Container */
 #clock {
   position: absolute;
-  top: 350px;
+  top: 320px;
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 200px;
@@ -255,6 +255,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   display: flex;
   align-items: center;
   pointer-events: none; /* Allow clicks to pass through */
+  z-index: 1; /* Above video */
 }
 
 .titlebar-icon {
@@ -341,9 +342,27 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   transition: opacity 0.4s ease;
 }
 
+/* Preview Video Styling */
+.preview-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+  transition: opacity 0.4s ease, border-radius 0.4s ease;
+  z-index: 0;
+  border-radius: 12px;
+}
+
+.preview-container.preview-scaled .preview-video {
+  border-radius: 0;
+}
+
 #green-preview {
   background-color: rgb(18, 18, 18); /* Dark gray */
-  background-image: url('/assets/images/silksong-gameplay.png');
+  /* background-image: url('/assets/images/silksong-gameplay.png'); */
   background-size: contain;
   background-position: center bottom;
   background-repeat: no-repeat;

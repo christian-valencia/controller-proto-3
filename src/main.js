@@ -254,6 +254,15 @@ function onHoldComplete() {
   if (greenPreview) {
     greenPreview.classList.add('preview-scaled') // Scale Silksong preview first
     isPreviewScaled = true
+    
+    // Play Silksong video when going fullscreen
+    const silksongVideo = document.getElementById('silksong-video')
+    if (silksongVideo) {
+      silksongVideo.muted = false // Unmute audio for fullscreen
+      silksongVideo.play().catch(err => {
+        if (DEBUG) console.log('Video playback failed:', err)
+      })
+    }
   }
   
   if (focusContainer) {
@@ -274,6 +283,13 @@ function onHoldComplete() {
   }
   
   resetHold()
+  
+  // Play unlock sound
+  const unlockSound = new Audio('/assets/sound/unlock-silksong.m4a')
+  unlockSound.volume = 0.5 // Set to 50% volume, adjust as needed
+  unlockSound.play().catch(err => {
+    if (DEBUG) console.log('Audio playback failed:', err)
+  })
   
   // Success rumble feedback
   RumbleFeedback.confirmation()
@@ -338,6 +354,13 @@ function onXHoldComplete() {
   if (activePreview && activePreview.classList.contains('preview-scaled')) {
     activePreview.classList.remove('preview-scaled')
     isPreviewScaled = false
+    
+    // Pause Silksong video when scaling down
+    const silksongVideo = document.getElementById('silksong-video')
+    if (silksongVideo && activePreview.id === 'green-preview') {
+      silksongVideo.muted = true // Mute audio when scaling down
+      silksongVideo.pause()
+    }
     
     // Close gamebar if it's open
     if (isGamebarVisible) {
@@ -656,6 +679,17 @@ function scaleUpPreview() {
     // Scale up to 100%
     activePreview.classList.add('preview-scaled')
     isPreviewScaled = true
+    
+    // Play Silksong video when going fullscreen
+    if (activePreview.id === 'green-preview') {
+      const silksongVideo = document.getElementById('silksong-video')
+      if (silksongVideo) {
+        silksongVideo.muted = false // Unmute audio for fullscreen
+        silksongVideo.play().catch(err => {
+          if (DEBUG) console.log('Video playback failed:', err)
+        })
+      }
+    }
     
     // Hide running apps when going fullscreen
     const runningApps = document.getElementById('running-apps')

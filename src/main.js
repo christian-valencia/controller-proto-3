@@ -284,13 +284,6 @@ function onHoldComplete() {
   
   resetHold()
   
-  // Play unlock sound
-  const unlockSound = new Audio('/assets/sound/unlock-silksong.m4a')
-  unlockSound.volume = 0.5 // Set to 50% volume, adjust as needed
-  unlockSound.play().catch(err => {
-    if (DEBUG) console.log('Audio playback failed:', err)
-  })
-  
   // Success rumble feedback
   RumbleFeedback.confirmation()
   

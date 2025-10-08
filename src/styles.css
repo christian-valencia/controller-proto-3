@@ -345,11 +345,12 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 /* Preview Video Styling */
 .preview-video {
   position: absolute;
-  top: 0;
+  top: 64px;
   left: 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: calc(100% - 64px);
+  object-fit: contain;
+  object-position: center bottom;
   opacity: 1;
   transition: opacity 0.4s ease, border-radius 0.4s ease;
   z-index: 0;
@@ -358,6 +359,8 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 
 .preview-container.preview-scaled .preview-video {
   border-radius: 0;
+  top: 0;
+  height: 100%;
 }
 
 #green-preview {

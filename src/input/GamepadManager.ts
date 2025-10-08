@@ -88,25 +88,16 @@ export class GamepadManager {
       for (const [index, gamepad] of this.now.entries()) {
         if (gamepad) {
           g = gamepad;
-          if (name === 'Y') {
-            console.log('🎮 GamepadManager.isDown - Found gamepad at index', index, 'instead of', padIndex)
-          }
           break;
         }
       }
     }
     
     if (!g) {
-      if (name === 'Y') {
-        console.log('🎮 GamepadManager.isDown - No gamepad found at any index')
-      }
       return false
     }
     
     const result = this.btnValue(g, name as any) > 0
-    if (name === 'Y') {
-      console.log('🎮 GamepadManager.isDown("Y") =', result, 'btnValue =', this.btnValue(g, name as any))
-    }
     return result
   }
   justPressed(name: ButtonName, padIndex = 0): boolean {

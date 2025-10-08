@@ -95,7 +95,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 /* Clock Container */
 #clock {
   position: absolute;
-  top: 50%;
+  top: 350px;
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 200px;
@@ -195,21 +195,21 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 
 /* Individual App Icon Colors */
 .green-icon {
-  background-image: url('/assets/icons/xbox.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-.blue-icon {
   background-image: url('/assets/icons/silksong.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
 
+.blue-icon {
+  background-image: url('/assets/icons/xbox.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 .orange-icon {
-  background-image: url('/assets/icons/discord.png');
+  background-image: url('/assets/icons/steam.png');
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
@@ -343,7 +343,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 
 #green-preview {
   background-color: rgb(18, 18, 18); /* Dark gray */
-  background-image: url('/assets/images/garrison.png');
+  background-image: url('/assets/images/silksong-gameplay.png');
   background-size: contain;
   background-position: center bottom;
   background-repeat: no-repeat;
@@ -369,7 +369,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 
 #blue-preview {
   background-color: rgb(18, 18, 18); /* Dark gray */
-  background-image: url('/assets/images/silksong-gameplay.png');
+  background-image: url('/assets/images/xbox-app.png');
   background-size: contain;
   background-position: center bottom;
   background-repeat: no-repeat;
@@ -377,7 +377,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 
 #orange-preview {
   background-color: rgb(18, 18, 18); /* Dark gray */
-  background-image: url('/assets/images/discord-app.png');
+  background-image: url('/assets/images/steam-app.jpg');
   background-size: contain;
   background-position: center bottom;
   background-repeat: no-repeat;
@@ -428,6 +428,59 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 
 #progress-ring.active {
   opacity: 1;
+}
+
+/* Quick Resume Container */
+#quick-resume {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 80px;
+  background-color: #25282C;
+  border: 1px solid rgba(107, 117, 132, 0.6);
+  border-radius: 8px;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 3;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: bottom 0.4s ease, opacity 0.4s ease;
+}
+
+#quick-resume.dismiss {
+  bottom: -104px; /* Slide off bottom (height + bottom margin + extra) */
+  opacity: 0;
+}
+
+.qr-image {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.qr-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.qr-title {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.qr-game {
+  color: white;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.2;
 }
 
 /* Utility Classes */
@@ -566,6 +619,68 @@ button:active { transform: translateY(1px); }
   border-radius: 6px;
   border-color: #B13A45; /* Red color */
   /* Remove fixed dimensions to allow JavaScript to control sizing */
+}
+
+/* Gamebar Container */
+#gamebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1280px;
+  height: 720px;
+  background-image: url('/assets/images/GB-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+#gamebar.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Nav Widgets Container - 2/3 width of gamebar */
+#nav-widgets {
+  position: absolute;
+  top: 0;
+  left: -854px; /* Start off-screen to the left (width + 1px) */
+  width: 853px; /* 2/3 of 1280px */
+  height: 720px;
+  transition: left 0.4s ease;
+}
+
+#gamebar.visible #nav-widgets {
+  left: 0; /* Slide in when gamebar is visible */
+}
+
+/* Nav Container - Nav bar at top with background image */
+#nav {
+  position: absolute;
+  top: 16px;
+  left: 24px;
+  width: 592px; /* 853px - 24px left - 24px right = 805px available, but spec says 592px */
+  height: 64px;
+  background-image: url('/assets/images/gb-nav.png');
+  background-size: cover;
+  background-position: left;
+  background-repeat: no-repeat;
+}
+
+/* Widgets Container - Panel below nav with background image */
+#widgets {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  width: 796px; /* As specified */
+  height: 616px;
+  background-image: url('/assets/images/widget-legend.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* Focus when Shell Library is visible - Use class-based approach */
@@ -817,6 +932,12 @@ button:active { transform: translateY(1px); }
 
 .launcher-row-container:nth-child(4) .launcher-app:nth-child(4) {
   background-image: url('/assets/images/discord.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
+.launcher-row-container:nth-child(4) .launcher-app:nth-child(5) {
+  background-image: url('/assets/images/edge.png');
   background-color: transparent;
   background-size: 180px 180px;
 }

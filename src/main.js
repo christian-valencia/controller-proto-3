@@ -1,5 +1,10 @@
 import { InputManager } from './input/InputManager'
 
+// ============================================================================
+// DEBUG MODE - Set to false for production to remove console logs
+// ============================================================================
+const DEBUG = false
+
 // DOM ELEMENT SELECTION ONLY - No DOM creation here
 const windowsShell = document.getElementById('windows-shell')
 const lockScreen = document.getElementById('lock-screen')
@@ -44,12 +49,15 @@ const UI_STATES = {
 let currentUIState = UI_STATES.LOCKED
 
 // App Navigation State
-let selectedAppIndex = 0 // 0=green, 1=blue, 2=orange
+let selectedAppIndex = 0 // 0=green (Silksong), 1=blue (Xbox), 2=orange (Discord)
 let lastStickNavTime = 0
 
 // Preview Scaling State
 let isPreviewScaled = false
 let lastAButtonPress = 0
+
+// Gamebar State
+let isGamebarVisible = false
 
 // Focus Navigation State
 let focusArea = 'preview' // 'preview', 'shell-nav', 'shell-surface', or 'library-launchers'
@@ -62,15 +70,15 @@ const navItems = ['library', 'settings', 'gallery', 'notifications']
 let selectedLauncherIndex = 0 // Index of currently selected launcher app
 let selectedLauncherRow = -1 // Index of currently selected row (-1=search box, 0-2=launcher rows)
 const LAUNCHER_ROWS = 3
-const LAUNCHER_COUNTS_PER_ROW = [5, 8, 4] // Number of items in each row: Launchers(5), All games(8), All apps(4)
+const LAUNCHER_COUNTS_PER_ROW = [5, 8, 5] // Number of items in each row: Launchers(5), All games(8), All apps(5)
 
 // Settings Navigation State
 let selectedSettingsNavIndex = 0 // Index of currently selected settings nav item (0-10)
 const SETTINGS_NAV_ITEMS = 11 // Total number of nav items
 
 // Gallery Navigation State
-let selectedGalleryNavIndex = 0 // Index of currently selected gallery nav item (0-2)
-const GALLERY_NAV_ITEMS = 3 // Total number of nav items (All, Photos, Videos)
+let selectedGalleryNavIndex = 0 // Index of currently selected gallery nav item (0-3)
+const GALLERY_NAV_ITEMS = 4 // Total number of nav items (All, Photos, Videos, Files)
 
 // Gallery Media Navigation State
 let selectedMediaRow = 0 // Index of currently selected media row (0-3 for 4 rows of 2 items)
@@ -236,15 +244,15 @@ function onHoldComplete() {
   // Ensure preview containers are positioned correctly
   updateAppStates()
   
-  // Show focus container and auto-scale green preview
-  selectedAppIndex = 0 // Ensure green preview is selected
+  // Show focus container and auto-scale green preview (Silksong)
+  selectedAppIndex = 0 // Ensure green preview (Silksong) is selected
   focusArea = 'preview' // Ensure focus is in preview mode
   
   const focusContainer = document.getElementById('focus')
   const greenPreview = document.getElementById('green-preview')
   
   if (greenPreview) {
-    greenPreview.classList.add('preview-scaled') // Scale green preview first
+    greenPreview.classList.add('preview-scaled') // Scale Silksong preview first
     isPreviewScaled = true
   }
   
@@ -257,6 +265,12 @@ function onHoldComplete() {
   // Slide out the auth container
   if (auth) {
     auth.classList.add('slide-out')
+  }
+  
+  // Dismiss quick-resume container
+  const quickResume = document.getElementById('quick-resume')
+  if (quickResume) {
+    quickResume.classList.add('dismiss')
   }
   
   resetHold()
@@ -299,7 +313,15 @@ function handleXButtonHold() {
       onXHoldComplete()
     }
   } else if (!isXPressed && isXHolding) {
-    // Released before completion
+    // Button released - check if it was a quick tap or a hold
+    const elapsed = Date.now() - xHoldStartTime
+    
+    if (elapsed < X_HOLD_DURATION) {
+      // Quick tap - toggle gamebar
+      console.log('X button quick tap detected - toggling gamebar')
+      toggleGamebar()
+    }
+    // Released before completion of hold
     resetXHold()
   }
 }
@@ -317,6 +339,16 @@ function onXHoldComplete() {
     activePreview.classList.remove('preview-scaled')
     isPreviewScaled = false
     
+    // Close gamebar if it's open
+    if (isGamebarVisible) {
+      const gamebar = document.getElementById('gamebar')
+      if (gamebar) {
+        gamebar.classList.remove('visible')
+        isGamebarVisible = false
+        console.log('Gamebar closed (preview scaled down)')
+      }
+    }
+    
     // Animate running apps back down from top
     const runningApps = document.getElementById('running-apps')
     if (runningApps) {
@@ -331,7 +363,7 @@ function onXHoldComplete() {
     
     // If the selected app is not already at index 0, reorder the arrays
     if (selectedAppIndex !== 0) {
-      console.log(`Reordering: Moving ${appNames[selectedAppIndex]} to leftmost position`)
+      if (DEBUG) console.log(`Reordering: Moving ${appNames[selectedAppIndex]} to leftmost position`)
       
       // Store the selected app info
       const selectedAppContainer = appContainers[selectedAppIndex]
@@ -358,7 +390,7 @@ function onXHoldComplete() {
       // Set selectedAppIndex to 0 since we moved it to the front
       selectedAppIndex = 0
       
-      console.log('New app order:', appNames)
+      if (DEBUG) console.log('New app order:', appNames)
     }
     
     // Update preview positions and app states
@@ -378,6 +410,29 @@ function onXHoldComplete() {
 function resetXHold() {
   isXHolding = false
   xHoldStartTime = 0
+}
+
+function toggleGamebar() {
+  // Only allow toggling gamebar when a preview is fullscreen
+  if (!isPreviewScaled || focusArea !== 'preview') {
+    console.log('Gamebar can only be toggled when an app preview is fullscreen')
+    return
+  }
+  
+  const gamebar = document.getElementById('gamebar')
+  if (!gamebar) return
+  
+  isGamebarVisible = !isGamebarVisible
+  
+  if (isGamebarVisible) {
+    gamebar.classList.add('visible')
+    console.log('Gamebar opened')
+    RumbleFeedback.lightTap()
+  } else {
+    gamebar.classList.remove('visible')
+    console.log('Gamebar closed')
+    RumbleFeedback.lightTap()
+  }
 }
 
 function updateVisualFeedback() {
@@ -476,7 +531,7 @@ const RumbleFeedback = {
 
 // State Management Functions
 function changeUIState(newState) {
-  console.log(`UI State: ${currentUIState} → ${newState}`)
+  if (DEBUG) console.log(`UI State: ${currentUIState} → ${newState}`)
   currentUIState = newState
   
   // Show/hide blur container based on unlock state
@@ -506,7 +561,7 @@ function navigateApps(direction) {
     selectedAppIndex = (selectedAppIndex - 1 + appContainers.length) % appContainers.length
   }
   
-  console.log(`App Navigation: ${appNames[previousApp]} → ${appNames[selectedAppIndex]}`)
+  if (DEBUG) console.log(`App Navigation: ${appNames[previousApp]} → ${appNames[selectedAppIndex]}`)
   updateAppStates()
   RumbleFeedback.selectionChange()
 }
@@ -520,7 +575,7 @@ function navigateShellNav(direction) {
     selectedNavIndex = (selectedNavIndex - 1 + navItems.length) % navItems.length
   }
   
-  console.log(`Shell Nav Navigation: ${navItems[previousNav]} → ${navItems[selectedNavIndex]}`)
+  if (DEBUG) console.log(`Shell Nav Navigation: ${navItems[previousNav]} → ${navItems[selectedNavIndex]}`)
   updateFocusPosition()
   RumbleFeedback.selectionChange()
 }
@@ -962,7 +1017,7 @@ function updateSettingsNavFocus() {
 }
 
 function navigateSettingsNav(direction) {
-  console.log('navigateSettingsNav called with direction:', direction, 'current index:', selectedSettingsNavIndex, 'focusArea:', focusArea)
+  if (DEBUG) console.log('navigateSettingsNav called with direction:', direction, 'current index:', selectedSettingsNavIndex, 'focusArea:', focusArea)
   if (direction === 'up' && selectedSettingsNavIndex > 0) {
     selectedSettingsNavIndex--
     updateSettingsNavFocus()
@@ -979,7 +1034,7 @@ function navigateSettingsNav(direction) {
     selectedDisplayControlIndex = 0
     updateDisplayControlFocus()
   } else if (direction === 'left') {
-    console.log('Left navigation in settings nav - no action')
+    if (DEBUG) console.log('Left navigation in settings nav - no action')
   }
 }
 
@@ -1122,7 +1177,7 @@ function updateGalleryNavFocus() {
 }
 
 function navigateGalleryNav(direction) {
-  console.log('navigateGalleryNav called with direction:', direction, 'current index:', selectedGalleryNavIndex, 'focusArea:', focusArea)
+  if (DEBUG) console.log('navigateGalleryNav called with direction:', direction, 'current index:', selectedGalleryNavIndex, 'focusArea:', focusArea)
   if (direction === 'up' && selectedGalleryNavIndex > 0) {
     selectedGalleryNavIndex--
     updateGalleryNavFocus()
@@ -1140,7 +1195,7 @@ function navigateGalleryNav(direction) {
     selectedMediaIndex = 0
     updateMediaFocus()
   } else if (direction === 'left') {
-    console.log('Left navigation in gallery nav - no action')
+    if (DEBUG) console.log('Left navigation in gallery nav - no action')
   }
 }
 
@@ -1218,7 +1273,7 @@ function showShellContainer(containerName) {
   if (!container) return
   
   container.classList.add('visible')
-  console.log(`Shell ${containerName.charAt(0).toUpperCase() + containerName.slice(1)} sliding in from bottom`)
+  if (DEBUG) console.log(`Shell ${containerName.charAt(0).toUpperCase() + containerName.slice(1)} sliding in from bottom`)
   
   // Hide running apps when shell surface opens (keep shell-nav visible)
   if (runningApps) {
@@ -1302,7 +1357,7 @@ function hideShellContainer(containerName) {
   if (!container) return
   
   container.classList.remove('visible')
-  console.log(`Shell ${containerName.charAt(0).toUpperCase() + containerName.slice(1)} sliding out to bottom`)
+  if (DEBUG) console.log(`Shell ${containerName.charAt(0).toUpperCase() + containerName.slice(1)} sliding out to bottom`)
   
   // Restore running apps when shell surface closes (shell-nav stays visible)
   if (runningApps) {
@@ -1366,7 +1421,7 @@ function handleShellInputs() {
   // Simple test for all possible navigation inputs
   // Horizontal Navigation - D-pad left/right (check both justPressed and isDown)
   if (input.justPressed('LEFT') || (input.isDown('LEFT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('LEFT detected - focusArea:', focusArea)
+    if (DEBUG) console.log('LEFT detected - focusArea:', focusArea)
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
       navigateLaunchers('left')
@@ -1403,7 +1458,7 @@ function handleShellInputs() {
     }
   }
   if (input.justPressed('RIGHT') || (input.isDown('RIGHT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('RIGHT detected - focusArea:', focusArea)
+    if (DEBUG) console.log('RIGHT detected - focusArea:', focusArea)
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
       navigateLaunchers('right')
@@ -1602,7 +1657,7 @@ function handleShellInputs() {
   
   // Focus area navigation - DOWN moves from preview to shell-nav, UP moves back
   if (input.justPressed('DOWN') || (input.isDown('DOWN') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('DOWN detected - focusArea:', focusArea)
+    if (DEBUG) console.log('DOWN detected - focusArea:', focusArea)
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
       navigateLaunchers('down')
@@ -1639,7 +1694,7 @@ function handleShellInputs() {
     }
   }
   if (input.justPressed('UP') || (input.isDown('UP') && now - lastStickNavTime > STICK_NAV_DELAY)) {
-    console.log('UP detected - focusArea:', focusArea)
+    if (DEBUG) console.log('UP detected - focusArea:', focusArea)
     // Check if we're in library launchers mode
     if (focusArea === 'library-launchers') {
       navigateLaunchers('up')
@@ -1679,7 +1734,7 @@ function handleShellInputs() {
   if (input.justPressed('DOWN') || (input.isDown('DOWN') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     // Check if we're in settings navigation mode
     if (focusArea === 'settings-nav') {
-      console.log('Navigating settings down')
+      if (DEBUG) console.log('Navigating settings down')
       navigateSettingsNav('down')
       lastStickNavTime = now
     }
@@ -1690,7 +1745,7 @@ function handleShellInputs() {
     }
     // Check if we're in settings display controls mode
     else if (focusArea === 'settings-display-controls') {
-      console.log('Navigating display controls down')
+      if (DEBUG) console.log('Navigating display controls down')
       navigateDisplayControls('down')
       lastStickNavTime = now
     }
@@ -1702,25 +1757,20 @@ function handleShellInputs() {
     // Example: Use left stick for in-app navigation
     const leftStick = input.getStick('LEFT')
     if (leftStick.magnitude > STICK_THRESHOLD) {
-      // console.log('Fullscreen app input - Left stick:', leftStick.x, leftStick.y)
       // Add your fullscreen app logic here
     }
     
     // Example: Use d-pad for in-app actions
     if (input.justPressed('UP')) {
-      // console.log('Fullscreen app input - D-pad UP')
       // Add your fullscreen app logic here
     }
     if (input.justPressed('DOWN')) {
-      // console.log('Fullscreen app input - D-pad DOWN')
       // Add your fullscreen app logic here
     }
     if (input.justPressed('LEFT')) {
-      // console.log('Fullscreen app input - D-pad LEFT')
       // Add your fullscreen app logic here
     }
     if (input.justPressed('RIGHT')) {
-      // console.log('Fullscreen app input - D-pad RIGHT')
       // Add your fullscreen app logic here
     }
   }
@@ -1776,7 +1826,8 @@ function handleShellInputs() {
       RumbleFeedback.lightTap()
     }
   }
-  // X button is now used for hold-to-scale-down (handled in handleXButtonHold)
+  // X button for gamebar toggle and hold-to-scale-down is handled in handleXButtonHold()
+  // Y button
   if (input.justPressed('Y')) {
     RumbleFeedback.lightTap()
   }

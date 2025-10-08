@@ -16,7 +16,7 @@
           <!-- Background Container -->
           <div id="lock-background">
             <video id="lock-video" autoplay loop muted playsinline>
-              <source src="/assets/videos/lockloop.mp4" type="video/mp4">
+              <source src="/assets/videos/lockloop2.mp4" type="video/mp4">
             </video>
           </div>
           
@@ -36,8 +36,8 @@
             <!-- Progress Ring -->
             <div id="progress-ring">
               <svg width="36" height="36">
-                <circle cx="18" cy="18" r="16" stroke="rgba(93,212,195,0.3)" stroke-width="2" fill="none"/>
-                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="#5DD4C3" stroke-width="2" fill="none" 
+                <circle cx="18" cy="18" r="16" stroke="rgba(177,58,69,0.3)" stroke-width="2" fill="none"/>
+                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="#B13A45" stroke-width="2" fill="none" 
                         stroke-dasharray="100.53" stroke-dashoffset="100.53" transform="rotate(-90 18 18)"
                         style="transition: stroke-dashoffset 0.05s linear;"/>
                 <text x="18" y="20" text-anchor="middle" dominant-baseline="middle" 
@@ -323,8 +323,57 @@
           
           <!-- Shell Gallery Container -->
           <div id="shell-gallery">
-            <div class="gallery-content">
-              <h1>Gallery</h1>
+            <div class="gallery-navigation">
+              <div class="gallery-nav-title">Gallery</div>
+              <div class="gallery-nav-pages">
+                <div class="nav-page-item selected">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">All</div>
+                </div>
+                <div class="nav-page-item">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">Photos</div>
+                </div>
+                <div class="nav-page-item">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">Videos</div>
+                </div>
+              </div>
+            </div>
+            <div class="gallery-content-container">
+              <div class="gallery-header">
+                <h1>All media</h1>
+              </div>
+              <div class="gallery-media-grid">
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/picture-icon-gallery.svg" class="media-type-icon" alt="Image" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/picture-icon-gallery.svg" class="media-type-icon" alt="Image" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/picture-icon-gallery.svg" class="media-type-icon" alt="Image" />
+                </div>
+              </div>
+            </div>
+            <!-- Gallery Legend -->
+            <div class="gallery-legend">
+              <img src="/assets/images/shell-container-legend.png" alt="Controls Legend" />
             </div>
           </div>
           
@@ -336,19 +385,19 @@
             <div id="settings" class="nav-item">
               <img src="/assets/icons/settings.svg" alt="Settings" width="24" height="24" />
             </div>
-            <div id="notifications" class="nav-item">
-              <img src="/assets/icons/notifications.svg" alt="Notifications" width="24" height="24" />
-            </div>
             <div id="gallery" class="nav-item">
               <img src="/assets/icons/gallery.svg" alt="Gallery" width="24" height="24" />
+            </div>
+            <div id="notifications" class="nav-item">
+              <img src="/assets/icons/notifications.svg" alt="Notifications" width="24" height="24" />
             </div>
             
             <!-- Shell Nav Labels (inside shell-nav) -->
             <div id="shell-nav-labels">
               <div id="label-library" class="nav-label">Library</div>
               <div id="label-settings" class="nav-label">Settings</div>
-              <div id="label-notifications" class="nav-label">Notifications</div>
               <div id="label-gallery" class="nav-label">Gallery</div>
+              <div id="label-notifications" class="nav-label">Notifications</div>
             </div>
           </div>
         </div>

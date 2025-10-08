@@ -524,7 +524,7 @@ button:active { transform: translateY(1px); }
   left: 50%;
   width: 100vw;
   height: 100vh;
-  border: 4px solid #5DD4C3; /* Teal color from progress indicator */
+  border: 4px solid #B13A45; /* Red color from progress indicator */
   border-radius: 0;
   background: none;
   pointer-events: none;
@@ -533,7 +533,7 @@ button:active { transform: translateY(1px); }
   visibility: hidden;
   transition: all 0.4s ease;
   transform: translate(-50%, -50%);
-  filter: drop-shadow(0 4px 8px rgba(93, 212, 195, 0.3)); /* Subtle teal drop shadow */
+  filter: drop-shadow(0 4px 8px rgba(177, 58, 69, 0.3)); /* Subtle red drop shadow */
 }
 
 /* Focus Visible State */
@@ -564,7 +564,7 @@ button:active { transform: translateY(1px); }
 #focus.focus-shell-surface {
   border-width: 2px;
   border-radius: 6px;
-  border-color: #5DD4C3; /* Teal color */
+  border-color: #B13A45; /* Red color */
   /* Remove fixed dimensions to allow JavaScript to control sizing */
 }
 
@@ -650,8 +650,8 @@ button:active { transform: translateY(1px); }
 }
 
 .library-search-box.focused {
-  border: 2px solid #5DD4C3; /* Teal color */
-  box-shadow: 0 8px 24px rgba(93, 212, 195, 0.4); /* Teal shadow */
+  border: 2px solid #B13A45; /* Red color */
+  box-shadow: 0 8px 24px rgba(177, 58, 69, 0.4); /* Red shadow */
 }
 
 /* Launcher Row Container (includes title + launchers) */
@@ -824,8 +824,8 @@ button:active { transform: translateY(1px); }
 .launcher-app.focused {
   /* Visual indication that this launcher has focus */
   transform: scale(1.1) !important;
-  border-color: #5DD4C3; /* Teal color */
-  box-shadow: 0 8px 16px rgba(93, 212, 195, 0.4); /* Teal shadow */
+  border-color: #B13A45; /* Red color */
+  box-shadow: 0 8px 16px rgba(177, 58, 69, 0.4); /* Red shadow */
 }
 
 /* Shell Settings Container */
@@ -931,13 +931,14 @@ button:active { transform: translateY(1px); }
   box-sizing: border-box;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: border-color 0.2s ease, border-width 0.2s ease;
+  transition: border-color 0.2s ease, border-width 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .slider-control.focused,
 .cycle-selector.focused {
-  border: 2px solid #5DD4C3; /* Teal color */
-  box-shadow: 0 4px 8px rgba(93, 212, 195, 0.3); /* Subtle teal drop shadow */
+  border: 2px solid #B13A45; /* Red color */
+  box-shadow: 0 8px 16px rgba(177, 58, 69, 0.4); /* Enhanced red drop shadow */
+  transform: scale(1.02); /* Slight scale up */
 }
 
 .cycle-selector:last-child {
@@ -986,7 +987,7 @@ button:active { transform: translateY(1px); }
   left: 0;
   height: 100%;
   width: 50%;
-  background: #5DD4C3; /* Teal color */
+  background: #B13A45; /* Red color */
   border-radius: 2px;
   z-index: 1;
 }
@@ -1161,8 +1162,8 @@ button:active { transform: translateY(1px); }
 }
 
 .nav-page-item.focused {
-  border-color: #5DD4C3; /* Teal color */
-  box-shadow: 0 4px 8px rgba(93, 212, 195, 0.3); /* Subtle teal drop shadow */
+  border-color: #B13A45; /* Red color */
+  box-shadow: 0 4px 8px rgba(177, 58, 69, 0.3); /* Subtle red drop shadow */
 }
 
 .nav-page-icon {
@@ -1239,7 +1240,6 @@ button:active { transform: translateY(1px); }
   left: 0;
   width: 1280px;
   height: 720px;
-  background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0;
   z-index: 20;
   transform: scale(0);
@@ -1254,7 +1254,216 @@ button:active { transform: translateY(1px); }
   transform: scale(1.0);
 }
 
-/* Gallery Content Styling */
+/* Gallery Navigation Styling */
+.gallery-navigation {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 280px;
+  height: 100%;
+  z-index: 2; /* Above content container */
+  background: transparent;
+  pointer-events: none; /* Allow clicks to pass through empty space */
+}
+
+.gallery-navigation > * {
+  pointer-events: auto; /* Re-enable clicks on actual nav elements */
+}
+
+/* Gallery Navigation Title */
+.gallery-nav-title {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding-left: 32px;
+  font-size: 16px;
+  font-weight: 400;
+  color: white;
+}
+
+/* Gallery Navigation Pages */
+.gallery-nav-pages {
+  position: absolute;
+  top: 40px; /* Directly after title */
+  left: 0;
+  width: 100%;
+  height: calc(100% - 40px); /* Fill remaining height */
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Gallery Content Container Styling */
+.gallery-content-container {
+  position: absolute;
+  left: 280px; /* To the right of navigation */
+  top: 0;
+  width: calc(100% - 280px); /* Fill remaining width */
+  height: 100%;
+  padding: 0 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hide scrollbar but keep functionality */
+.gallery-content-container::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.gallery-content-container {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Gallery Header Styling */
+.gallery-header {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.gallery-header h1 {
+  font-size: 32px;
+  font-weight: 500;
+  color: white;
+  margin: 32px 0 0 0;
+  padding-left: 40px; 
+}
+
+/* Gallery Media Grid Container */
+.gallery-media-grid {
+  flex: 1;
+  overflow-y: scroll;
+  overflow-x: clip; /* Allow horizontal overflow for scaled items */
+  scroll-behavior: smooth;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-content: flex-start;
+  padding-bottom: 72px;
+  padding-top: 20px; /* Add top padding so scaled items don't get cut off */
+  padding-left: 28px;
+}
+
+/* Hide scrollbar for media grid */
+.gallery-media-grid::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.gallery-media-grid {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Gallery Media Item Styling */
+.gallery-media-item {
+  width: calc(42%); /* Reduced from 44% to allow room for scale */
+  height: 220px; /* Reduced from 240px */
+  background-color: rgba(0, 0, 0, 0.1);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  margin: 10px; /* Add margin for breathing room when scaled */
+  position: relative; /* Contain absolutely positioned children */
+}
+
+/* Gallery Media Item Images - Static (default, unfocused) */
+.gallery-media-item:nth-child(1) {
+  background-image: url('/assets/images/silksong-gif-3.gif'); /* Static placeholder */
+}
+
+.gallery-media-item:nth-child(2) {
+  background-image: url('/assets/images/silksong-gif-4.gif'); /* Static placeholder */
+}
+
+.gallery-media-item:nth-child(3) {
+  background-image: url('/assets/images/silksong-pic-3.png');
+}
+
+.gallery-media-item:nth-child(4) {
+  background-image: url('/assets/images/silksong-gif-1.webp'); /* Static placeholder */
+}
+
+.gallery-media-item:nth-child(5) {
+  background-image: url('/assets/images/silksong-gif-2.webp'); /* Static placeholder */
+}
+
+.gallery-media-item:nth-child(6) {
+  background-image: url('/assets/images/silksong-pic-1.png');
+}
+
+.gallery-media-item:nth-child(7) {
+  background-image: url('/assets/images/silksong-gif-5.webp'); /* Static placeholder */
+}
+
+.gallery-media-item:nth-child(8) {
+  background-image: url('/assets/images/silksong-pic-2.jpg');
+}
+
+/* Gallery Media Item Images - Animated (when focused) */
+.gallery-media-item:nth-child(1).focused {
+  background-image: url('/assets/images/silksong-gif-3.gif');
+}
+
+.gallery-media-item:nth-child(2).focused {
+  background-image: url('/assets/images/silksong-gif-4.gif');
+}
+
+.gallery-media-item:nth-child(4).focused {
+  background-image: url('/assets/images/silksong-gif-1.webp');
+}
+
+.gallery-media-item:nth-child(5).focused {
+  background-image: url('/assets/images/silksong-gif-2.webp');
+}
+
+.gallery-media-item:nth-child(7).focused {
+  background-image: url('/assets/images/silksong-gif-5.webp');
+}
+
+.gallery-media-item.focused {
+  transform: scale(1.05);
+  border: 2px solid #B13A45;
+  box-shadow: 0 8px 24px rgba(177, 58, 69, 0.4);
+  z-index: 10;
+}
+
+/* Media Type Icon (for PNG/JPG items) */
+.media-type-icon {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Gallery Legend */
+.gallery-legend {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 10; /* Top-most layer */
+}
+
+.gallery-legend img {
+  display: block;
+  width: auto;
+  height: auto;
+}
+
+/* Old Gallery Content Styling (deprecated) */
 .gallery-content {
   position: relative;
   padding: 0;

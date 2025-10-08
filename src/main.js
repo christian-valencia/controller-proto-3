@@ -53,10 +53,10 @@ let lastAButtonPress = 0
 
 // Focus Navigation State
 let focusArea = 'preview' // 'preview', 'shell-nav', 'shell-surface', or 'library-launchers'
-let selectedNavIndex = 0 // 0=library, 1=settings, 2=notifications, 3=gallery
+let selectedNavIndex = 0 // 0=library, 1=settings, 2=gallery, 3=notifications
 let previousFocusState = { area: 'preview', navIndex: 0, appIndex: 0 } // Store previous focus state
 let currentShellSurface = null // Track which shell surface is currently open
-const navItems = ['library', 'settings', 'notifications', 'gallery']
+const navItems = ['library', 'settings', 'gallery', 'notifications']
 
 // Library Launchers Navigation State
 let selectedLauncherIndex = 0 // Index of currently selected launcher app
@@ -67,6 +67,16 @@ const LAUNCHER_COUNTS_PER_ROW = [5, 8, 4] // Number of items in each row: Launch
 // Settings Navigation State
 let selectedSettingsNavIndex = 0 // Index of currently selected settings nav item (0-10)
 const SETTINGS_NAV_ITEMS = 11 // Total number of nav items
+
+// Gallery Navigation State
+let selectedGalleryNavIndex = 0 // Index of currently selected gallery nav item (0-2)
+const GALLERY_NAV_ITEMS = 3 // Total number of nav items (All, Photos, Videos)
+
+// Gallery Media Navigation State
+let selectedMediaRow = 0 // Index of currently selected media row (0-3 for 4 rows of 2 items)
+let selectedMediaIndex = 0 // Index within the row (0-1 for 2 items per row)
+const MEDIA_ITEMS_PER_ROW = 2
+const MEDIA_ROWS = 4 // 8 items total, 2 per row = 4 rows
 
 // Settings Display Controls State
 let selectedDisplayControlIndex = 0 // Index of currently selected display control (0-8: 3 controls per section × 3 sections)
@@ -931,6 +941,23 @@ function updateSettingsNavFocus() {
   // Add focused class to selected item
   if (navItems[selectedSettingsNavIndex]) {
     navItems[selectedSettingsNavIndex].classList.add('focused')
+    
+    // Handle scrolling based on selected nav index
+    const navPagesContainer = document.querySelector('.settings-nav-pages')
+    
+    if (navPagesContainer) {
+      if (selectedSettingsNavIndex >= 2) {
+        // 3rd row or later (indices 2+): Scroll up to show 3rd and 4th rows
+        const thirdItem = navItems[2]
+        if (thirdItem) {
+          const itemTop = thirdItem.offsetTop
+          navPagesContainer.scrollTo({ top: itemTop, behavior: 'smooth' })
+        }
+      } else {
+        // 1st or 2nd row (indices 0-1): Scroll back to initial position
+        navPagesContainer.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
   }
 }
 
@@ -1079,6 +1106,101 @@ function updateCycleSelector(controlIndex) {
   }
 }
 
+// Gallery Navigation Functions
+function updateGalleryNavFocus() {
+  const navItems = document.querySelectorAll('.gallery-nav-pages .nav-page-item')
+  
+  if (!navItems || navItems.length === 0) return
+  
+  // Remove focused class from all items
+  navItems.forEach(item => item.classList.remove('focused'))
+  
+  // Add focused class to selected item
+  if (navItems[selectedGalleryNavIndex]) {
+    navItems[selectedGalleryNavIndex].classList.add('focused')
+  }
+}
+
+function navigateGalleryNav(direction) {
+  console.log('navigateGalleryNav called with direction:', direction, 'current index:', selectedGalleryNavIndex, 'focusArea:', focusArea)
+  if (direction === 'up' && selectedGalleryNavIndex > 0) {
+    selectedGalleryNavIndex--
+    updateGalleryNavFocus()
+  } else if (direction === 'down' && selectedGalleryNavIndex < GALLERY_NAV_ITEMS - 1) {
+    selectedGalleryNavIndex++
+    updateGalleryNavFocus()
+  } else if (direction === 'right') {
+    // Clear focus from nav items before switching
+    const navItems = document.querySelectorAll('.gallery-nav-pages .nav-page-item')
+    navItems.forEach(item => item.classList.remove('focused'))
+    
+    // Switch to media items navigation
+    focusArea = 'gallery-media'
+    selectedMediaRow = 0
+    selectedMediaIndex = 0
+    updateMediaFocus()
+  } else if (direction === 'left') {
+    console.log('Left navigation in gallery nav - no action')
+  }
+}
+
+// Gallery Media Navigation Functions
+function updateMediaFocus() {
+  const mediaItems = document.querySelectorAll('.gallery-media-item')
+  
+  if (!mediaItems || mediaItems.length === 0) return
+  
+  // Remove focused class from all items
+  mediaItems.forEach(item => item.classList.remove('focused'))
+  
+  // Calculate the flat index from row and column
+  const flatIndex = selectedMediaRow * MEDIA_ITEMS_PER_ROW + selectedMediaIndex
+  
+  // Add focused class to selected item
+  if (mediaItems[flatIndex]) {
+    mediaItems[flatIndex].classList.add('focused')
+    
+    // Simple scroll logic for media grid
+    const mediaGrid = document.querySelector('.gallery-media-grid')
+    if (mediaGrid && selectedMediaRow >= 2) {
+      // Scroll to show 3rd and 4th rows
+      const thirdRowItem = mediaItems[2 * MEDIA_ITEMS_PER_ROW]
+      if (thirdRowItem) {
+        const itemTop = thirdRowItem.offsetTop
+        mediaGrid.scrollTo({ top: itemTop - 100, behavior: 'smooth' })
+      }
+    } else if (mediaGrid) {
+      // Reset scroll for rows 0-1
+      mediaGrid.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+}
+
+function navigateMediaItems(direction) {
+  if (direction === 'left') {
+    if (selectedMediaIndex > 0) {
+      selectedMediaIndex--
+      updateMediaFocus()
+    } else {
+      // Go back to gallery navigation
+      focusArea = 'gallery-nav'
+      updateGalleryNavFocus()
+      // Remove focus from media items
+      const mediaItems = document.querySelectorAll('.gallery-media-item')
+      mediaItems.forEach(item => item.classList.remove('focused'))
+    }
+  } else if (direction === 'right' && selectedMediaIndex < MEDIA_ITEMS_PER_ROW - 1) {
+    selectedMediaIndex++
+    updateMediaFocus()
+  } else if (direction === 'up' && selectedMediaRow > 0) {
+    selectedMediaRow--
+    updateMediaFocus()
+  } else if (direction === 'down' && selectedMediaRow < MEDIA_ROWS - 1) {
+    selectedMediaRow++
+    updateMediaFocus()
+  }
+}
+
 // Shell Library Functions
 // Consolidated Shell Container Functions
 function showShellContainer(containerName) {
@@ -1132,9 +1254,9 @@ function showShellContainer(containerName) {
   
   // If opening settings, enter settings navigation mode
   if (containerName === 'settings') {
-    focusArea = 'settings-nav'
-    selectedSettingsNavIndex = 0
-    updateSettingsNavFocus()
+    focusArea = 'settings-display-controls'
+    selectedDisplayControlIndex = 0
+    updateDisplayControlFocus()
     
     // Initialize all sliders with their current values
     for (let i = 0; i < 3; i++) {
@@ -1148,7 +1270,21 @@ function showShellContainer(containerName) {
     })
     
     // Mark first item as selected (Home)
-    const navItems = document.querySelectorAll('.nav-page-item')
+    const navItems = document.querySelectorAll('.settings-nav-pages .nav-page-item')
+    if (navItems[0]) {
+      navItems[0].classList.add('selected')
+    }
+  }
+  
+  // If opening gallery, enter gallery navigation mode
+  if (containerName === 'gallery') {
+    focusArea = 'gallery-media'
+    selectedMediaRow = 0
+    selectedMediaIndex = 0
+    updateMediaFocus()
+    
+    // Mark first item as selected (All)
+    const navItems = document.querySelectorAll('.gallery-nav-pages .nav-page-item')
     if (navItems[0]) {
       navItems[0].classList.add('selected')
     }
@@ -1241,6 +1377,16 @@ function handleShellInputs() {
       navigateSettingsNav('left')
       lastStickNavTime = now
     }
+    // Check if we're in gallery nav mode
+    else if (focusArea === 'gallery-nav') {
+      navigateGalleryNav('left')
+      lastStickNavTime = now
+    }
+    // Check if we're in gallery media mode
+    else if (focusArea === 'gallery-media') {
+      navigateMediaItems('left')
+      lastStickNavTime = now
+    }
     // Check if we're in settings display controls mode
     else if (focusArea === 'settings-display-controls') {
       navigateDisplayControls('left')
@@ -1248,7 +1394,7 @@ function handleShellInputs() {
     }
     // Only allow navigation if not in a shell surface
     else if (focusArea !== 'shell-surface') {
-      if (focusArea === 'preview') {
+      if (focusArea === 'preview' && !isPreviewScaled) {
         navigateApps('left')
       } else if (focusArea === 'shell-nav') {
         navigateShellNav('left')
@@ -1268,6 +1414,16 @@ function handleShellInputs() {
       navigateSettingsNav('right')
       lastStickNavTime = now
     }
+    // Check if we're in gallery nav mode
+    else if (focusArea === 'gallery-nav') {
+      navigateGalleryNav('right')
+      lastStickNavTime = now
+    }
+    // Check if we're in gallery media mode
+    else if (focusArea === 'gallery-media') {
+      navigateMediaItems('right')
+      lastStickNavTime = now
+    }
     // Check if we're in settings display controls mode
     else if (focusArea === 'settings-display-controls') {
       navigateDisplayControls('right')
@@ -1275,7 +1431,7 @@ function handleShellInputs() {
     }
     // Only allow navigation if not in a shell surface
     else if (focusArea !== 'shell-surface') {
-      if (focusArea === 'preview') {
+      if (focusArea === 'preview' && !isPreviewScaled) {
         navigateApps('right')
       } else if (focusArea === 'shell-nav') {
         navigateShellNav('right')
@@ -1288,7 +1444,7 @@ function handleShellInputs() {
   if (input.justPressed('LB') || (input.isDown('LB') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     // Only allow navigation if not in a shell surface
     if (focusArea !== 'shell-surface') {
-      if (focusArea === 'preview') {
+      if (focusArea === 'preview' && !isPreviewScaled) {
         navigateApps('left')
       } else if (focusArea === 'shell-nav') {
         navigateShellNav('left')
@@ -1299,7 +1455,7 @@ function handleShellInputs() {
   if (input.justPressed('RB') || (input.isDown('RB') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     // Only allow navigation if not in a shell surface
     if (focusArea !== 'shell-surface') {
-      if (focusArea === 'preview') {
+      if (focusArea === 'preview' && !isPreviewScaled) {
         navigateApps('right')
       } else if (focusArea === 'shell-nav') {
         navigateShellNav('right')
@@ -1329,6 +1485,23 @@ function handleShellInputs() {
         lastStickNavTime = currentTime
       }
     }
+    // Check if we're in gallery nav mode - allow right for future content navigation
+    else if (focusArea === 'gallery-nav') {
+      if (leftStick.x > STICK_THRESHOLD) {
+        navigateGalleryNav('right')
+        lastStickNavTime = currentTime
+      }
+    }
+    // Check if we're in gallery media mode
+    else if (focusArea === 'gallery-media') {
+      if (leftStick.x > STICK_THRESHOLD) {
+        navigateMediaItems('right')
+        lastStickNavTime = currentTime
+      } else if (leftStick.x < -STICK_THRESHOLD) {
+        navigateMediaItems('left')
+        lastStickNavTime = currentTime
+      }
+    }
     // Check if we're in settings display controls mode - allow left to go back to nav
     else if (focusArea === 'settings-display-controls') {
       if (leftStick.x < -STICK_THRESHOLD) {
@@ -1339,14 +1512,14 @@ function handleShellInputs() {
     // Only allow navigation if not in a shell surface
     else if (focusArea !== 'shell-surface') {
       if (leftStick.x > STICK_THRESHOLD) {
-        if (focusArea === 'preview') {
+        if (focusArea === 'preview' && !isPreviewScaled) {
           navigateApps('right')
         } else if (focusArea === 'shell-nav') {
           navigateShellNav('right')
         }
         lastStickNavTime = currentTime
       } else if (leftStick.x < -STICK_THRESHOLD) {
-        if (focusArea === 'preview') {
+        if (focusArea === 'preview' && !isPreviewScaled) {
           navigateApps('left')
         } else if (focusArea === 'shell-nav') {
           navigateShellNav('left')
@@ -1378,6 +1551,26 @@ function handleShellInputs() {
         lastStickNavTime = currentTime
       }
     }
+    // Check if we're in gallery navigation mode
+    else if (focusArea === 'gallery-nav') {
+      if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
+        navigateGalleryNav('up')
+        lastStickNavTime = currentTime
+      } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
+        navigateGalleryNav('down')
+        lastStickNavTime = currentTime
+      }
+    }
+    // Check if we're in gallery media mode
+    else if (focusArea === 'gallery-media') {
+      if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
+        navigateMediaItems('up')
+        lastStickNavTime = currentTime
+      } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
+        navigateMediaItems('down')
+        lastStickNavTime = currentTime
+      }
+    }
     // Check if we're in settings display controls mode
     else if (focusArea === 'settings-display-controls') {
       if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
@@ -1391,13 +1584,13 @@ function handleShellInputs() {
     // Only allow focus area switching if not in a shell surface
     else if (focusArea !== 'shell-surface') {
       if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
-        if (focusArea === 'shell-nav') {
+        if (focusArea === 'shell-nav' && !isPreviewScaled) {
           focusArea = 'preview'
           updateFocusPosition()
           lastStickNavTime = currentTime
         }
       } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
-        if (focusArea === 'preview') {
+        if (focusArea === 'preview' && !isPreviewScaled) {
           focusArea = 'shell-nav'
           // Keep current selectedNavIndex - don't reset to 0
           updateFocusPosition()
@@ -1420,6 +1613,16 @@ function handleShellInputs() {
       navigateSettingsNav('down')
       lastStickNavTime = now
     }
+    // Check if we're in gallery navigation mode
+    else if (focusArea === 'gallery-nav') {
+      navigateGalleryNav('down')
+      lastStickNavTime = now
+    }
+    // Check if we're in gallery media mode
+    else if (focusArea === 'gallery-media') {
+      navigateMediaItems('down')
+      lastStickNavTime = now
+    }
     // Check if we're in settings display controls mode
     else if (focusArea === 'settings-display-controls') {
       navigateDisplayControls('down')
@@ -1427,7 +1630,7 @@ function handleShellInputs() {
     }
     // Only allow focus area switching if not in a shell surface
     else if (focusArea !== 'shell-surface') {
-      if (focusArea === 'preview') {
+      if (focusArea === 'preview' && !isPreviewScaled) {
         focusArea = 'shell-nav'
         // Keep current selectedNavIndex - don't reset to 0
         updateFocusPosition()
@@ -1447,6 +1650,16 @@ function handleShellInputs() {
       navigateSettingsNav('up')
       lastStickNavTime = now
     }
+    // Check if we're in gallery navigation mode
+    else if (focusArea === 'gallery-nav') {
+      navigateGalleryNav('up')
+      lastStickNavTime = now
+    }
+    // Check if we're in gallery media mode
+    else if (focusArea === 'gallery-media') {
+      navigateMediaItems('up')
+      lastStickNavTime = now
+    }
     // Check if we're in settings display controls mode
     else if (focusArea === 'settings-display-controls') {
       navigateDisplayControls('up')
@@ -1454,7 +1667,7 @@ function handleShellInputs() {
     }
     // Only allow focus area switching if not in a shell surface
     else if (focusArea !== 'shell-surface') {
-      if (focusArea === 'shell-nav') {
+      if (focusArea === 'shell-nav' && !isPreviewScaled) {
         focusArea = 'preview'
         updateFocusPosition()
         lastStickNavTime = now
@@ -1470,11 +1683,45 @@ function handleShellInputs() {
       navigateSettingsNav('down')
       lastStickNavTime = now
     }
+    // Check if we're in gallery navigation mode
+    else if (focusArea === 'gallery-nav') {
+      navigateGalleryNav('down')
+      lastStickNavTime = now
+    }
     // Check if we're in settings display controls mode
     else if (focusArea === 'settings-display-controls') {
       console.log('Navigating display controls down')
       navigateDisplayControls('down')
       lastStickNavTime = now
+    }
+  }
+  
+  // Fullscreen Input Handling
+  // When a preview is fullscreen (isPreviewScaled = true), joystick and d-pad inputs are available for app-specific functionality
+  if (isPreviewScaled && focusArea === 'preview') {
+    // Example: Use left stick for in-app navigation
+    const leftStick = input.getStick('LEFT')
+    if (leftStick.magnitude > STICK_THRESHOLD) {
+      // console.log('Fullscreen app input - Left stick:', leftStick.x, leftStick.y)
+      // Add your fullscreen app logic here
+    }
+    
+    // Example: Use d-pad for in-app actions
+    if (input.justPressed('UP')) {
+      // console.log('Fullscreen app input - D-pad UP')
+      // Add your fullscreen app logic here
+    }
+    if (input.justPressed('DOWN')) {
+      // console.log('Fullscreen app input - D-pad DOWN')
+      // Add your fullscreen app logic here
+    }
+    if (input.justPressed('LEFT')) {
+      // console.log('Fullscreen app input - D-pad LEFT')
+      // Add your fullscreen app logic here
+    }
+    if (input.justPressed('RIGHT')) {
+      // console.log('Fullscreen app input - D-pad RIGHT')
+      // Add your fullscreen app logic here
     }
   }
   
@@ -1494,11 +1741,11 @@ function handleShellInputs() {
       } else if (selectedNavIndex === 1) { // Settings selected
         showShellSettings()
         RumbleFeedback.confirmation()
-      } else if (selectedNavIndex === 2) { // Notifications selected
-        showShellNotifications()
-        RumbleFeedback.confirmation()
-      } else if (selectedNavIndex === 3) { // Gallery selected
+      } else if (selectedNavIndex === 2) { // Gallery selected
         showShellGallery()
+        RumbleFeedback.confirmation()
+      } else if (selectedNavIndex === 3) { // Notifications selected
+        showShellNotifications()
         RumbleFeedback.confirmation()
       }
     } else if (focusArea === 'shell-surface') {

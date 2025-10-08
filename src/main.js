@@ -22,6 +22,14 @@ const orangeApp = document.getElementById('orange')
 let appContainers = [greenApp, blueApp, orangeApp]
 let appNames = ['green', 'blue', 'orange']
 
+// Function to get visible (non-hidden) apps
+function getVisibleApps() {
+  return appNames.filter(name => {
+    const container = document.getElementById(name)
+    return container && !container.classList.contains('hidden-app')
+  })
+}
+
 // Initialize input system
 const input = new InputManager()
 
@@ -65,6 +73,10 @@ let selectedNavIndex = 0 // 0=library, 1=settings, 2=gallery, 3=notifications
 let previousFocusState = { area: 'preview', navIndex: 0, appIndex: 0 } // Store previous focus state
 let currentShellSurface = null // Track which shell surface is currently open
 const navItems = ['library', 'settings', 'gallery', 'notifications']
+
+// Steam reveal animation state
+let isSteamRevealing = false // Flag to disable input during Steam reveal animation
+let hasSteamBeenLaunched = false // Flag to prevent Steam from being launched again
 
 // Library Launchers Navigation State
 let selectedLauncherIndex = 0 // Index of currently selected launcher app
@@ -570,14 +582,28 @@ function changeUIState(newState) {
 // App Navigation Functions
 function navigateApps(direction) {
   const previousApp = selectedAppIndex
+  const visibleAppNames = getVisibleApps()
   
+  // If we have no visible apps, do nothing
+  if (visibleAppNames.length === 0) return
+  
+  // Find current app in visible list
+  const currentAppName = appNames[selectedAppIndex]
+  const currentVisibleIndex = visibleAppNames.indexOf(currentAppName)
+  
+  // Navigate within visible apps only
+  let newVisibleIndex
   if (direction === 'right') {
-    selectedAppIndex = (selectedAppIndex + 1) % appContainers.length
+    newVisibleIndex = (currentVisibleIndex + 1) % visibleAppNames.length
   } else if (direction === 'left') {
-    selectedAppIndex = (selectedAppIndex - 1 + appContainers.length) % appContainers.length
+    newVisibleIndex = (currentVisibleIndex - 1 + visibleAppNames.length) % visibleAppNames.length
   }
   
-  if (DEBUG) console.log(`App Navigation: ${appNames[previousApp]} → ${appNames[selectedAppIndex]}`)
+  // Find the new app in the main appNames array
+  const newAppName = visibleAppNames[newVisibleIndex]
+  selectedAppIndex = appNames.indexOf(newAppName)
+  
+  if (DEBUG) console.log(`App Navigation: ${appNames[previousApp]} → ${appNames[selectedAppIndex]} (visible apps: ${visibleAppNames.join(', ')})`)
   updateAppStates()
   RumbleFeedback.selectionChange()
 }
@@ -619,13 +645,17 @@ function updateAppStates() {
 }
 
 function updatePreviewPositions() {
-  // Get preview containers based on current app order
-  const previewContainers = appNames.map(name => 
+  // Get only visible apps
+  const visibleAppNames = getVisibleApps()
+  
+  // Get preview containers based on visible app order
+  const previewContainers = visibleAppNames.map(name => 
     document.getElementById(`${name}-preview`)
   )
   
-  // Remove all positioning classes and scaling first
-  previewContainers.forEach(container => {
+  // Remove all positioning classes and scaling first (from ALL previews, not just visible)
+  appNames.forEach(name => {
+    const container = document.getElementById(`${name}-preview`)
     if (container) {
       container.classList.remove('preview-center', 'preview-left', 'preview-right', 'preview-far-left', 'preview-far-right', 'preview-scaled')
     }
@@ -634,24 +664,44 @@ function updatePreviewPositions() {
   // Reset scaling state when switching apps
   isPreviewScaled = false
   
-  // Add positioning classes based on selected app
-  // The selectedAppIndex now refers to position in the reordered array
-  switch (selectedAppIndex) {
-    case 0: // First app in array (leftmost)
-      previewContainers[0]?.classList.add('preview-center')  // First app in center
-      previewContainers[1]?.classList.add('preview-right')   // Second app to the right
-      previewContainers[2]?.classList.add('preview-far-right') // Third app far right
-      break
-    case 1: // Second app in array
-      previewContainers[0]?.classList.add('preview-left')    // First app to the left
-      previewContainers[1]?.classList.add('preview-center')  // Second app in center
-      previewContainers[2]?.classList.add('preview-right')   // Third app to the right
-      break
-    case 2: // Third app in array (rightmost)
-      previewContainers[0]?.classList.add('preview-far-left') // First app far left
-      previewContainers[1]?.classList.add('preview-left')    // Second app to the left
-      previewContainers[2]?.classList.add('preview-center')  // Third app in center
-      break
+  // Only position visible apps
+  const visibleCount = visibleAppNames.length
+  
+  // Find the selected app's index within visible apps
+  const currentAppName = appNames[selectedAppIndex]
+  const visibleSelectedIndex = visibleAppNames.indexOf(currentAppName)
+  
+  if (visibleCount === 2) {
+    // With 2 apps: show center and one adjacent
+    switch (visibleSelectedIndex) {
+      case 0: // First visible app
+        previewContainers[0]?.classList.add('preview-center')  // First app in center
+        previewContainers[1]?.classList.add('preview-right')   // Second app to the right
+        break
+      case 1: // Second visible app
+        previewContainers[0]?.classList.add('preview-left')    // First app to the left
+        previewContainers[1]?.classList.add('preview-center')  // Second app in center
+        break
+    }
+  } else if (visibleCount === 3) {
+    // With 3 apps: use original logic
+    switch (visibleSelectedIndex) {
+      case 0: // First visible app in array (leftmost)
+        previewContainers[0]?.classList.add('preview-center')  // First app in center
+        previewContainers[1]?.classList.add('preview-right')   // Second app to the right
+        previewContainers[2]?.classList.add('preview-far-right') // Third app far right
+        break
+      case 1: // Second visible app in array
+        previewContainers[0]?.classList.add('preview-left')    // First app to the left
+        previewContainers[1]?.classList.add('preview-center')  // Second app in center
+        previewContainers[2]?.classList.add('preview-right')   // Third app to the right
+        break
+      case 2: // Third visible app in array (rightmost)
+        previewContainers[0]?.classList.add('preview-far-left') // First app far left
+        previewContainers[1]?.classList.add('preview-left')    // Second app to the left
+        previewContainers[2]?.classList.add('preview-center')  // Third app in center
+        break
+    }
   }
   
   // Update focus container position
@@ -1806,8 +1856,102 @@ function handleShellInputs() {
   const buttonTime = Date.now()
   
   if (input.isDown('A') && (buttonTime - lastAButtonPress) > A_BUTTON_DEBOUNCE) {
+    // Don't allow A button during Steam reveal animation
+    if (isSteamRevealing) {
+      return
+    }
+    
     lastAButtonPress = buttonTime
-    if (focusArea === 'preview') {
+    
+    if (focusArea === 'library-launchers') {
+      // Check if Steam launcher is selected (Row 0, Index 1)
+      if (selectedLauncherRow === 0 && selectedLauncherIndex === 1) {
+        // Don't allow launching Steam if it's already been launched
+        if (hasSteamBeenLaunched) {
+          RumbleFeedback.lightTap() // Give feedback that it's disabled
+          return
+        }
+        
+        // Set flags to disable input and mark Steam as launched
+        isSteamRevealing = true
+        hasSteamBeenLaunched = true
+        
+        // Step 1: Dismiss library
+        hideShellLibrary()
+        
+        // Step 2: Immediately after library starts dismissing, reveal and animate Steam
+        setTimeout(() => {
+          const orangeApp = document.getElementById('orange')
+          const orangePreview = document.getElementById('orange-preview')
+          
+          // Reveal Steam app and preview with slide-in animation
+          if (orangeApp) orangeApp.classList.remove('hidden-app')
+          if (orangePreview) {
+            orangePreview.classList.remove('hidden-app')
+            orangePreview.classList.add('slide-in-left')
+          }
+          
+          // DON'T move focus yet - let Steam animate first
+          
+          // Reorder to move Steam to leftmost position
+          selectedAppIndex = 2 // Steam is at index 2
+          
+          const selectedAppContainer = appContainers[selectedAppIndex]
+          const selectedAppName = appNames[selectedAppIndex]
+          
+          // Remove from current position
+          appContainers.splice(selectedAppIndex, 1)
+          appNames.splice(selectedAppIndex, 1)
+          
+          // Insert at the beginning (leftmost)
+          appContainers.unshift(selectedAppContainer)
+          appNames.unshift(selectedAppName)
+          
+          // Update the DOM order
+          const runningApps = document.getElementById('running-apps')
+          if (runningApps) {
+            runningApps.innerHTML = ''
+            appContainers.forEach(container => {
+              if (container) runningApps.appendChild(container)
+            })
+          }
+          
+          // Set to index 0 (leftmost)
+          selectedAppIndex = 0
+          
+          // Update states and positions (this shifts others to the right)
+          updateAppStates()
+          updatePreviewPositions()
+          // Don't update focus yet
+          
+          // Step 3: After slide-in completes (0.6s), pause and let focus catch up
+          setTimeout(() => {
+            if (orangePreview) {
+              orangePreview.classList.remove('slide-in-left')
+            }
+            
+            // Move focus to preview area to catch up during the pause
+            focusArea = 'preview'
+            updateFocusPosition()
+            
+            // Step 4: After 0.4s pause, scale up Steam and focus together
+            setTimeout(() => {
+              scaleUpPreview()
+              
+              // Re-enable input after animation completes
+              setTimeout(() => {
+                isSteamRevealing = false
+              }, 400) // Wait for scale-up to complete
+            }, 400) // 0.4s pause for focus to catch up
+          }, 600) // Match slide-in animation duration (0.6s)
+        }, 100) // Start almost immediately (just after library starts dismiss)
+        
+        RumbleFeedback.confirmation()
+      } else {
+        // Other launchers - just confirmation
+        RumbleFeedback.confirmation()
+      }
+    } else if (focusArea === 'preview') {
       // A button only scales UP previews when focus is on preview area
       scaleUpPreview()
     } else if (focusArea === 'shell-nav') {

@@ -42,19 +42,6 @@ export class GamepadManager {
     return null
   }
 
-  // Debug method to check for controllers
-  logControllers() {
-    const pads = navigator.getGamepads()
-    console.log('🎮 Checking for controllers...')
-    console.log('🎮 navigator.getGamepads():', pads)
-    for (let i = 0; i < pads.length; i++) {
-      const pad = pads[i]
-      if (pad) {
-        console.log(`🎮 Controller ${i}:`, pad.id, 'buttons:', pad.buttons.length)
-      }
-    }
-  }
-
   update() {
     this.prev = new Map(this.now)
     this.now.clear()
@@ -62,10 +49,6 @@ export class GamepadManager {
     for (const g of pads) {
       if (g) {
         this.now.set(g.index, g)
-        // Debug: Check if Y button is pressed
-        if (g.buttons[3] && g.buttons[3].pressed) {
-          console.log('🎮 GAMEPAD Y BUTTON PRESSED!', g.id)
-        }
       }
     }
   }
@@ -97,8 +80,7 @@ export class GamepadManager {
       return false
     }
     
-    const result = this.btnValue(g, name as any) > 0
-    return result
+    return this.btnValue(g, name as any) > 0
   }
   justPressed(name: ButtonName, padIndex = 0): boolean {
     // Find gamepad at any index

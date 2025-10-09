@@ -3,7 +3,7 @@ import { InputManager } from './input/InputManager'
 // ============================================================================
 // DEBUG MODE - Set to false for production to remove console logs
 // ============================================================================
-const DEBUG = false
+const DEBUG = true
 
 // DOM ELEMENT SELECTION ONLY - No DOM creation here
 const windowsShell = document.getElementById('windows-shell')
@@ -156,9 +156,18 @@ function toggleFullscreen() {
   }
 }
 
-// Main game loop
+// Main game loop  
+let debugCounter = 0
 function loop() {
   input.update()
+
+  // Debug: Log current state every 300 frames (about 5 seconds)
+  if (DEBUG && debugCounter % 300 === 0) {
+    console.log(`🎮 Current UI State: ${currentUIState}`)
+    const gamepad = input.firstGamepad()
+    console.log(`🎮 Gamepad detected: ${gamepad ? gamepad.id : 'None'}`)
+  }
+  debugCounter++
 
   // Handle input actions
   handleInputActions()
@@ -171,6 +180,17 @@ function loop() {
 }
 
 function handleInputActions() {
+  // Debug: Check if any inputs are being detected
+  if (DEBUG) {
+    // Test all basic buttons
+    const testButtons = ['A', 'B', 'X', 'Y', 'UP', 'DOWN', 'LEFT', 'RIGHT']
+    testButtons.forEach(button => {
+      if (input.justPressed(button)) {
+        console.log(`🎮 INPUT DETECTED: ${button} button pressed`)
+      }
+    })
+  }
+  
   // State-based input routing
   switch (currentUIState) {
     case UI_STATES.LOCKED:

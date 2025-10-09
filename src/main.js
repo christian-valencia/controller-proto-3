@@ -193,6 +193,11 @@ function toggleFullscreen() {
 let debugCounter = 0
 function loop() {
   input.update()
+  
+  // Debug Y button specifically when it's being pressed
+  if (input.isDown('Y') || input.justPressed('Y')) {
+    console.log('🔍 Y BUTTON ACTIVE - isDown:', input.isDown('Y'), 'justPressed:', input.justPressed('Y'), 'UIState:', currentUIState)
+  }
 
   // Debug: Log current state every 300 frames (about 5 seconds)
   if (DEBUG && debugCounter % 300 === 0) {
@@ -292,6 +297,18 @@ function ensureGamepadActivation() {
         activatedGamepads.forEach((gp, index) => {
           console.log(`✅ Controller ${index}: ${gp.id}`)
         })
+        
+        // CRITICAL: Refresh InputManager to recognize newly activated gamepad
+        console.log('🔄 Refreshing InputManager to recognize activated gamepad...')
+        input.update() // Force InputManager to refresh its gamepad state
+        
+        // Test Y button immediately after activation
+        setTimeout(() => {
+          console.log('🧪 Testing Y button detection after gamepad activation...')
+          const isYDown = input.isDown('Y')
+          const gamepadState = input.inputManager ? input.inputManager.gamepadManager : 'unknown'
+          console.log('Y button state:', isYDown, 'GamepadManager state:', gamepadState)
+        }, 100)
         
         // Remove the activation check
         window.removeEventListener('gamepadconnected', checkForGamepadActivation)
@@ -490,7 +507,19 @@ function handlePressAndHold() {
   if (currentUIState !== UI_STATES.LOCKED) return
   
   const isYPressed = input.isDown('Y')
-
+  
+  // Debug Y button detection
+  if (isYPressed) {
+    console.log('🔥 Y BUTTON DETECTED - isHolding:', isHolding, 'holdStartTime:', holdStartTime)
+  }
+  
+  // Also debug raw InputManager state for Y button
+  if (input.justPressed('Y')) {
+    console.log('🎮 Y BUTTON JUST PRESSED - InputManager detected press')
+  }
+  if (input.isDown('Y')) {
+    console.log('🎮 Y BUTTON IS DOWN - InputManager detected hold')
+  }
   
   if (isYPressed && !isHolding) {
     // Start holding

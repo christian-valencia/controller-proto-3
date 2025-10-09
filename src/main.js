@@ -35,6 +35,11 @@ const input = new InputManager()
 
 // Debug: Add gamepad connection event listeners
 if (DEBUG) {
+  // Check gamepad API availability immediately
+  console.log('🎮 Gamepad API available:', 'getGamepads' in navigator)
+  console.log('🎮 User agent:', navigator.userAgent)
+  console.log('🎮 Is secure context (HTTPS):', window.isSecureContext)
+  
   window.addEventListener('gamepadconnected', (e) => {
     console.log('🎮 BROWSER EVENT: Gamepad connected:', e.gamepad.id)
     console.log('🎮 Gamepad index:', e.gamepad.index)
@@ -45,6 +50,20 @@ if (DEBUG) {
   window.addEventListener('gamepaddisconnected', (e) => {
     console.log('🎮 BROWSER EVENT: Gamepad disconnected:', e.gamepad.id)
   })
+  
+  // Try to force gamepad detection on any user interaction
+  document.addEventListener('click', () => {
+    console.log('🎮 Click detected - checking for gamepads...')
+    const gamepads = navigator.getGamepads()
+    console.log('🎮 Post-click gamepad check:', gamepads)
+  }, { once: true })
+  
+  // Also try on any key press
+  document.addEventListener('keydown', () => {
+    console.log('🎮 Keydown detected - checking for gamepads...')
+    const gamepads = navigator.getGamepads()
+    console.log('🎮 Post-keydown gamepad check:', gamepads)
+  }, { once: true })
 }
 
 // Direct B button handler for closing shell containers (backup for InputManager)
@@ -182,16 +201,28 @@ function loop() {
     console.log(`🎮 Gamepad detected: ${gamepad ? gamepad.id : 'None'}`)
     
     // Check raw gamepad API
-    const gamepads = navigator.getGamepads()
-    console.log(`🎮 Raw navigator.getGamepads():`, gamepads)
-    console.log(`🎮 Number of gamepads found: ${gamepads.filter(gp => gp !== null).length}`)
-    
-    // Log each connected gamepad
-    gamepads.forEach((gp, index) => {
-      if (gp) {
-        console.log(`🎮 Gamepad ${index}: ${gp.id} (${gp.buttons.length} buttons, ${gp.axes.length} axes)`)
-      }
-    })
+    try {
+      const gamepads = navigator.getGamepads()
+      console.log(`🎮 Raw navigator.getGamepads():`, gamepads)
+      console.log(`🎮 Number of gamepads found: ${gamepads.filter(gp => gp !== null).length}`)
+      
+      // Log each connected gamepad
+      gamepads.forEach((gp, index) => {
+        if (gp) {
+          console.log(`🎮 Gamepad ${index}: ${gp.id} (${gp.buttons.length} buttons, ${gp.axes.length} axes)`)
+          console.log(`🎮 Gamepad ${index} connected: ${gp.connected}`)
+          console.log(`🎮 Gamepad ${index} timestamp: ${gp.timestamp}`)
+        }
+      })
+      
+      // Additional browser checks
+      console.log(`🎮 Document has focus: ${document.hasFocus()}`)
+      console.log(`🎮 Page visibility: ${document.visibilityState}`)
+      console.log(`🎮 Window location: ${window.location.href}`)
+      
+    } catch (error) {
+      console.error('🎮 ERROR accessing gamepad API:', error)
+    }
   }
   debugCounter++
 

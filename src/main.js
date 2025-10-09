@@ -64,8 +64,8 @@ let lastStickNavTime = 0
 let isPreviewScaled = false
 let lastAButtonPress = 0
 
-// Gamebar State
-let isGamebarVisible = false
+// Overlay State
+let isOverlayVisible = false
 
 // Focus Navigation State
 let focusArea = 'preview' // 'preview', 'shell-nav', 'shell-surface', 'library-launchers', 'settings-nav', 'gallery-nav', 'gallery-media', 'notifications-nav', 'notifications-content'
@@ -144,6 +144,9 @@ window.addEventListener('keydown', (e) => {
     toggleFullscreen()
   }
 })
+
+// X button overlay toggle is handled by handleXButtonHold() via InputManager
+// D key maps to X button, K key also maps to X button
 
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
@@ -346,9 +349,9 @@ function handleXButtonHold() {
     const elapsed = Date.now() - xHoldStartTime
     
     if (elapsed < X_HOLD_DURATION) {
-      // Quick tap - toggle gamebar
-      console.log('X button quick tap detected - toggling gamebar')
-      toggleGamebar()
+      // Quick tap - toggle overlay
+      console.log('X button quick tap detected - toggling overlay')
+      toggleOverlay()
     }
     // Released before completion of hold
     resetXHold()
@@ -375,13 +378,13 @@ function onXHoldComplete() {
       silksongVideo.pause()
     }
     
-    // Close gamebar if it's open
-    if (isGamebarVisible) {
-      const gamebar = document.getElementById('gamebar')
-      if (gamebar) {
-        gamebar.classList.remove('visible')
-        isGamebarVisible = false
-        console.log('Gamebar closed (preview scaled down)')
+    // Close overlay if it's open
+    if (isOverlayVisible) {
+      const overlay = document.getElementById('overlay')
+      if (overlay) {
+        overlay.classList.remove('visible')
+        isOverlayVisible = false
+        console.log('Overlay closed (preview scaled down)')
       }
     }
     
@@ -448,25 +451,41 @@ function resetXHold() {
   xHoldStartTime = 0
 }
 
-function toggleGamebar() {
-  // Only allow toggling gamebar when a preview is fullscreen
+function toggleOverlay() {
+  // Only allow toggling overlay when a preview is fullscreen
   if (!isPreviewScaled || focusArea !== 'preview') {
-    console.log('Gamebar can only be toggled when an app preview is fullscreen')
+    console.log('Overlay can only be toggled when an app preview is fullscreen')
     return
   }
   
-  const gamebar = document.getElementById('gamebar')
-  if (!gamebar) return
+  const overlay = document.getElementById('overlay')
+  if (!overlay) return
   
-  isGamebarVisible = !isGamebarVisible
+  isOverlayVisible = !isOverlayVisible
   
-  if (isGamebarVisible) {
-    gamebar.classList.add('visible')
-    console.log('Gamebar opened')
+  if (isOverlayVisible) {
+    // Determine which overlay interface to show based on active app
+    const currentAppName = appNames[selectedAppIndex]
+    
+    overlay.classList.add('visible')
+    
+    // Remove any existing overlay mode classes
+    overlay.classList.remove('show-gb', 'show-steam')
+    
+    if (currentAppName === 'green' || currentAppName === 'blue') {
+      // Silksong (green) or Xbox (blue) - show GB nav widgets
+      overlay.classList.add('show-gb')
+      console.log(`Overlay opened: GB interface for ${currentAppName} app`)
+    } else if (currentAppName === 'orange') {
+      // Steam/Discord (orange) - show Steam interface
+      overlay.classList.add('show-steam')
+      console.log(`Overlay opened: Steam interface for ${currentAppName} app`)
+    }
+    
     RumbleFeedback.lightTap()
   } else {
-    gamebar.classList.remove('visible')
-    console.log('Gamebar closed')
+    overlay.classList.remove('visible', 'show-gb', 'show-steam')
+    console.log('Overlay closed')
     RumbleFeedback.lightTap()
   }
 }
@@ -2205,7 +2224,7 @@ function handleShellInputs() {
       RumbleFeedback.lightTap()
     }
   }
-  // X button for gamebar toggle and hold-to-scale-down is handled in handleXButtonHold()
+  // X button for overlay toggle and hold-to-scale-down is handled in handleXButtonHold()
   // Y button
   if (input.justPressed('Y')) {
     RumbleFeedback.lightTap()

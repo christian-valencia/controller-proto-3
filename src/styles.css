@@ -675,8 +675,8 @@ button:active { transform: translateY(1px); }
   /* Remove fixed dimensions to allow JavaScript to control sizing */
 }
 
-/* Gamebar Container */
-#gamebar {
+/* Overlay Container */
+#overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -692,13 +692,13 @@ button:active { transform: translateY(1px); }
   transition: opacity 0.3s ease;
 }
 
-#gamebar.visible {
+#overlay.visible {
   opacity: 1;
   pointer-events: auto;
 }
 
-/* Nav Widgets Container - 2/3 width of gamebar */
-#nav-widgets {
+/* GB Nav Widgets Container - 2/3 width of overlay */
+#gb-nav-widgets {
   position: absolute;
   top: 0;
   left: -854px; /* Start off-screen to the left (width + 1px) */
@@ -707,12 +707,13 @@ button:active { transform: translateY(1px); }
   transition: left 0.4s ease;
 }
 
-#gamebar.visible #nav-widgets {
-  left: 0; /* Slide in when gamebar is visible */
+/* GB Nav Widgets - Show only for Silksong and Xbox apps */
+#overlay.visible.show-gb #gb-nav-widgets {
+  left: 0; /* Slide in when overlay is visible and GB mode is active */
 }
 
-/* Nav Container - Nav bar at top with background image */
-#nav {
+/* GB Nav Container - Nav bar at top with background image */
+#gb-nav {
   position: absolute;
   top: 16px;
   left: 24px;
@@ -724,8 +725,8 @@ button:active { transform: translateY(1px); }
   background-repeat: no-repeat;
 }
 
-/* Widgets Container - Panel below nav with background image */
-#widgets {
+/* GB Widgets Container - Panel below nav with background image */
+#gb-widgets {
   position: absolute;
   bottom: 24px;
   left: 24px;
@@ -735,6 +736,53 @@ button:active { transform: translateY(1px); }
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+/* Steam Container - Full overlay size */
+#steam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1280px;
+  height: 720px;
+}
+
+/* Steam Nav Container - Left sidebar navigation */
+#steam-nav {
+  position: absolute;
+  top: 0;
+  left: -250px; /* Start off-screen to the left */
+  width: 250px;
+  height: 720px;
+  background-image: url('/assets/images/steam-nav.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: left 0.4s ease;
+}
+
+/* Steam Nav - Show only for Steam app */
+#overlay.visible.show-steam #steam-nav {
+  left: 0; /* Slide in when overlay is visible and Steam mode is active */
+}
+
+/* Steam Legend Container - Bottom legend bar */
+#steam-legend {
+  position: absolute;
+  bottom: -36px; /* Start off-screen below */
+  left: 0;
+  width: 1280px;
+  height: 36px;
+  background-image: url('/assets/images/steam-legend.png');
+  background-size: contain;
+  background-position: bottom center;
+  background-repeat: no-repeat;
+  transition: bottom 0.4s ease;
+}
+
+/* Steam Legend - Show only for Steam app */
+#overlay.visible.show-steam #steam-legend {
+  bottom: 0; /* Slide up when overlay is visible and Steam mode is active */
 }
 
 /* Focus when Shell Library is visible - Use class-based approach */

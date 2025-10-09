@@ -33,6 +33,20 @@ function getVisibleApps() {
 // Initialize input system
 const input = new InputManager()
 
+// Debug: Add gamepad connection event listeners
+if (DEBUG) {
+  window.addEventListener('gamepadconnected', (e) => {
+    console.log('🎮 BROWSER EVENT: Gamepad connected:', e.gamepad.id)
+    console.log('🎮 Gamepad index:', e.gamepad.index)
+    console.log('🎮 Gamepad buttons:', e.gamepad.buttons.length)
+    console.log('🎮 Gamepad axes:', e.gamepad.axes.length)
+  })
+  
+  window.addEventListener('gamepaddisconnected', (e) => {
+    console.log('🎮 BROWSER EVENT: Gamepad disconnected:', e.gamepad.id)
+  })
+}
+
 // Direct B button handler for closing shell containers (backup for InputManager)
 let lastBKeyPress = 0
 window.addEventListener('keydown', (e) => {
@@ -166,6 +180,18 @@ function loop() {
     console.log(`🎮 Current UI State: ${currentUIState}`)
     const gamepad = input.firstGamepad()
     console.log(`🎮 Gamepad detected: ${gamepad ? gamepad.id : 'None'}`)
+    
+    // Check raw gamepad API
+    const gamepads = navigator.getGamepads()
+    console.log(`🎮 Raw navigator.getGamepads():`, gamepads)
+    console.log(`🎮 Number of gamepads found: ${gamepads.filter(gp => gp !== null).length}`)
+    
+    // Log each connected gamepad
+    gamepads.forEach((gp, index) => {
+      if (gp) {
+        console.log(`🎮 Gamepad ${index}: ${gp.id} (${gp.buttons.length} buttons, ${gp.axes.length} axes)`)
+      }
+    })
   }
   debugCounter++
 
@@ -189,6 +215,22 @@ function handleInputActions() {
         console.log(`🎮 INPUT DETECTED: ${button} button pressed`)
       }
     })
+    
+    // Also check if InputManager is detecting any activity at all
+    if (debugCounter % 300 === 0) {
+      console.log(`🎮 InputManager status check:`)
+      console.log(`  - Gamepad manager first gamepad:`, input.gamepad.first())
+      console.log(`  - Active input method:`, input.getActiveInputMethod())
+      
+      // Test raw gamepad button states
+      const rawGamepad = navigator.getGamepads()[0]
+      if (rawGamepad) {
+        const pressedButtons = rawGamepad.buttons.map((btn, i) => btn.pressed ? i : null).filter(i => i !== null)
+        if (pressedButtons.length > 0) {
+          console.log(`🎮 RAW GAMEPAD: Buttons currently pressed:`, pressedButtons)
+        }
+      }
+    }
   }
   
   // State-based input routing

@@ -93,8 +93,8 @@ let selectedGalleryNavIndex = 0 // Index of currently selected gallery nav item 
 const GALLERY_NAV_ITEMS = 4 // Total number of nav items (All, Photos, Videos, Files)
 
 // Notifications Navigation State
-let selectedNotificationsNavIndex = 0 // Index of currently selected notifications nav item (0-4)
-const NOTIFICATIONS_NAV_ITEMS = 5 // Total number of nav items (All, Social, Game updates, App updates, System updates)
+let selectedNotificationsNavIndex = 0 // Index of currently selected notifications nav item (0-5)
+const NOTIFICATIONS_NAV_ITEMS = 6 // Total number of nav items (All, Urgent, Social, Game updates, App updates, System updates)
 
 // Notifications Content State
 let selectedNotificationIndex = 0 // Index of currently selected notification item (0-7 for 8 notifications)

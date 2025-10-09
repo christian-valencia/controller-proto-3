@@ -199,10 +199,24 @@ function loop() {
     console.log('🔍 Y BUTTON ACTIVE - isDown:', input.isDown('Y'), 'justPressed:', input.justPressed('Y'), 'UIState:', currentUIState)
   }
   
-  // Also monitor raw gamepad Y button every frame
-  const rawGamepad = input.firstGamepad()
-  if (rawGamepad && rawGamepad.buttons[3] && rawGamepad.buttons[3].pressed) {
-    console.log('🔥 RAW Y BUTTON PRESSED - InputManager Y:', input.isDown('Y'))
+  // Also monitor raw gamepad Y button every frame - FORCE FRESH POLL
+  const freshGamepads = navigator.getGamepads() // Get fresh gamepad state
+  const freshGamepad = Array.from(freshGamepads).find(gp => gp !== null)
+  if (freshGamepad && freshGamepad.buttons[3] && freshGamepad.buttons[3].pressed) {
+    console.log('🔥 RAW Y BUTTON PRESSED - InputManager Y:', input.isDown('Y'), 'Fresh gamepad timestamp:', freshGamepad.timestamp)
+  }
+  
+  // Debug: Show fresh gamepad state every 60 frames when buttons are pressed
+  if (debugCounter % 60 === 0 && freshGamepad) {
+    const anyButtonPressed = Array.from(freshGamepad.buttons).some(btn => btn && btn.pressed)
+    if (anyButtonPressed) {
+      console.log('🎮 FRESH GAMEPAD STATE - Any buttons pressed:', anyButtonPressed, 'Timestamp:', freshGamepad.timestamp)
+      freshGamepad.buttons.forEach((btn, index) => {
+        if (btn && btn.pressed) {
+          console.log(`Button ${index} pressed:`, btn.pressed, 'value:', btn.value)
+        }
+      })
+    }
   }
 
   // Debug: Log current state every 300 frames (about 5 seconds)
@@ -308,6 +322,11 @@ function ensureGamepadActivation() {
         console.log('🔄 Refreshing InputManager to recognize activated gamepad...')
         input.update() // Force InputManager to refresh its gamepad state
         
+        // Force multiple updates to ensure gamepad state is fresh
+        setTimeout(() => input.update(), 50)
+        setTimeout(() => input.update(), 100)
+        setTimeout(() => input.update(), 150)
+        
         // Test Y button immediately after activation
         setTimeout(() => {
           console.log('🧪 Testing Y button detection after gamepad activation...')
@@ -324,8 +343,42 @@ function ensureGamepadActivation() {
             console.log('Button 3 (Y):', firstGamepad.buttons[3]?.pressed)
             console.log('Total buttons:', firstGamepad.buttons.length)
             
-            // Prompt user to test Y button
+            // Prompt user to test Y button and show activation prompt
             console.log('🧪 PRESS AND HOLD Y BUTTON NOW to test raw detection...')
+            
+            // Show an on-screen prompt since buttons aren't working
+            const buttonTestPrompt = document.createElement('div')
+            buttonTestPrompt.id = 'button-test-prompt'
+            buttonTestPrompt.innerHTML = `
+              <div style="
+                position: fixed;
+                top: 60%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(255, 165, 0, 0.95);
+                color: white;
+                padding: 20px;
+                border-radius: 10px;
+                text-align: center;
+                font-size: 16px;
+                font-weight: bold;
+                z-index: 10001;
+                border: 3px solid #ff8c00;
+                box-shadow: 0 0 20px rgba(255, 165, 0, 0.6);
+              ">
+                🧪 CONTROLLER TEST<br><br>
+                Press and hold the Y button<br>
+                <small>Testing button detection...</small>
+              </div>
+            `
+            document.body.appendChild(buttonTestPrompt)
+            
+            // Remove prompt after 5 seconds
+            setTimeout(() => {
+              if (document.getElementById('button-test-prompt')) {
+                document.body.removeChild(buttonTestPrompt)
+              }
+            }, 5000)
           }
         }, 100)
         
@@ -340,7 +393,21 @@ function ensureGamepadActivation() {
     // Listen for gamepad connection events
     window.addEventListener('gamepadconnected', (event) => {
       console.log('🎮 Gamepad connected event:', event.gamepad.id)
+      
+      // Force immediate gamepad state refresh
+      console.log('🔄 Forcing immediate gamepad state refresh...')
+      const freshPads = navigator.getGamepads()
+      console.log('Fresh gamepad count:', Array.from(freshPads).filter(gp => gp !== null).length)
+      
       checkForGamepadActivation()
+    })
+    
+    // Also listen for any button presses to wake up the gamepad API
+    document.addEventListener('keydown', () => {
+      if (!hasGamepads) {
+        console.log('🔄 Keydown detected - checking if this wakes up gamepad API...')
+        setTimeout(checkForGamepadActivation, 100)
+      }
     })
     
     // Also poll for gamepad detection periodically

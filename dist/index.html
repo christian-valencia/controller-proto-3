@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Windows Gaming Shell v1.0</title>
-    <script type="module" crossorigin src="/assets/index-C7TPWqh5.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BgweXwdD.css">
+    <script type="module" crossorigin src="/assets/index-B4QGeghX.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DwXTiOwo.css">
   </head>
   <body>
     <!-- Main App Container -->
@@ -15,7 +15,11 @@
         <!-- Lock Screen Container -->
         <div id="lock-screen">
           <!-- Background Container -->
-          <div id="lock-background"></div>
+          <div id="lock-background">
+            <video id="lock-video" autoplay loop muted playsinline>
+              <source src="/assets/videos/lockloop2.mp4" type="video/mp4">
+            </video>
+          </div>
           
           <!-- Smoke Container -->
           <div id="smoke"></div>
@@ -33,8 +37,8 @@
             <!-- Progress Ring -->
             <div id="progress-ring">
               <svg width="36" height="36">
-                <circle cx="18" cy="18" r="16" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/>
-                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="white" stroke-width="2" fill="none" 
+                <circle cx="18" cy="18" r="16" stroke="rgba(177,58,69,0.3)" stroke-width="2" fill="none"/>
+                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="#B13A45" stroke-width="2" fill="none" 
                         stroke-dasharray="100.53" stroke-dashoffset="100.53" transform="rotate(-90 18 18)"
                         style="transition: stroke-dashoffset 0.05s linear;"/>
                 <text x="18" y="20" text-anchor="middle" dominant-baseline="middle" 
@@ -45,24 +49,20 @@
             <!-- Right Text -->
             <div id="auth-text-right">to unlock</div>
           </div>
-        </div>
-        
-        <!-- System Tray Container -->
-        <div id="system-tray">
-          <!-- WiFi, Volume, Battery Container -->
-          <div id="wifi-volume-battery">
-            <img src="/assets/icons/wifi-volume-battery.png" alt="WiFi, Volume, Battery" />
-          </div>
           
-          <!-- Clock 2 Container -->
-          <div id="clock2">
-            
+          <!-- Quick Resume Container -->
+          <div id="quick-resume">
+            <img src="/assets/images/qr-silksong.png" alt="Silksong" class="qr-image">
+            <div class="qr-text">
+              <div class="qr-title">Resume playing</div>
+              <div class="qr-game">Hollow Knight: Silksong</div>
+            </div>
           </div>
         </div>
         
         <!-- Blur Container -->
         <div id="blur-container">
-          <img src="/assets/images/blur.png" alt="Blur Effect" />
+          <img src="/assets/images/blur2.png" alt="Blur Effect" />
         </div>
         
         <!-- Switcher Container -->
@@ -77,7 +77,7 @@
               <div class="app-background"></div>
               <div class="app-icon blue-icon"></div>
             </div>
-            <div class="app-container" id="orange">
+            <div class="app-container hidden-app" id="orange">
               <div class="app-background"></div>
               <div class="app-icon orange-icon"></div>
             </div>
@@ -85,28 +85,39 @@
           
           <!-- Preview Containers -->
           <div id="green-preview" class="preview-container">
-            <div class="preview-titlebar">
-              <img src="assets/icons/xbox.png" alt="Xbox" class="titlebar-icon">
-              <span class="titlebar-text">Xbox</span>
-            </div>
-          </div>
-          <div id="blue-preview" class="preview-container">
+            <video id="silksong-video" class="preview-video" loop muted playsinline>
+              <source src="/assets/videos/silksong-gameplay.mp4" type="video/mp4">
+            </video>
             <div class="preview-titlebar">
               <img src="assets/icons/silksong.png" alt="Silksong" class="titlebar-icon">
               <span class="titlebar-text">Silksong</span>
             </div>
           </div>
-          <div id="orange-preview" class="preview-container">
+          <div id="blue-preview" class="preview-container">
             <div class="preview-titlebar">
-              <img src="assets/icons/discord.png" alt="Discord" class="titlebar-icon">
-              <span class="titlebar-text">Discord</span>
+              <img src="assets/icons/xbox.png" alt="Xbox" class="titlebar-icon">
+              <span class="titlebar-text">Xbox</span>
+            </div>
+          </div>
+          <div id="orange-preview" class="preview-container hidden-app">
+            <div class="preview-titlebar">
+              <img src="assets/icons/steam.png" alt="Steam" class="titlebar-icon">
+              <span class="titlebar-text">Steam</span>
+            </div>
+          </div>
+          
+          <!-- Gamebar Container -->
+          <div id="gamebar">
+            <div id="nav-widgets">
+              <div id="nav"></div>
+              <div id="widgets"></div>
             </div>
           </div>
           
           <!-- Shell Library Container -->
           <div id="shell-library">
             <div class="library-content">
-              <h1 class="library-main-title">Library</h1>
+              <input type="text" class="library-search-box" placeholder="Search for games or apps" />
               <div class="launcher-row-container">
                 <h2 class="launcher-row-title">Launchers</h2>
                 <div class="launchers">
@@ -128,29 +139,11 @@
                   <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
                 </div>
               </div>
               <div class="launcher-row-container">
                 <h2 class="launcher-row-title">All apps</h2>
                 <div class="launchers">
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
@@ -163,7 +156,7 @@
             
             <!-- Legend (top-most layer, bottom right) -->
             <div class="legend">
-              <img src="/assets/images/shell-container-legend.png" alt="Controls Legend" />
+              <img src="/assets/images/shell-container-legend-2.png" alt="Controls Legend" />
             </div>
           </div>
           
@@ -181,65 +174,331 @@
               <div class="settings-nav-pages">
                 <div class="nav-page-item">
                   <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Home</div>
+                  <div class="nav-page-text">Nav</div>
                 </div>
                 <div class="nav-page-item">
                   <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Text</div>
+                  <div class="nav-page-text">Nav</div>
                 </div>
                 <div class="nav-page-item">
                   <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Text</div>
+                  <div class="nav-page-text">Nav</div>
                 </div>
                 <div class="nav-page-item">
                   <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Text</div>
+                  <div class="nav-page-text">Nav</div>
                 </div>
                 <div class="nav-page-item">
                   <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Text</div>
+                  <div class="nav-page-text">Nav</div>
                 </div>
                 <div class="nav-page-item">
                   <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Text</div>
+                  <div class="nav-page-text">Nav</div>
                 </div>
                 <div class="nav-page-item">
                   <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Text</div>
+                  <div class="nav-page-text">Nav</div>
                 </div>
                 <div class="nav-page-item">
                   <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Text</div>
+                  <div class="nav-page-text">Nav</div>
                 </div>
                 <div class="nav-page-item">
                   <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Text</div>
+                  <div class="nav-page-text">Nav</div>
                 </div>
                 <div class="nav-page-item">
                   <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Text</div>
+                  <div class="nav-page-text">Nav</div>
                 </div>
                 <div class="nav-page-item">
                   <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Text</div>
+                  <div class="nav-page-text">Nav</div>
                 </div>
               </div>
             </div>
             <div class="settings-content-container">
+              <h1>Title</h1>
+              <div class="section-settings">
+                <h1>Subtitle</h1>
+                <div class="slider-control">
+                  <div class="control-text">
+                    <div class="control-title">Control</div>
+                    <div class="control-description">Description</div>
+                  </div>
+                  <div class="slider-knob-container">
+                    <div class="slider-track">
+                      <div class="slider-value"></div>
+                      <div class="slider-knob"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="cycle-selector">
+                  <div class="control-text">
+                    <div class="control-title">Control</div>
+                    <div class="control-description">Description</div>
+                  </div>
+                  <div class="cycle-text">
+                    <div class="chevron-left"></div>
+                    <div class="cycle-value">Value 1</div>
+                    <div class="chevron-right"></div>
+                  </div>
+                </div>
+                <div class="cycle-selector">
+                  <div class="control-text">
+                    <div class="control-title">Control</div>
+                    <div class="control-description">Description</div>
+                  </div>
+                  <div class="cycle-text">
+                    <div class="chevron-left"></div>
+                    <div class="cycle-value">Value 1</div>
+                    <div class="chevron-right"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="section-settings">
+                <h1>Subtitle</h1>
+                <div class="slider-control">
+                  <div class="control-text">
+                    <div class="control-title">Control</div>
+                    <div class="control-description">Description</div>
+                  </div>
+                  <div class="slider-knob-container">
+                    <div class="slider-track">
+                      <div class="slider-value"></div>
+                      <div class="slider-knob"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="cycle-selector">
+                  <div class="control-text">
+                    <div class="control-title">Control</div>
+                    <div class="control-description">Description</div>
+                  </div>
+                  <div class="cycle-text">
+                    <div class="chevron-left"></div>
+                    <div class="cycle-value">Value 1</div>
+                    <div class="chevron-right"></div>
+                  </div>
+                </div>
+                <div class="cycle-selector">
+                  <div class="control-text">
+                    <div class="control-title">Control</div>
+                    <div class="control-description">Description</div>
+                  </div>
+                  <div class="cycle-text">
+                    <div class="chevron-left"></div>
+                    <div class="cycle-value">Value 1</div>
+                    <div class="chevron-right"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="section-settings">
+                <h1>Subtitle</h1>
+                <div class="slider-control">
+                  <div class="control-text">
+                    <div class="control-title">Control</div>
+                    <div class="control-description">Description</div>
+                  </div>
+                  <div class="slider-knob-container">
+                    <div class="slider-track">
+                      <div class="slider-value"></div>
+                      <div class="slider-knob"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="cycle-selector">
+                  <div class="control-text">
+                    <div class="control-title">Control</div>
+                    <div class="control-description">Description</div>
+                  </div>
+                  <div class="cycle-text">
+                    <div class="chevron-left"></div>
+                    <div class="cycle-value">Value 1</div>
+                    <div class="chevron-right"></div>
+                  </div>
+                </div>
+                <div class="cycle-selector">
+                  <div class="control-text">
+                    <div class="control-title">Control</div>
+                    <div class="control-description">Description</div>
+                  </div>
+                  <div class="cycle-text">
+                    <div class="chevron-left"></div>
+                    <div class="cycle-value">Value 1</div>
+                    <div class="chevron-right"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="settings-legend">
+              <img src="/assets/images/settings-legend.png" alt="Controller Legend" />
             </div>
           </div>
           
           <!-- Shell Notifications Container -->
           <div id="shell-notifications">
-            <div class="notifications-content">
-              <h1>Notifications</h1>
+            <div class="notifications-navigation">
+              <div class="notifications-nav-title">Notifications</div>
+              <div class="notifications-nav-pages">
+                <div class="nav-page-item selected">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">All</div>
+                </div>
+                <div class="nav-page-item">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">Urgent</div>
+                </div>
+                <div class="nav-page-item">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">Social</div>
+                </div>
+                <div class="nav-page-item">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">Game updates</div>
+                </div>
+                <div class="nav-page-item">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">App updates</div>
+                </div>
+                <div class="nav-page-item">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">System updates</div>
+                </div>
+              </div>
             </div>
+            <div class="notifications-content-container">
+              <div class="notifications-header">
+                <h1>All notifications</h1>
+              </div>
+              <div class="notifications-list">
+                <div class="notification">
+                  <div class="notification-icon"></div>
+                  <div class="notification-text">
+                    <div class="notification-title">Header</div>
+                    <div class="notification-description">Description</div>
+                  </div>
+                  <div class="notification-time">12:00</div>
+                </div>
+                <div class="notification">
+                  <div class="notification-icon"></div>
+                  <div class="notification-text">
+                    <div class="notification-title">Header</div>
+                    <div class="notification-description">Description</div>
+                  </div>
+                  <div class="notification-time">12:00</div>
+                </div>
+                <div class="notification">
+                  <div class="notification-icon"></div>
+                  <div class="notification-text">
+                    <div class="notification-title">Header</div>
+                    <div class="notification-description">Description</div>
+                  </div>
+                  <div class="notification-time">12:00</div>
+                </div>
+                <div class="notification">
+                  <div class="notification-icon"></div>
+                  <div class="notification-text">
+                    <div class="notification-title">Header</div>
+                    <div class="notification-description">Description</div>
+                  </div>
+                  <div class="notification-time">12:00</div>
+                </div>
+                <div class="notification">
+                  <div class="notification-icon"></div>
+                  <div class="notification-text">
+                    <div class="notification-title">Header</div>
+                    <div class="notification-description">Description</div>
+                  </div>
+                  <div class="notification-time">12:00</div>
+                </div>
+                <div class="notification">
+                  <div class="notification-icon"></div>
+                  <div class="notification-text">
+                    <div class="notification-title">Header</div>
+                    <div class="notification-description">Description</div>
+                  </div>
+                  <div class="notification-time">12:00</div>
+                </div>
+                <div class="notification">
+                  <div class="notification-icon"></div>
+                  <div class="notification-text">
+                    <div class="notification-title">Header</div>
+                    <div class="notification-description">Description</div>
+                  </div>
+                  <div class="notification-time">12:00</div>
+                </div>
+                <div class="notification">
+                  <div class="notification-icon"></div>
+                  <div class="notification-text">
+                    <div class="notification-title">Header</div>
+                    <div class="notification-description">Description</div>
+                  </div>
+                  <div class="notification-time">12:00</div>
+                </div>
+              </div>
+            </div>
+            <div class="notifications-legend"></div>
           </div>
           
           <!-- Shell Gallery Container -->
           <div id="shell-gallery">
-            <div class="gallery-content">
-              <h1>Gallery</h1>
+            <div class="gallery-navigation">
+              <div class="gallery-nav-title">Gallery</div>
+              <div class="gallery-nav-pages">
+                <div class="nav-page-item selected">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">All</div>
+                </div>
+                <div class="nav-page-item">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">Photos</div>
+                </div>
+                <div class="nav-page-item">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">Videos</div>
+                </div>
+                <div class="nav-page-item">
+                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-text">Files</div>
+                </div>
+              </div>
+            </div>
+            <div class="gallery-content-container">
+              <div class="gallery-header">
+                <h1>All content</h1>
+              </div>
+              <div class="gallery-media-grid">
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/picture-icon-gallery.svg" class="media-type-icon" alt="Image" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/picture-icon-gallery.svg" class="media-type-icon" alt="Image" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                </div>
+                <div class="gallery-media-item">
+                  <img src="/assets/icons/picture-icon-gallery.svg" class="media-type-icon" alt="Image" />
+                </div>
+              </div>
+            </div>
+            <!-- Gallery Legend -->
+            <div class="gallery-legend">
+              <img src="/assets/images/shell-container-legend.png" alt="Controls Legend" />
             </div>
           </div>
           
@@ -251,19 +510,19 @@
             <div id="settings" class="nav-item">
               <img src="/assets/icons/settings.svg" alt="Settings" width="24" height="24" />
             </div>
-            <div id="notifications" class="nav-item">
-              <img src="/assets/icons/notifications.svg" alt="Notifications" width="24" height="24" />
-            </div>
             <div id="gallery" class="nav-item">
               <img src="/assets/icons/gallery.svg" alt="Gallery" width="24" height="24" />
+            </div>
+            <div id="notifications" class="nav-item">
+              <img src="/assets/icons/notifications.svg" alt="Notifications" width="24" height="24" />
             </div>
             
             <!-- Shell Nav Labels (inside shell-nav) -->
             <div id="shell-nav-labels">
               <div id="label-library" class="nav-label">Library</div>
               <div id="label-settings" class="nav-label">Settings</div>
-              <div id="label-notifications" class="nav-label">Notifications</div>
               <div id="label-gallery" class="nav-label">Gallery</div>
+              <div id="label-notifications" class="nav-label">Notifications</div>
             </div>
           </div>
         </div>

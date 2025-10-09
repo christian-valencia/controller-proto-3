@@ -474,6 +474,9 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   transition: opacity 0.2s ease;
   flex-shrink: 0;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 #progress-ring.active {
@@ -531,6 +534,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   font-size: 18px;
   font-weight: 400;
   line-height: 1.2;
+  opacity: 60%; 
 }
 
 /* Utility Classes */
@@ -992,6 +996,12 @@ button:active { transform: translateY(1px); }
   background-size: 180px 180px;
 }
 
+.launcher-row-container:nth-child(4) .launcher-app:nth-child(6) {
+  background-image: url('/assets/images/store.png');
+  background-color: transparent;
+  background-size: 180px 180px;
+}
+
 .launcher-app.focused {
   /* Visual indication that this launcher has focus */
   transform: scale(1.1) !important;
@@ -1369,7 +1379,6 @@ button:active { transform: translateY(1px); }
   left: 0;
   width: 1280px;
   height: 720px;
-  background: rgba(49, 94, 109, 1.0); /* Light blue background */
   border-radius: 0;
   z-index: 20;
   transform: scale(0);
@@ -1384,24 +1393,185 @@ button:active { transform: translateY(1px); }
   transform: scale(1.0);
 }
 
-/* Notifications Content Styling */
-.notifications-content {
-  position: relative;
-  padding: 0;
-  color: #1a1a1a;
-  font-size: 24px;
-  width: 100%;
-  height: 100%;
+/* Notifications Legend Container */
+.notifications-legend {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  width: 350px;
+  height: 72px;
+  background-image: url('/assets/images/notification-legend.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 30;
+  pointer-events: none;
 }
 
-.notifications-content h1 {
+/* Notifications Navigation Styling */
+.notifications-navigation {
   position: absolute;
-  left: 36px;
-  top: 36px;
-  font-size: 36px;
-  font-weight: bold;
-  margin: 0;
-  color:rgb(255, 255, 255)
+  left: 0;
+  top: 0;
+  width: 280px;
+  height: 100%;
+  z-index: 2; /* Above content container */
+  background: transparent;
+  pointer-events: none; /* Allow clicks to pass through empty space */
+}
+
+.notifications-navigation > * {
+  pointer-events: auto; /* Re-enable clicks on actual nav elements */
+}
+
+/* Notifications Navigation Title */
+.notifications-nav-title {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding-left: 32px;
+  font-size: 16px;
+  font-weight: 400;
+  color: white;
+}
+
+/* Notifications Navigation Pages */
+.notifications-nav-pages {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Notifications Content Container Styling */
+.notifications-content-container {
+  position: absolute;
+  left: 280px; /* To the right of navigation */
+  top: 0;
+  width: calc(100% - 280px); /* Fill remaining width */
+  height: 100%;
+  padding: 0 80px 0 80px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+/* Hide scrollbar but keep functionality */
+.notifications-list::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.notifications-list {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Notifications Header Styling */
+.notifications-header {
+  width: 100%;
+  height: 90px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.notifications-header h1 {
+  font-size: 32px;
+  font-weight: 500;
+  color: white;
+  margin: 32px 0 32px 24px;
+}
+
+/* Notifications List Container */
+.notifications-list {
+  flex: 1;
+  padding-left: 20px;
+  padding-top: 20px;
+  padding-bottom: 80px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Notification Container Styling */
+.notification {
+  position: relative;
+  width: 98%;
+  min-height: 80px;
+  max-height: 80px;
+  background: rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: border-color 0.2s ease, border-width 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.notification.focused {
+  border: 2px solid #B13A45; /* Red color */
+  box-shadow: 0 8px 16px rgba(177, 58, 69, 0.4); /* Enhanced red drop shadow */
+  transform: scale(1.02); /* Slight scale up */
+}
+
+.notification:last-child {
+  margin-bottom: 0;
+}
+
+/* Notification Text Styling */
+.notification-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notification-title {
+  font-size: 18px;
+  font-weight: 400;
+  color: white;
+  line-height: 1.2;
+}
+
+.notification-description {
+  font-size: 18px;
+  font-weight: 350;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.2;
+}
+
+.notification-time {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  font-size: 16px;
+  font-weight: 400;
+  color: white;
+  opacity: 60%;
+  line-height: 1.2;
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(128, 128, 128, 0.5);
+  border-radius: 8px;
+  margin-right: 16px;
+  flex-shrink: 0;
 }
 
 /* Shell Gallery Container */
@@ -1632,24 +1802,4 @@ button:active { transform: translateY(1px); }
   display: block;
   width: auto;
   height: auto;
-}
-
-/* Old Gallery Content Styling (deprecated) */
-.gallery-content {
-  position: relative;
-  padding: 0;
-  color: #1a1a1a;
-  font-size: 24px;
-  width: 100%;
-  height: 100%;
-}
-
-.gallery-content h1 {
-  position: absolute;
-  left: 36px;
-  top: 36px;
-  font-size: 36px;
-  font-weight: bold;
-  margin: 0;
-  color:rgb(255, 255, 255)
 }

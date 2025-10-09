@@ -68,7 +68,7 @@ let lastAButtonPress = 0
 let isGamebarVisible = false
 
 // Focus Navigation State
-let focusArea = 'preview' // 'preview', 'shell-nav', 'shell-surface', or 'library-launchers'
+let focusArea = 'preview' // 'preview', 'shell-nav', 'shell-surface', 'library-launchers', 'settings-nav', 'gallery-nav', 'gallery-media', 'notifications-nav', 'notifications-content'
 let selectedNavIndex = 0 // 0=library, 1=settings, 2=gallery, 3=notifications
 let previousFocusState = { area: 'preview', navIndex: 0, appIndex: 0 } // Store previous focus state
 let currentShellSurface = null // Track which shell surface is currently open
@@ -82,7 +82,7 @@ let hasSteamBeenLaunched = false // Flag to prevent Steam from being launched ag
 let selectedLauncherIndex = 0 // Index of currently selected launcher app
 let selectedLauncherRow = -1 // Index of currently selected row (-1=search box, 0-2=launcher rows)
 const LAUNCHER_ROWS = 3
-const LAUNCHER_COUNTS_PER_ROW = [5, 8, 5] // Number of items in each row: Launchers(5), All games(8), All apps(5)
+const LAUNCHER_COUNTS_PER_ROW = [5, 8, 6] // Number of items in each row: Launchers(5), All games(8), All apps(6)
 
 // Settings Navigation State
 let selectedSettingsNavIndex = 0 // Index of currently selected settings nav item (0-10)
@@ -91,6 +91,14 @@ const SETTINGS_NAV_ITEMS = 11 // Total number of nav items
 // Gallery Navigation State
 let selectedGalleryNavIndex = 0 // Index of currently selected gallery nav item (0-3)
 const GALLERY_NAV_ITEMS = 4 // Total number of nav items (All, Photos, Videos, Files)
+
+// Notifications Navigation State
+let selectedNotificationsNavIndex = 0 // Index of currently selected notifications nav item (0-4)
+const NOTIFICATIONS_NAV_ITEMS = 5 // Total number of nav items (All, Social, Game updates, App updates, System updates)
+
+// Notifications Content State
+let selectedNotificationIndex = 0 // Index of currently selected notification item (0-7 for 8 notifications)
+const NOTIFICATION_ITEMS = 8 // Total number of notification containers
 
 // Gallery Media Navigation State
 let selectedMediaRow = 0 // Index of currently selected media row (0-3 for 4 rows of 2 items)
@@ -1333,6 +1341,80 @@ function navigateMediaItems(direction) {
   }
 }
 
+// Notifications Navigation Functions
+function updateNotificationsNavFocus() {
+  const navItems = document.querySelectorAll('#shell-notifications .nav-page-item')
+  const notifications = document.querySelectorAll('#shell-notifications .notification')
+  
+  if (!navItems || navItems.length === 0) return
+  
+  // Remove focused class from all nav items
+  navItems.forEach(item => item.classList.remove('focused'))
+  
+  // Remove focused class from all notifications (clear content focus when in nav)
+  notifications.forEach(notification => notification.classList.remove('focused'))
+  
+  // Add focused class to selected nav item
+  if (navItems[selectedNotificationsNavIndex]) {
+    navItems[selectedNotificationsNavIndex].classList.add('focused')
+  }
+}
+
+function navigateNotificationsNav(direction) {
+  if (direction === 'up' && selectedNotificationsNavIndex > 0) {
+    selectedNotificationsNavIndex--
+    updateNotificationsNavFocus()
+  } else if (direction === 'down' && selectedNotificationsNavIndex < NOTIFICATIONS_NAV_ITEMS - 1) {
+    selectedNotificationsNavIndex++
+    updateNotificationsNavFocus()
+  }
+}
+
+// Notifications Content Functions
+function updateNotificationFocus() {
+  const notifications = document.querySelectorAll('#shell-notifications .notification')
+  const navItems = document.querySelectorAll('#shell-notifications .nav-page-item')
+  const contentContainer = document.querySelector('#shell-notifications .notifications-list')
+  
+  if (!notifications || notifications.length === 0) return
+  
+  // Remove focused class from all notifications
+  notifications.forEach(notification => notification.classList.remove('focused'))
+  
+  // Remove focused class from all nav items (clear nav focus when in content)
+  navItems.forEach(item => item.classList.remove('focused'))
+  
+  // Add focused class to selected notification
+  if (notifications[selectedNotificationIndex]) {
+    notifications[selectedNotificationIndex].classList.add('focused')
+  }
+  
+  // Handle scrolling when reaching 5th notification (index 4) or beyond
+  if (contentContainer && selectedNotificationIndex >= 4) {
+    // Scroll to show the 5th notification with 72px margin
+    const fifthNotification = notifications[4]
+    if (fifthNotification) {
+      const notificationTop = fifthNotification.offsetTop
+      console.log(`Scrolling to notification ${selectedNotificationIndex + 1}, offsetTop: ${notificationTop}, scrollTo: ${notificationTop - 72}`)
+      contentContainer.scrollTo({ top: notificationTop - 72, behavior: 'smooth' })
+    }
+  } else if (contentContainer && selectedNotificationIndex <= 3) {
+    // Reset scroll position when navigating back to notifications 1-4
+    console.log(`Resetting scroll to top for notification ${selectedNotificationIndex + 1}`)
+    contentContainer.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+function navigateNotifications(direction) {
+  if (direction === 'up' && selectedNotificationIndex > 0) {
+    selectedNotificationIndex--
+    updateNotificationFocus()
+  } else if (direction === 'down' && selectedNotificationIndex < NOTIFICATION_ITEMS - 1) {
+    selectedNotificationIndex++
+    updateNotificationFocus()
+  }
+}
+
 // Shell Library Functions
 // Consolidated Shell Container Functions
 function showShellContainer(containerName) {
@@ -1422,6 +1504,19 @@ function showShellContainer(containerName) {
     }
   }
   
+  // If opening notifications, enter notifications content mode (focus on first notification)
+  if (containerName === 'notifications') {
+    focusArea = 'notifications-content'
+    selectedNotificationIndex = 0
+    updateNotificationFocus()
+    
+    // Mark first item as selected (All notifications)
+    const navItems = document.querySelectorAll('#shell-notifications .nav-page-item')
+    if (navItems[0]) {
+      navItems[0].classList.add('selected')
+    }
+  }
+  
   // Don't position focus since it's hidden with opacity 0
   // This prevents it from briefly appearing in the upper left
 }
@@ -1477,6 +1572,37 @@ function hideShellContainer(containerName) {
     })
   }
   
+  // Clear gallery navigation state
+  if (focusArea === 'gallery-nav' || focusArea === 'gallery-media') {
+    selectedGalleryNavIndex = 0
+    selectedMediaRow = 0
+    selectedMediaIndex = 0
+    // Remove focused and selected class from gallery nav items
+    document.querySelectorAll('.gallery-nav-pages .nav-page-item').forEach(item => {
+      item.classList.remove('focused')
+      item.classList.remove('selected')
+    })
+    // Remove focused class from gallery media items
+    document.querySelectorAll('.gallery-media-item').forEach(item => {
+      item.classList.remove('focused')
+    })
+  }
+  
+  // Clear notifications navigation state
+  if (focusArea === 'notifications-nav' || focusArea === 'notifications-content') {
+    selectedNotificationsNavIndex = 0
+    selectedNotificationIndex = 0
+    // Remove focused and selected class from notifications nav items
+    document.querySelectorAll('#shell-notifications .nav-page-item').forEach(item => {
+      item.classList.remove('focused')
+      item.classList.remove('selected')
+    })
+    // Remove focused class from notification content items
+    document.querySelectorAll('#shell-notifications .notification').forEach(item => {
+      item.classList.remove('focused')
+    })
+  }
+  
   // Restore previous focus position
   restorePreviousFocus()
 }
@@ -1524,6 +1650,13 @@ function handleShellInputs() {
       navigateDisplayControls('left')
       lastStickNavTime = now
     }
+    // Check if we're in notifications content mode - allow left to go back to nav
+    else if (focusArea === 'notifications-content') {
+      focusArea = 'notifications-nav'
+      selectedNotificationsNavIndex = 0
+      updateNotificationsNavFocus()
+      lastStickNavTime = now
+    }
     // Only allow navigation if not in a shell surface
     else if (focusArea !== 'shell-surface') {
       if (focusArea === 'preview' && !isPreviewScaled) {
@@ -1559,6 +1692,13 @@ function handleShellInputs() {
     // Check if we're in settings display controls mode
     else if (focusArea === 'settings-display-controls') {
       navigateDisplayControls('right')
+      lastStickNavTime = now
+    }
+    // Check if we're in notifications nav mode - allow right to go to content
+    else if (focusArea === 'notifications-nav') {
+      focusArea = 'notifications-content'
+      selectedNotificationIndex = 0
+      updateNotificationFocus()
       lastStickNavTime = now
     }
     // Only allow navigation if not in a shell surface
@@ -1641,6 +1781,24 @@ function handleShellInputs() {
         lastStickNavTime = currentTime
       }
     }
+    // Check if we're in notifications nav mode - allow right to go to content
+    else if (focusArea === 'notifications-nav') {
+      if (leftStick.x > STICK_THRESHOLD) {
+        focusArea = 'notifications-content'
+        selectedNotificationIndex = 0
+        updateNotificationFocus()
+        lastStickNavTime = currentTime
+      }
+    }
+    // Check if we're in notifications content mode - allow left to go back to nav
+    else if (focusArea === 'notifications-content') {
+      if (leftStick.x < -STICK_THRESHOLD) {
+        focusArea = 'notifications-nav'
+        selectedNotificationsNavIndex = 0
+        updateNotificationsNavFocus()
+        lastStickNavTime = currentTime
+      }
+    }
     // Only allow navigation if not in a shell surface
     else if (focusArea !== 'shell-surface') {
       if (leftStick.x > STICK_THRESHOLD) {
@@ -1690,6 +1848,26 @@ function handleShellInputs() {
         lastStickNavTime = currentTime
       } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
         navigateGalleryNav('down')
+        lastStickNavTime = currentTime
+      }
+    }
+    // Check if we're in notifications navigation mode
+    else if (focusArea === 'notifications-nav') {
+      if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
+        navigateNotificationsNav('up')
+        lastStickNavTime = currentTime
+      } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
+        navigateNotificationsNav('down')
+        lastStickNavTime = currentTime
+      }
+    }
+    // Check if we're in notifications content mode
+    else if (focusArea === 'notifications-content') {
+      if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
+        navigateNotifications('up')
+        lastStickNavTime = currentTime
+      } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
+        navigateNotifications('down')
         lastStickNavTime = currentTime
       }
     }
@@ -1750,6 +1928,16 @@ function handleShellInputs() {
       navigateGalleryNav('down')
       lastStickNavTime = now
     }
+    // Check if we're in notifications navigation mode
+    else if (focusArea === 'notifications-nav') {
+      navigateNotificationsNav('down')
+      lastStickNavTime = now
+    }
+    // Check if we're in notifications content mode
+    else if (focusArea === 'notifications-content') {
+      navigateNotifications('down')
+      lastStickNavTime = now
+    }
     // Check if we're in gallery media mode
     else if (focusArea === 'gallery-media') {
       navigateMediaItems('down')
@@ -1787,6 +1975,16 @@ function handleShellInputs() {
       navigateGalleryNav('up')
       lastStickNavTime = now
     }
+    // Check if we're in notifications navigation mode
+    else if (focusArea === 'notifications-nav') {
+      navigateNotificationsNav('up')
+      lastStickNavTime = now
+    }
+    // Check if we're in notifications content mode
+    else if (focusArea === 'notifications-content') {
+      navigateNotifications('up')
+      lastStickNavTime = now
+    }
     // Check if we're in gallery media mode
     else if (focusArea === 'gallery-media') {
       navigateMediaItems('up')
@@ -1818,6 +2016,16 @@ function handleShellInputs() {
     // Check if we're in gallery navigation mode
     else if (focusArea === 'gallery-nav') {
       navigateGalleryNav('down')
+      lastStickNavTime = now
+    }
+    // Check if we're in notifications navigation mode
+    else if (focusArea === 'notifications-nav') {
+      navigateNotificationsNav('down')
+      lastStickNavTime = now
+    }
+    // Check if we're in notifications content mode
+    else if (focusArea === 'notifications-content') {
+      navigateNotifications('down')
       lastStickNavTime = now
     }
     // Check if we're in settings display controls mode

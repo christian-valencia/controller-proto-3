@@ -231,10 +231,100 @@ function loop() {
   
   // Update visual feedback
   updateVisualFeedback()
-  
-  
-  requestAnimationFrame(loop)
 }
+
+// Focus detection and gamepad activation system
+function ensureDocumentFocus() {
+  if (!document.hasFocus()) {
+    console.log('🔥 CRITICAL: Document does not have focus - this prevents gamepad detection!')
+    
+    // Create a prominent focus prompt
+    const focusPrompt = document.createElement('div')
+    focusPrompt.id = 'focus-prompt'
+    focusPrompt.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 50, 50, 0.95);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        z-index: 10000;
+        border: 3px solid #ff6666;
+        box-shadow: 0 0 20px rgba(255, 50, 50, 0.5);
+      ">
+        🎮 CONTROLLER SETUP REQUIRED<br><br>
+        Tap anywhere on screen to enable gamepad detection<br>
+        <small style="font-size: 14px; opacity: 0.8;">Browser security requires user interaction</small>
+      </div>
+    `
+    document.body.appendChild(focusPrompt)
+    
+    // Focus activation handler
+    const activateFocus = () => {
+      console.log('🎯 User interaction detected - activating focus and gamepad API')
+      if (document.getElementById('focus-prompt')) {
+        document.body.removeChild(focusPrompt)
+      }
+      
+      // Force focus
+      window.focus()
+      document.body.focus()
+      
+      // Re-initialize gamepad detection after focus
+      setTimeout(() => {
+        console.log('🔄 Reinitializing gamepad detection after focus...')
+        initializeGamepads()
+        debugGamepadState()
+      }, 100)
+    }
+    
+    // Multiple activation triggers
+    document.addEventListener('click', activateFocus, { once: true })
+    document.addEventListener('touchstart', activateFocus, { once: true })
+    document.addEventListener('keydown', activateFocus, { once: true })
+    
+    return false // Focus not ready
+  }
+  return true // Focus is ready
+}
+
+// Initialize focus monitoring
+function initializeFocusMonitoring() {
+  // Check focus on initial load
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      ensureDocumentFocus()
+    }, 500)
+  })
+  
+  // Re-check focus when visibility changes
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      setTimeout(() => {
+        ensureDocumentFocus()
+      }, 100)
+    }
+  })
+  
+  // Re-check focus when window gains focus
+  window.addEventListener('focus', () => {
+    console.log('🎯 Window focus gained - checking gamepad availability')
+    setTimeout(() => {
+      debugGamepadState()
+    }, 100)
+  })
+}
+
+// Initialize focus monitoring immediately
+initializeFocusMonitoring()
+
+requestAnimationFrame(loop)
 
 function handleInputActions() {
   // Debug: Check if any inputs are being detected
@@ -2435,5 +2525,12 @@ function handleAppInputs() {
   // This is where you'd delegate to specific app input handlers
 }
 
-// Start the application
+// Start the application - but first ensure we have focus for gamepad detection
+console.log('🚀 Starting application...')
+
+// Check if document has focus, show prompt if not
+if (!ensureDocumentFocus()) {
+  console.log('⏳ Waiting for user interaction to enable gamepad detection...')
+}
+
 requestAnimationFrame(loop)

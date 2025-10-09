@@ -198,6 +198,12 @@ function loop() {
   if (input.isDown('Y') || input.justPressed('Y')) {
     console.log('🔍 Y BUTTON ACTIVE - isDown:', input.isDown('Y'), 'justPressed:', input.justPressed('Y'), 'UIState:', currentUIState)
   }
+  
+  // Also monitor raw gamepad Y button every frame
+  const rawGamepad = input.firstGamepad()
+  if (rawGamepad && rawGamepad.buttons[3] && rawGamepad.buttons[3].pressed) {
+    console.log('🔥 RAW Y BUTTON PRESSED - InputManager Y:', input.isDown('Y'))
+  }
 
   // Debug: Log current state every 300 frames (about 5 seconds)
   if (DEBUG && debugCounter % 300 === 0) {
@@ -306,8 +312,21 @@ function ensureGamepadActivation() {
         setTimeout(() => {
           console.log('🧪 Testing Y button detection after gamepad activation...')
           const isYDown = input.isDown('Y')
-          const gamepadState = input.inputManager ? input.inputManager.gamepadManager : 'unknown'
-          console.log('Y button state:', isYDown, 'GamepadManager state:', gamepadState)
+          const firstGamepad = input.firstGamepad()
+          console.log('Y button state:', isYDown, 'First gamepad:', firstGamepad ? firstGamepad.id : 'none')
+          
+          // Test raw gamepad button mapping
+          if (firstGamepad && firstGamepad.buttons) {
+            console.log('🔍 Raw gamepad buttons (current state):')
+            console.log('Button 0 (A):', firstGamepad.buttons[0]?.pressed)
+            console.log('Button 1 (B):', firstGamepad.buttons[1]?.pressed) 
+            console.log('Button 2 (X):', firstGamepad.buttons[2]?.pressed)
+            console.log('Button 3 (Y):', firstGamepad.buttons[3]?.pressed)
+            console.log('Total buttons:', firstGamepad.buttons.length)
+            
+            // Prompt user to test Y button
+            console.log('🧪 PRESS AND HOLD Y BUTTON NOW to test raw detection...')
+          }
         }, 100)
         
         // Remove the activation check

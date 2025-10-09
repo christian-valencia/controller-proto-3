@@ -233,6 +233,94 @@ function loop() {
   updateVisualFeedback()
 }
 
+// Gamepad activation system - browsers require controller button press to detect gamepads
+function ensureGamepadActivation() {
+  const gamepads = navigator.getGamepads()
+  const hasGamepads = Array.from(gamepads).some(gp => gp !== null)
+  
+  if (!hasGamepads && !document.getElementById('gamepad-prompt')) {
+    console.log('🎮 No gamepads detected - showing activation prompt')
+    
+    // Create a gamepad activation prompt
+    const gamepadPrompt = document.createElement('div')
+    gamepadPrompt.id = 'gamepad-prompt'
+    gamepadPrompt.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 150, 255, 0.95);
+        color: white;
+        padding: 25px;
+        border-radius: 12px;
+        text-align: center;
+        font-size: 20px;
+        font-weight: bold;
+        z-index: 10000;
+        border: 3px solid #4CAF50;
+        box-shadow: 0 0 25px rgba(0, 150, 255, 0.6);
+        max-width: 400px;
+      ">
+        🎮 CONTROLLER ACTIVATION<br><br>
+        <div style="font-size: 16px; margin: 15px 0;">
+          Press ANY button on your controller<br>
+          to activate gamepad detection
+        </div>
+        <div style="font-size: 14px; opacity: 0.8; margin-top: 10px;">
+          Browser requires controller interaction first
+        </div>
+        <div style="font-size: 12px; opacity: 0.7; margin-top: 15px;">
+          Make sure your controller is connected and in pairing mode
+        </div>
+      </div>
+    `
+    document.body.appendChild(gamepadPrompt)
+    
+    // Add gamepad event listeners for activation
+    const checkForGamepadActivation = () => {
+      const updatedGamepads = navigator.getGamepads()
+      const activatedGamepads = Array.from(updatedGamepads).filter(gp => gp !== null)
+      
+      if (activatedGamepads.length > 0) {
+        console.log('🎯 GAMEPAD ACTIVATED! Found:', activatedGamepads.length, 'controller(s)')
+        if (document.getElementById('gamepad-prompt')) {
+          document.body.removeChild(gamepadPrompt)
+        }
+        
+        // Log detected controllers
+        activatedGamepads.forEach((gp, index) => {
+          console.log(`✅ Controller ${index}: ${gp.id}`)
+        })
+        
+        // Remove the activation check
+        window.removeEventListener('gamepadconnected', checkForGamepadActivation)
+        
+        return true
+      }
+      return false
+    }
+    
+    // Listen for gamepad connection events
+    window.addEventListener('gamepadconnected', (event) => {
+      console.log('🎮 Gamepad connected event:', event.gamepad.id)
+      checkForGamepadActivation()
+    })
+    
+    // Also poll for gamepad detection periodically
+    const pollForGamepads = () => {
+      if (!checkForGamepadActivation()) {
+        setTimeout(pollForGamepads, 500)
+      }
+    }
+    setTimeout(pollForGamepads, 500)
+    
+    return false // Gamepads not ready
+  }
+  
+  return hasGamepads // Return true if gamepads are available
+}
+
 // Focus detection and gamepad activation system
 function ensureDocumentFocus() {
   if (!document.hasFocus()) {
@@ -276,11 +364,10 @@ function ensureDocumentFocus() {
       window.focus()
       document.body.focus()
       
-      // Re-initialize gamepad detection after focus
+      // Check for gamepad activation after focus
       setTimeout(() => {
-        console.log('🔄 Reinitializing gamepad detection after focus...')
-        initializeGamepads()
-        debugGamepadState()
+        console.log('🔄 Checking for gamepad activation after focus...')
+        ensureGamepadActivation()
       }, 100)
     }
     
@@ -291,7 +378,9 @@ function ensureDocumentFocus() {
     
     return false // Focus not ready
   }
-  return true // Focus is ready
+  
+  // Focus is ready, check gamepad activation
+  return ensureGamepadActivation()
 }
 
 // Initialize focus monitoring
@@ -316,6 +405,7 @@ function initializeFocusMonitoring() {
   window.addEventListener('focus', () => {
     console.log('🎯 Window focus gained - checking gamepad availability')
     setTimeout(() => {
+      ensureGamepadActivation()
       debugGamepadState()
     }, 100)
   })
@@ -2525,12 +2615,14 @@ function handleAppInputs() {
   // This is where you'd delegate to specific app input handlers
 }
 
-// Start the application - but first ensure we have focus for gamepad detection
+// Start the application - ensure focus and gamepad activation
 console.log('🚀 Starting application...')
 
-// Check if document has focus, show prompt if not
+// Check document focus and gamepad activation
 if (!ensureDocumentFocus()) {
-  console.log('⏳ Waiting for user interaction to enable gamepad detection...')
+  console.log('⏳ Waiting for user interaction and controller activation...')
+} else {
+  console.log('✅ Document has focus and gamepads are ready!')
 }
 
 requestAnimationFrame(loop)

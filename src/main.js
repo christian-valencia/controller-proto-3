@@ -1040,10 +1040,10 @@ function updateLauncherFocus() {
       }
     })
     
-    // Move the search box
+    // Move the search box (keep horizontal centering)
     if (searchBox) {
       searchBox.style.transition = 'transform 0.3s ease'
-      searchBox.style.transform = `translateY(${scrollOffset}px)`
+      searchBox.style.transform = `translateX(-50%) translateY(${scrollOffset}px)`
     }
   }
 }
@@ -2052,7 +2052,7 @@ function handleShellInputs() {
     else if (focusArea === 'notifications-content') {
       if (leftStick.x < -STICK_THRESHOLD) {
         focusArea = 'notifications-nav'
-        selectedNotificationsNavIndex = 0
+        // Keep the current nav index (don't reset to 0)
         updateNotificationsNavFocus()
         lastStickNavTime = currentTime
       }

@@ -551,19 +551,25 @@ button:active { transform: translateY(1px); }
   transform: translateX(-50%);
   width: 320px;
   height: 64px;
-  border-radius: 12px;
+  background-color: rgba(37, 40, 44, 0.6);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(107, 117, 132, 0.6);
+  border-image: initial;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: space-evenly;
   padding: 0 20px;
   box-sizing: border-box;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   transition: bottom 0.5s ease, opacity 0.1s ease;
   z-index: 2;
 }
 
 /* Shell Navigation Visible State */
 #shell-nav.visible {
-  bottom: 20px; /* 20px margin from bottom edge */
+  bottom: 24px; /* 24px margin from bottom edge */
 }
 
 /* Navigation Items */
@@ -841,7 +847,8 @@ button:active { transform: translateY(1px); }
 .library-search-box {
   position: absolute;
   top: 28px;
-  left: 64px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 400px;
   height: 40px;
   background: rgba(0, 0, 0, 0.6);
@@ -854,7 +861,7 @@ button:active { transform: translateY(1px); }
   outline: none;
   box-sizing: border-box;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  transition: border-color 0.2s ease, border-width 0.2s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.2s ease, border-width 0.2s ease, box-shadow 0.3s ease;
 }
 
 .library-search-box::placeholder {

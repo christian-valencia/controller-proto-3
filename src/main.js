@@ -1371,10 +1371,8 @@ function filterGalleryContent() {
       }
     })
     
-    // Move to media area and focus first visible item
-    focusArea = 'gallery-media'
-    selectedMediaRow = 0
-    selectedMediaIndex = 0
+    // Stay in nav area, just re-focus the selected nav item
+    updateGalleryNavFocus()
     updateMediaFocus()
   }, 300) // Match the CSS transition duration
 }
@@ -1499,27 +1497,109 @@ function navigateNotificationsNav(direction) {
   }
 }
 
+function filterNotificationsContent() {
+  const navItems = document.querySelectorAll('#shell-notifications .nav-page-item')
+  const notifications = document.querySelectorAll('#shell-notifications .notification')
+  const header = document.querySelector('.notifications-header h1')
+  
+  if (!navItems || navItems.length === 0) return
+  
+  // Remove 'selected' class from all nav items
+  navItems.forEach(item => item.classList.remove('selected'))
+  
+  // Remove 'focused' class from all nav items (no red border when moving to content)
+  navItems.forEach(item => item.classList.remove('focused'))
+  
+  // Add 'selected' class to currently selected nav item
+  if (navItems[selectedNotificationsNavIndex]) {
+    navItems[selectedNotificationsNavIndex].classList.add('selected')
+  }
+  
+  // Get filter type based on selected nav index
+  // 0 = All, 1 = Urgent, 2 = Social, 3 = Game updates, 4 = App updates, 5 = System updates
+  let filterType = 'all'
+  let headerText = 'All notifications'
+  
+  if (selectedNotificationsNavIndex === 1) {
+    filterType = 'urgent'
+    headerText = 'Urgent'
+  } else if (selectedNotificationsNavIndex === 2) {
+    filterType = 'social'
+    headerText = 'Social'
+  } else if (selectedNotificationsNavIndex === 3) {
+    filterType = 'game-update'
+    headerText = 'Game updates'
+  } else if (selectedNotificationsNavIndex === 4) {
+    filterType = 'app-update'
+    headerText = 'App updates'
+  } else if (selectedNotificationsNavIndex === 5) {
+    filterType = 'system-update'
+    headerText = 'System updates'
+  }
+  
+  // Update header text
+  if (header) {
+    header.textContent = headerText
+  }
+  
+  // Fade out all items first
+  notifications.forEach(item => {
+    item.classList.add('fade-out')
+  })
+  
+  // Wait for fade out, then filter and fade in
+  setTimeout(() => {
+    // Filter notifications
+    notifications.forEach(item => {
+      const itemTypes = item.getAttribute('data-type')
+      
+      if (filterType === 'all') {
+        // Show all items
+        item.style.display = ''
+        item.classList.remove('fade-out')
+        item.classList.add('fade-in')
+      } else if (itemTypes && itemTypes.includes(filterType)) {
+        // Show matching items (supports multiple data types)
+        item.style.display = ''
+        item.classList.remove('fade-out')
+        item.classList.add('fade-in')
+      } else {
+        // Hide non-matching items
+        item.style.display = 'none'
+        item.classList.remove('fade-out')
+      }
+    })
+    
+    // Stay in nav area, just re-focus the selected nav item
+    updateNotificationsNavFocus()
+  }, 300) // Match the CSS transition duration
+}
+
 // Notifications Content Functions
 function updateNotificationFocus() {
-  const notifications = document.querySelectorAll('#shell-notifications .notification')
+  const allNotifications = document.querySelectorAll('#shell-notifications .notification')
+  
+  // Only work with visible notifications
+  const notifications = Array.from(allNotifications).filter(item => item.style.display !== 'none')
+  
   const navItems = document.querySelectorAll('#shell-notifications .nav-page-item')
   const contentContainer = document.querySelector('#shell-notifications .notifications-list')
   
   if (!notifications || notifications.length === 0) return
   
   // Remove focused class from all notifications
-  notifications.forEach(notification => notification.classList.remove('focused'))
+  allNotifications.forEach(notification => notification.classList.remove('focused'))
   
   // Remove focused class from all nav items (clear nav focus when in content)
   navItems.forEach(item => item.classList.remove('focused'))
   
-  // Add focused class to selected notification
+  // Add focused class to selected visible notification
   if (notifications[selectedNotificationIndex]) {
     notifications[selectedNotificationIndex].classList.add('focused')
   }
   
   // Handle scrolling when reaching 5th notification (index 4) or beyond
-  if (contentContainer && selectedNotificationIndex >= 4) {
+  if (contentContainer && selectedNotificationIndex >= 4 && notifications.length > 4) {
     // Scroll to show the 5th notification with 72px margin
     const fifthNotification = notifications[4]
     if (fifthNotification) {
@@ -1535,10 +1615,18 @@ function updateNotificationFocus() {
 }
 
 function navigateNotifications(direction) {
+  // Get only visible notifications for boundary calculation
+  const allNotifications = document.querySelectorAll('#shell-notifications .notification')
+  const visibleNotifications = Array.from(allNotifications).filter(item => item.style.display !== 'none')
+  
+  if (visibleNotifications.length === 0) return
+  
+  const maxIndex = visibleNotifications.length - 1
+  
   if (direction === 'up' && selectedNotificationIndex > 0) {
     selectedNotificationIndex--
     updateNotificationFocus()
-  } else if (direction === 'down' && selectedNotificationIndex < NOTIFICATION_ITEMS - 1) {
+  } else if (direction === 'down' && selectedNotificationIndex < maxIndex) {
     selectedNotificationIndex++
     updateNotificationFocus()
   }
@@ -1621,8 +1709,12 @@ function showShellContainer(containerName) {
   
   // If opening gallery, start in content area with "All" filter
   if (containerName === 'gallery') {
+    // Reset to "All" nav item
+    selectedGalleryNavIndex = 0
+    
     // Mark "All" nav item as selected
     const navItems = document.querySelectorAll('.gallery-nav-pages .nav-page-item')
+    navItems.forEach(item => item.classList.remove('selected'))
     if (navItems[0]) {
       navItems[0].classList.add('selected')
     }
@@ -1637,17 +1729,25 @@ function showShellContainer(containerName) {
     updateMediaFocus()
   }
   
-  // If opening notifications, enter notifications content mode (focus on first notification)
+  // If opening notifications, start in content area with "All" filter
   if (containerName === 'notifications') {
-    focusArea = 'notifications-content'
-    selectedNotificationIndex = 0
-    updateNotificationFocus()
+    // Reset to "All" nav item
+    selectedNotificationsNavIndex = 0
     
-    // Mark first item as selected (All notifications)
+    // Mark "All" nav item as selected
     const navItems = document.querySelectorAll('#shell-notifications .nav-page-item')
+    navItems.forEach(item => item.classList.remove('selected'))
     if (navItems[0]) {
       navItems[0].classList.add('selected')
     }
+    
+    // Initialize filter to show all content
+    filterNotificationsContent()
+    
+    // Start in content area, focused on first notification
+    focusArea = 'notifications-content'
+    selectedNotificationIndex = 0
+    updateNotificationFocus()
   }
   
   // Don't position focus since it's hidden with opacity 0
@@ -2313,6 +2413,10 @@ function handleShellInputs() {
     } else if (focusArea === 'gallery-nav') {
       // A button activates filter when in gallery navigation
       filterGalleryContent()
+      RumbleFeedback.confirmation()
+    } else if (focusArea === 'notifications-nav') {
+      // A button activates filter when in notifications navigation
+      filterNotificationsContent()
       RumbleFeedback.confirmation()
     } else if (focusArea === 'shell-surface') {
       // A button actions within shell surface (future functionality)

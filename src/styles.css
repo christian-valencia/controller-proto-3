@@ -1586,15 +1586,25 @@ button:active { transform: translateY(1px); }
   box-sizing: border-box;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: border-color 0.2s ease, border-width 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, border-width 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
   flex-shrink: 0;
   overflow: visible;
+  opacity: 1;
 }
 
 .notification.focused {
   border: 2px solid #B13A45; /* Red color */
   box-shadow: 0 8px 16px rgba(177, 58, 69, 0.4); /* Enhanced red drop shadow */
   transform: scale(1.02); /* Slight scale up */
+}
+
+/* Fade animations for filtering */
+.notification.fade-out {
+  opacity: 0;
+}
+
+.notification.fade-in {
+  opacity: 1;
 }
 
 .notification:last-child {

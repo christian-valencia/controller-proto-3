@@ -1,4 +1,4 @@
-export type ButtonName =
+﻿export type ButtonName =
   | 'A' | 'B' | 'X' | 'Y'
   | 'LB' | 'RB' | 'LT' | 'RT'
   | 'LS' | 'RS'

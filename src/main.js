@@ -82,7 +82,7 @@ let hasSteamBeenLaunched = false // Flag to prevent Steam from being launched ag
 let selectedLauncherIndex = 0 // Index of currently selected launcher app
 let selectedLauncherRow = -1 // Index of currently selected row (-1=search box, 0-2=launcher rows)
 const LAUNCHER_ROWS = 3
-const LAUNCHER_COUNTS_PER_ROW = [5, 8, 6] // Number of items in each row: Launchers(5), All games(8), All apps(6)
+const LAUNCHER_COUNTS_PER_ROW = [6, 8, 7] // Number of items in each row: Launchers(6), All games(8), All apps(7)
 
 // Settings Navigation State
 let selectedSettingsNavIndex = 0 // Index of currently selected settings nav item (0-10)
@@ -104,7 +104,7 @@ const NOTIFICATION_ITEMS = 8 // Total number of notification containers
 let selectedMediaRow = 0 // Index of currently selected media row (0-3 for 4 rows of 2 items)
 let selectedMediaIndex = 0 // Index within the row (0-1 for 2 items per row)
 const MEDIA_ITEMS_PER_ROW = 2
-const MEDIA_ROWS = 4 // 8 items total, 2 per row = 4 rows
+const MEDIA_ROWS = 5 // 9 items total, 2 per row = 5 rows
 
 // Settings Display Controls State
 let selectedDisplayControlIndex = 0 // Index of currently selected display control (0-8: 3 controls per section ├ù 3 sections)
@@ -1303,14 +1303,93 @@ function navigateGalleryNav(direction) {
   }
 }
 
+// Gallery Filter Function
+function filterGalleryContent() {
+  const navItems = document.querySelectorAll('.gallery-nav-pages .nav-page-item')
+  const mediaItems = document.querySelectorAll('.gallery-media-item')
+  const header = document.querySelector('.gallery-header h1')
+  
+  if (!navItems || navItems.length === 0) return
+  
+  // Remove 'selected' class from all nav items
+  navItems.forEach(item => item.classList.remove('selected'))
+  
+  // Remove 'focused' class from all nav items (no red border when moving to content)
+  navItems.forEach(item => item.classList.remove('focused'))
+  
+  // Add 'selected' class to currently selected nav item
+  if (navItems[selectedGalleryNavIndex]) {
+    navItems[selectedGalleryNavIndex].classList.add('selected')
+  }
+  
+  // Get filter type based on selected nav index
+  // 0 = All, 1 = Photos, 2 = Videos, 3 = Files
+  let filterType = 'all'
+  let headerText = 'All content'
+  
+  if (selectedGalleryNavIndex === 1) {
+    filterType = 'image'
+    headerText = 'Photos'
+  } else if (selectedGalleryNavIndex === 2) {
+    filterType = 'video'
+    headerText = 'Videos'
+  } else if (selectedGalleryNavIndex === 3) {
+    filterType = 'file'
+    headerText = 'Files'
+  }
+  
+  // Update header text
+  if (header) {
+    header.textContent = headerText
+  }
+  
+  // Fade out all items first
+  mediaItems.forEach(item => {
+    item.classList.add('fade-out')
+  })
+  
+  // Wait for fade out, then filter and fade in
+  setTimeout(() => {
+    // Filter media items
+    mediaItems.forEach(item => {
+      const itemType = item.getAttribute('data-type')
+      
+      if (filterType === 'all') {
+        // Show all items
+        item.style.display = ''
+        item.classList.remove('fade-out')
+        item.classList.add('fade-in')
+      } else if (itemType === filterType) {
+        // Show matching items
+        item.style.display = ''
+        item.classList.remove('fade-out')
+        item.classList.add('fade-in')
+      } else {
+        // Hide non-matching items
+        item.style.display = 'none'
+        item.classList.remove('fade-out')
+      }
+    })
+    
+    // Move to media area and focus first visible item
+    focusArea = 'gallery-media'
+    selectedMediaRow = 0
+    selectedMediaIndex = 0
+    updateMediaFocus()
+  }, 300) // Match the CSS transition duration
+}
+
 // Gallery Media Navigation Functions
 function updateMediaFocus() {
-  const mediaItems = document.querySelectorAll('.gallery-media-item')
+  const allMediaItems = document.querySelectorAll('.gallery-media-item')
+  
+  // Only work with visible items
+  const mediaItems = Array.from(allMediaItems).filter(item => item.style.display !== 'none')
   
   if (!mediaItems || mediaItems.length === 0) return
   
   // Remove focused class from all items
-  mediaItems.forEach(item => item.classList.remove('focused'))
+  allMediaItems.forEach(item => item.classList.remove('focused'))
   
   // Calculate the flat index from row and column
   const flatIndex = selectedMediaRow * MEDIA_ITEMS_PER_ROW + selectedMediaIndex
@@ -1319,23 +1398,45 @@ function updateMediaFocus() {
   if (mediaItems[flatIndex]) {
     mediaItems[flatIndex].classList.add('focused')
     
-    // Simple scroll logic for media grid
+    // Improved scroll logic for media grid
     const mediaGrid = document.querySelector('.gallery-media-grid')
-    if (mediaGrid && selectedMediaRow >= 2) {
-      // Scroll to show 3rd and 4th rows
-      const thirdRowItem = mediaItems[2 * MEDIA_ITEMS_PER_ROW]
-      if (thirdRowItem) {
-        const itemTop = thirdRowItem.offsetTop
-        mediaGrid.scrollTo({ top: itemTop - 100, behavior: 'smooth' })
+    if (mediaGrid) {
+      if (selectedMediaRow >= 3) {
+        // For rows 3+ (4th row and beyond), scroll more to show bottom items
+        const targetRowIndex = Math.min(selectedMediaRow, Math.floor((mediaItems.length - 1) / MEDIA_ITEMS_PER_ROW))
+        const itemsInTargetRow = mediaItems.filter((_, idx) => Math.floor(idx / MEDIA_ITEMS_PER_ROW) === targetRowIndex)
+        if (itemsInTargetRow.length > 0) {
+          const itemTop = itemsInTargetRow[0].offsetTop
+          mediaGrid.scrollTo({ top: itemTop - 50, behavior: 'smooth' })
+        }
+      } else if (selectedMediaRow >= 2) {
+        // For row 2 (3rd row), scroll moderately
+        const visibleInRow2 = mediaItems.filter((_, idx) => Math.floor(idx / MEDIA_ITEMS_PER_ROW) === 2)
+        if (visibleInRow2.length > 0) {
+          const itemTop = visibleInRow2[0].offsetTop
+          mediaGrid.scrollTo({ top: itemTop - 100, behavior: 'smooth' })
+        }
+      } else {
+        // Reset scroll for rows 0-1
+        mediaGrid.scrollTo({ top: 0, behavior: 'smooth' })
       }
-    } else if (mediaGrid) {
-      // Reset scroll for rows 0-1
-      mediaGrid.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 }
 
 function navigateMediaItems(direction) {
+  // Get only visible items for boundary calculation
+  const allMediaItems = document.querySelectorAll('.gallery-media-item')
+  const visibleItems = Array.from(allMediaItems).filter(item => item.style.display !== 'none')
+  
+  if (visibleItems.length === 0) return
+  
+  // Calculate how many items in current row
+  const currentFlatIndex = selectedMediaRow * MEDIA_ITEMS_PER_ROW + selectedMediaIndex
+  const totalVisibleItems = visibleItems.length
+  const maxRow = Math.floor((totalVisibleItems - 1) / MEDIA_ITEMS_PER_ROW)
+  const itemsInCurrentRow = Math.min(MEDIA_ITEMS_PER_ROW, totalVisibleItems - (selectedMediaRow * MEDIA_ITEMS_PER_ROW))
+  
   if (direction === 'left') {
     if (selectedMediaIndex > 0) {
       selectedMediaIndex--
@@ -1345,17 +1446,26 @@ function navigateMediaItems(direction) {
       focusArea = 'gallery-nav'
       updateGalleryNavFocus()
       // Remove focus from media items
-      const mediaItems = document.querySelectorAll('.gallery-media-item')
-      mediaItems.forEach(item => item.classList.remove('focused'))
+      allMediaItems.forEach(item => item.classList.remove('focused'))
     }
-  } else if (direction === 'right' && selectedMediaIndex < MEDIA_ITEMS_PER_ROW - 1) {
+  } else if (direction === 'right' && selectedMediaIndex < itemsInCurrentRow - 1) {
     selectedMediaIndex++
     updateMediaFocus()
   } else if (direction === 'up' && selectedMediaRow > 0) {
     selectedMediaRow--
+    // Check if new row has fewer items
+    const itemsInNewRow = Math.min(MEDIA_ITEMS_PER_ROW, totalVisibleItems - (selectedMediaRow * MEDIA_ITEMS_PER_ROW))
+    if (selectedMediaIndex >= itemsInNewRow) {
+      selectedMediaIndex = itemsInNewRow - 1
+    }
     updateMediaFocus()
-  } else if (direction === 'down' && selectedMediaRow < MEDIA_ROWS - 1) {
+  } else if (direction === 'down' && selectedMediaRow < maxRow) {
     selectedMediaRow++
+    // Check if new row has fewer items
+    const itemsInNewRow = Math.min(MEDIA_ITEMS_PER_ROW, totalVisibleItems - (selectedMediaRow * MEDIA_ITEMS_PER_ROW))
+    if (selectedMediaIndex >= itemsInNewRow) {
+      selectedMediaIndex = itemsInNewRow - 1
+    }
     updateMediaFocus()
   }
 }
@@ -1509,18 +1619,22 @@ function showShellContainer(containerName) {
     }
   }
   
-  // If opening gallery, enter gallery navigation mode
+  // If opening gallery, start in content area with "All" filter
   if (containerName === 'gallery') {
-    focusArea = 'gallery-media'
-    selectedMediaRow = 0
-    selectedMediaIndex = 0
-    updateMediaFocus()
-    
-    // Mark first item as selected (All)
+    // Mark "All" nav item as selected
     const navItems = document.querySelectorAll('.gallery-nav-pages .nav-page-item')
     if (navItems[0]) {
       navItems[0].classList.add('selected')
     }
+    
+    // Initialize filter to show all content
+    filterGalleryContent()
+    
+    // Start in media area, focused on first item
+    focusArea = 'gallery-media'
+    selectedMediaRow = 0
+    selectedMediaIndex = 0
+    updateMediaFocus()
   }
   
   // If opening notifications, enter notifications content mode (focus on first notification)
@@ -2196,6 +2310,10 @@ function handleShellInputs() {
         showShellNotifications()
         RumbleFeedback.confirmation()
       }
+    } else if (focusArea === 'gallery-nav') {
+      // A button activates filter when in gallery navigation
+      filterGalleryContent()
+      RumbleFeedback.confirmation()
     } else if (focusArea === 'shell-surface') {
       // A button actions within shell surface (future functionality)
       RumbleFeedback.lightTap()

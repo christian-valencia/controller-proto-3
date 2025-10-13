@@ -36,8 +36,8 @@
             <!-- Progress Ring -->
             <div id="progress-ring">
               <svg width="36" height="36">
-                <circle cx="18" cy="18" r="16" stroke="rgba(177,58,69,0.3)" stroke-width="2" fill="none"/>
-                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="#B13A45" stroke-width="2" fill="none" 
+                <circle cx="18" cy="18" r="16" stroke="rgba(177,58,69,0.3)" stroke-width="3" fill="none"/>
+                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="#B13A45" stroke-width="3" fill="none" 
                         stroke-dasharray="100.53" stroke-dashoffset="100.53" transform="rotate(-90 18 18)"
                         style="transition: stroke-dashoffset 0.05s linear;"/>
                 <text x="18" y="20" text-anchor="middle" dominant-baseline="middle" 
@@ -89,7 +89,7 @@
             </video>
             <div class="preview-titlebar">
               <img src="assets/icons/silksong.png" alt="Silksong" class="titlebar-icon">
-              <span class="titlebar-text">Silksong</span>
+              <span class="titlebar-text">Hollow Knight: Silksong</span>
             </div>
           </div>
           <div id="blue-preview" class="preview-container">
@@ -129,6 +129,7 @@
                   <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
+                  <div class="launcher-app"></div>
                 </div>
               </div>
               <div class="launcher-row-container">
@@ -147,6 +148,7 @@
               <div class="launcher-row-container">
                 <h2 class="launcher-row-title">All apps</h2>
                 <div class="launchers">
+                  <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
@@ -451,19 +453,27 @@
               <div class="gallery-nav-title">Gallery</div>
               <div class="gallery-nav-pages">
                 <div class="nav-page-item selected">
-                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-icon">
+                    <img src="/assets/icons/gallery.svg" alt="Gallery" />
+                  </div>
                   <div class="nav-page-text">All</div>
                 </div>
                 <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-icon">
+                    <img src="/assets/icons/picture.svg" alt="Photos" />
+                  </div>
                   <div class="nav-page-text">Photos</div>
                 </div>
                 <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-icon">
+                    <img src="/assets/icons/video.svg" alt="Videos" />
+                  </div>
                   <div class="nav-page-text">Videos</div>
                 </div>
                 <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-icon">
+                    <img src="/assets/icons/file.svg" alt="Files" />
+                  </div>
                   <div class="nav-page-text">Files</div>
                 </div>
               </div>
@@ -473,29 +483,59 @@
                 <h1>All content</h1>
               </div>
               <div class="gallery-media-grid">
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                <div class="gallery-media-item" data-type="video">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                    <span class="media-item-name">Hornet Boss Fight</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                <div class="gallery-media-item" data-type="video">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                    <span class="media-item-name">Deepnest Exploration</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/picture-icon-gallery.svg" class="media-type-icon" alt="Image" />
+                <div class="gallery-media-item" data-type="image">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/picture.svg" class="media-type-icon" alt="Image" />
+                    <span class="media-item-name">Moss Grotto Screenshot</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                <div class="gallery-media-item" data-type="video">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                    <span class="media-item-name">Silk Abilities Showcase</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                <div class="gallery-media-item" data-type="video">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                    <span class="media-item-name">Lace Combat Demo</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/picture-icon-gallery.svg" class="media-type-icon" alt="Image" />
+                <div class="gallery-media-item" data-type="image">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/picture.svg" class="media-type-icon" alt="Image" />
+                    <span class="media-item-name">Citadel Panorama</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                <div class="gallery-media-item" data-type="video">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                    <span class="media-item-name">Crystal Peaks Gameplay</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/picture-icon-gallery.svg" class="media-type-icon" alt="Image" />
+                <div class="gallery-media-item" data-type="image">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/picture.svg" class="media-type-icon" alt="Image" />
+                    <span class="media-item-name">Kingdom's Edge Sunrise</span>
+                  </div>
+                </div>
+                <div class="gallery-media-item" data-type="file">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/file.svg" class="media-type-icon" alt="File" />
+                    <span class="media-item-name">Save Game Data.json</span>
+                  </div>
                 </div>
               </div>
             </div>

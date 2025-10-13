@@ -1,4 +1,4 @@
-import { GamepadManager, ButtonName } from './GamepadManager'
+﻿import { GamepadManager, ButtonName } from './GamepadManager'
 import { KeyboardManager } from './KeyboardManager'
 
 export type { ButtonName } from './GamepadManager'

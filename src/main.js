@@ -1371,9 +1371,11 @@ function filterGalleryContent() {
       }
     })
     
+    // Remove focus from all media items (stay in nav only)
+    mediaItems.forEach(item => item.classList.remove('focused'))
+    
     // Stay in nav area, just re-focus the selected nav item
     updateGalleryNavFocus()
-    updateMediaFocus()
   }, 300) // Match the CSS transition duration
 }
 
@@ -1570,6 +1572,9 @@ function filterNotificationsContent() {
       }
     })
     
+    // Remove focus from all notifications (stay in nav only)
+    notifications.forEach(item => item.classList.remove('focused'))
+    
     // Stay in nav area, just re-focus the selected nav item
     updateNotificationsNavFocus()
   }, 300) // Match the CSS transition duration
@@ -1719,8 +1724,18 @@ function showShellContainer(containerName) {
       navItems[0].classList.add('selected')
     }
     
-    // Initialize filter to show all content
-    filterGalleryContent()
+    // Show all media items (no filter animation on init)
+    const mediaItems = document.querySelectorAll('.gallery-media-item')
+    mediaItems.forEach(item => {
+      item.style.display = ''
+      item.classList.remove('fade-out', 'fade-in')
+    })
+    
+    // Update header to "All content"
+    const header = document.querySelector('.gallery-header h1')
+    if (header) {
+      header.textContent = 'All content'
+    }
     
     // Start in media area, focused on first item
     focusArea = 'gallery-media'
@@ -1741,8 +1756,18 @@ function showShellContainer(containerName) {
       navItems[0].classList.add('selected')
     }
     
-    // Initialize filter to show all content
-    filterNotificationsContent()
+    // Show all notifications (no filter animation on init)
+    const notifications = document.querySelectorAll('#shell-notifications .notification')
+    notifications.forEach(item => {
+      item.style.display = ''
+      item.classList.remove('fade-out', 'fade-in')
+    })
+    
+    // Update header to "All notifications"
+    const header = document.querySelector('.notifications-header h1')
+    if (header) {
+      header.textContent = 'All notifications'
+    }
     
     // Start in content area, focused on first notification
     focusArea = 'notifications-content'
@@ -1886,7 +1911,7 @@ function handleShellInputs() {
     // Check if we're in notifications content mode - allow left to go back to nav
     else if (focusArea === 'notifications-content') {
       focusArea = 'notifications-nav'
-      selectedNotificationsNavIndex = 0
+      // Keep the current nav index (don't reset to 0)
       updateNotificationsNavFocus()
       lastStickNavTime = now
     }

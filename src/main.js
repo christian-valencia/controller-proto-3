@@ -156,6 +156,130 @@ function toggleFullscreen() {
   }
 }
 
+// ============================================================================
+// CONTEXTUAL LEGEND SYSTEM
+// ============================================================================
+
+// Legend contexts with controller and keyboard mappings
+const LEGEND_CONTEXTS = {
+  'lock-screen': {
+    controller: [
+      { button: 'Y', action: 'Unlock' }
+    ],
+    keyboard: [
+      { button: 'W', action: 'Unlock' }
+    ]
+  },
+  'preview': {
+    controller: [
+      { button: 'A', action: 'Select' },
+      { button: '→', action: 'Nav Right' },
+      { button: '←', action: 'Nav Left' },
+      { button: '↓', action: 'Nav Down' },
+      { button: '↑', action: 'Nav Up' }
+    ],
+    keyboard: [
+      { button: 'A', action: 'Select' },
+      { button: '→', action: 'Nav Right' },
+      { button: '←', action: 'Nav Left' },
+      { button: '↓', action: 'Nav Down' },
+      { button: '↑', action: 'Nav Up' }
+    ]
+  },
+  'preview-scaled': {
+    controller: [
+      { button: 'X', action: 'Overlay' },
+      { button: 'X', action: 'Hold for App Switching' }
+    ],
+    keyboard: [
+      { button: 'D', action: 'Overlay' },
+      { button: 'D', action: 'Hold for App Switching' }
+    ]
+  },
+  'shell-nav': {
+    controller: [
+      { button: 'A', action: 'Select' },
+      { button: '→', action: 'Nav Right' },
+      { button: '←', action: 'Nav Left' },
+      { button: '↓', action: 'Nav Down' },
+      { button: '↑', action: 'Nav Up' }
+    ],
+    keyboard: [
+      { button: 'A', action: 'Select' },
+      { button: '→', action: 'Nav Right' },
+      { button: '←', action: 'Nav Left' },
+      { button: '↓', action: 'Nav Down' },
+      { button: '↑', action: 'Nav Up' }
+    ]
+  },
+  'library': {
+    controller: [
+      { button: 'A', action: 'Select' },
+      { button: 'B', action: 'Back' }
+    ],
+    keyboard: [
+      { button: 'A', action: 'Select' },
+      { button: 'S', action: 'Back' }
+    ]
+  },
+  'gallery': {
+    controller: [
+      { button: 'A', action: 'Select' },
+      { button: 'B', action: 'Back' }
+    ],
+    keyboard: [
+      { button: 'A', action: 'Select' },
+      { button: 'S', action: 'Back' }
+    ]
+  },
+  'notifications': {
+    controller: [
+      { button: 'A', action: 'Select' },
+      { button: 'B', action: 'Back' }
+    ],
+    keyboard: [
+      { button: 'A', action: 'Select' },
+      { button: 'S', action: 'Back' }
+    ]
+  },
+  'settings': {
+    controller: [
+      { button: 'R', action: 'Adjust (Right Stick)' },
+      { button: 'B', action: 'Back' }
+    ],
+    keyboard: [
+      { button: 'S', action: 'Back' }
+    ]
+  }
+}
+
+// Update legend based on current context
+function updateLegend(context) {
+  const legendData = LEGEND_CONTEXTS[context]
+  if (!legendData) return
+
+  const controllerItems = document.querySelector('.controller-items')
+  const keyboardItems = document.querySelector('.keyboard-items')
+
+  if (controllerItems) {
+    controllerItems.innerHTML = legendData.controller.map(item => `
+      <div class="legend-item">
+        <div class="legend-button">${item.button}</div>
+        <span class="legend-action">${item.action}</span>
+      </div>
+    `).join('')
+  }
+
+  if (keyboardItems) {
+    keyboardItems.innerHTML = legendData.keyboard.map(item => `
+      <div class="legend-item">
+        <div class="legend-button">${item.button}</div>
+        <span class="legend-action">${item.action}</span>
+      </div>
+    `).join('')
+  }
+}
+
 // Main game loop
 function loop() {
   input.update()
@@ -277,6 +401,7 @@ function onHoldComplete() {
   if (greenPreview) {
     greenPreview.classList.add('preview-scaled') // Scale Silksong preview first
     isPreviewScaled = true
+    updateLegend('preview-scaled')
     
     // Play Silksong video when going fullscreen
     const silksongVideo = document.getElementById('silksong-video')
@@ -370,6 +495,7 @@ function onXHoldComplete() {
   if (activePreview && activePreview.classList.contains('preview-scaled')) {
     activePreview.classList.remove('preview-scaled')
     isPreviewScaled = false
+    updateLegend('preview')
     
     // Pause Silksong video when scaling down
     const silksongVideo = document.getElementById('silksong-video')
@@ -589,6 +715,13 @@ function changeUIState(newState) {
   if (DEBUG) console.log(`UI State: ${currentUIState} ΓåÆ ${newState}`)
   currentUIState = newState
   
+  // Update legend based on UI state
+  if (newState === UI_STATES.LOCKED) {
+    updateLegend('lock-screen')
+  } else if (newState === UI_STATES.SHELL) {
+    updateLegend('preview')
+  }
+  
   // Show/hide blur container based on unlock state
   const blurContainer = document.getElementById('blur-container')
   if (blurContainer) {
@@ -690,6 +823,7 @@ function updatePreviewPositions() {
   
   // Reset scaling state when switching apps
   isPreviewScaled = false
+  updateLegend('preview')
   
   // Only position visible apps
   const visibleCount = visibleAppNames.length
@@ -749,6 +883,7 @@ function scaleUpPreview() {
     // Scale up to 100%
     activePreview.classList.add('preview-scaled')
     isPreviewScaled = true
+    updateLegend('preview-scaled')
     
     // Play Silksong video when going fullscreen
     if (activePreview.id === 'green-preview') {
@@ -1686,6 +1821,7 @@ function showShellContainer(containerName) {
     selectedLauncherIndex = 0
     selectedLauncherRow = -1 // Start at search box
     updateLauncherFocus()
+    updateLegend('library')
   }
   
   // If opening settings, enter settings navigation mode
@@ -1693,6 +1829,7 @@ function showShellContainer(containerName) {
     focusArea = 'settings-display-controls'
     selectedDisplayControlIndex = 0
     updateDisplayControlFocus()
+    updateLegend('settings')
     
     // Initialize all sliders with their current values
     for (let i = 0; i < 3; i++) {
@@ -1742,6 +1879,7 @@ function showShellContainer(containerName) {
     selectedMediaRow = 0
     selectedMediaIndex = 0
     updateMediaFocus()
+    updateLegend('gallery')
   }
   
   // If opening notifications, start in content area with "All" filter
@@ -1773,6 +1911,7 @@ function showShellContainer(containerName) {
     focusArea = 'notifications-content'
     selectedNotificationIndex = 0
     updateNotificationFocus()
+    updateLegend('notifications')
   }
   
   // Don't position focus since it's hidden with opacity 0
@@ -1863,6 +2002,9 @@ function hideShellContainer(containerName) {
   
   // Restore previous focus position
   restorePreviousFocus()
+  
+  // Restore preview legend when closing any shell
+  updateLegend('preview')
 }
 
 // Wrapper functions for backwards compatibility
@@ -2155,6 +2297,7 @@ function handleShellInputs() {
         if (focusArea === 'shell-nav' && !isPreviewScaled) {
           focusArea = 'preview'
           updateFocusPosition()
+          updateLegend('preview')
           lastStickNavTime = currentTime
         }
       } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
@@ -2162,6 +2305,7 @@ function handleShellInputs() {
           focusArea = 'shell-nav'
           // Keep current selectedNavIndex - don't reset to 0
           updateFocusPosition()
+          updateLegend('shell-nav')
           lastStickNavTime = currentTime
         }
       }
@@ -2212,6 +2356,7 @@ function handleShellInputs() {
         focusArea = 'shell-nav'
         // Keep current selectedNavIndex - don't reset to 0
         updateFocusPosition()
+        updateLegend('shell-nav')
         lastStickNavTime = now
       }
     }
@@ -2258,6 +2403,7 @@ function handleShellInputs() {
       if (focusArea === 'shell-nav' && !isPreviewScaled) {
         focusArea = 'preview'
         updateFocusPosition()
+        updateLegend('preview')
         lastStickNavTime = now
       }
     }
@@ -2589,5 +2735,9 @@ function handleAppInputs() {
   // This is where you'd delegate to specific app input handlers
 }
 
+// Initialize the contextual legend
+updateLegend('lock-screen')
+
 // Start the application
 requestAnimationFrame(loop)
+

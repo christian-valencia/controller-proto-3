@@ -68,7 +68,7 @@ let lastAButtonPress = 0
 let isOverlayVisible = false
 
 // Focus Navigation State
-let focusArea = 'preview' // 'preview', 'shell-nav', 'shell-surface', 'library-launchers', 'settings-nav', 'gallery-nav', 'gallery-media', 'notifications-nav', 'notifications-content'
+let focusArea = 'preview' // 'preview', 'shell-nav', 'shell-surface', 'library-launchers', 'settings-nav', 'gallery-nav', 'gallery-media', 'notifications-nav', 'notifications-buttons', 'notifications-content'
 let selectedNavIndex = 0 // 0=library, 1=settings, 2=gallery, 3=notifications
 let previousFocusState = { area: 'preview', navIndex: 0, appIndex: 0 } // Store previous focus state
 let currentShellSurface = null // Track which shell surface is currently open
@@ -93,12 +93,15 @@ let selectedGalleryNavIndex = 0 // Index of currently selected gallery nav item 
 const GALLERY_NAV_ITEMS = 4 // Total number of nav items (All, Photos, Videos, Files)
 
 // Notifications Navigation State
-let selectedNotificationsNavIndex = 0 // Index of currently selected notifications nav item (0-5)
-const NOTIFICATIONS_NAV_ITEMS = 6 // Total number of nav items (All, Urgent, Social, Game updates, App updates, System updates)
+let selectedNotificationsNavIndex = 0 // Index of currently selected notifications nav item (0-3)
+const NOTIFICATIONS_NAV_ITEMS = 4 // Total number of nav items (All, Urgent, Social, Updates)
 
 // Notifications Content State
 let selectedNotificationIndex = 0 // Index of currently selected notification item (0-7 for 8 notifications)
 const NOTIFICATION_ITEMS = 8 // Total number of notification containers
+
+// Notifications Buttons State
+let selectedNotificationButtonIndex = 0 // Index of currently selected button (0=Clear all, 1=Update all)
 
 // Gallery Media Navigation State
 let selectedMediaRow = 0 // Index of currently selected media row (0-3 for 4 rows of 2 items)
@@ -164,10 +167,10 @@ function toggleFullscreen() {
 const LEGEND_CONTEXTS = {
   'lock-screen': {
     controller: [
-      { button: 'Y', action: 'Unlock' }
+      { button: 'A', action: 'Unlock' }
     ],
     keyboard: [
-      { button: 'W', action: 'Unlock' }
+      { button: 'A', action: 'Unlock' }
     ]
   },
   'preview': {
@@ -340,10 +343,10 @@ function handlePressAndHold() {
   // Only handle press and hold if lock screen is still locked
   if (currentUIState !== UI_STATES.LOCKED) return
   
-  const isYPressed = input.isDown('Y')
+  const isAPressed = input.isDown('A')
 
   
-  if (isYPressed && !isHolding) {
+  if (isAPressed && !isHolding) {
     // Start holding
     isHolding = true
     holdStartTime = Date.now()
@@ -351,13 +354,13 @@ function handlePressAndHold() {
       progressCircle.style.transition = 'none' // Remove CSS transition for manual control
       progressCircle.style.strokeDashoffset = '100.53' // Reset to full circle
     }
-  } else if (isYPressed && isHolding) {
+  } else if (isAPressed && isHolding) {
     // Continue holding - update progress
     const elapsed = Date.now() - holdStartTime
     const progress = Math.min(elapsed / HOLD_DURATION, 1)
     
     if (progressCircle) {
-      // Calculate the dash offset (circumference = 2╧Çr = 2╧Ç(16) Γëê 100.53)
+      // Calculate the dash offset (circumference = 2πr = 2π(16) ≈ 100.53)
       const circumference = 100.53
       const dashOffset = circumference * (1 - progress)
       progressCircle.style.strokeDashoffset = dashOffset.toString()
@@ -367,7 +370,7 @@ function handlePressAndHold() {
     if (progress >= 1) {
       onHoldComplete()
     }
-  } else if (!isYPressed && isHolding) {
+  } else if (!isAPressed && isHolding) {
     // Released before completion
     resetHold()
   }
@@ -1609,6 +1612,7 @@ function navigateMediaItems(direction) {
 function updateNotificationsNavFocus() {
   const navItems = document.querySelectorAll('#shell-notifications .nav-page-item')
   const notifications = document.querySelectorAll('#shell-notifications .notification')
+  const buttons = document.querySelectorAll('.notification-action-button')
   
   if (!navItems || navItems.length === 0) return
   
@@ -1617,6 +1621,9 @@ function updateNotificationsNavFocus() {
   
   // Remove focused class from all notifications (clear content focus when in nav)
   notifications.forEach(notification => notification.classList.remove('focused'))
+  
+  // Remove focused class from all buttons (clear button focus when in nav)
+  buttons.forEach(button => button.classList.remove('focused'))
   
   // Add focused class to selected nav item
   if (navItems[selectedNotificationsNavIndex]) {
@@ -1638,6 +1645,9 @@ function filterNotificationsContent() {
   const navItems = document.querySelectorAll('#shell-notifications .nav-page-item')
   const notifications = document.querySelectorAll('#shell-notifications .notification')
   const header = document.querySelector('.notifications-header h1')
+  const buttons = document.querySelectorAll('.notification-action-button')
+  const clearAllButton = buttons[0]
+  const updateAllButton = buttons[1]
   
   if (!navItems || navItems.length === 0) return
   
@@ -1653,7 +1663,7 @@ function filterNotificationsContent() {
   }
   
   // Get filter type based on selected nav index
-  // 0 = All, 1 = Urgent, 2 = Social, 3 = Game updates, 4 = App updates, 5 = System updates
+  // 0 = All, 1 = Urgent, 2 = Social, 3 = Updates
   let filterType = 'all'
   let headerText = 'All notifications'
   
@@ -1664,19 +1674,34 @@ function filterNotificationsContent() {
     filterType = 'social'
     headerText = 'Social'
   } else if (selectedNotificationsNavIndex === 3) {
-    filterType = 'game-update'
-    headerText = 'Game updates'
-  } else if (selectedNotificationsNavIndex === 4) {
-    filterType = 'app-update'
-    headerText = 'App updates'
-  } else if (selectedNotificationsNavIndex === 5) {
-    filterType = 'system-update'
-    headerText = 'System updates'
+    filterType = 'update'
+    headerText = 'Updates'
   }
   
   // Update header text
   if (header) {
     header.textContent = headerText
+  }
+  
+  // Show/hide buttons based on selected nav item
+  if (clearAllButton && updateAllButton) {
+    if (selectedNotificationsNavIndex === 1) {
+      // Urgent: hide "Clear all", show "Update all"
+      clearAllButton.style.display = 'none'
+      updateAllButton.style.display = ''
+    } else if (selectedNotificationsNavIndex === 2) {
+      // Social: show "Clear all", hide "Update all"
+      clearAllButton.style.display = ''
+      updateAllButton.style.display = 'none'
+    } else if (selectedNotificationsNavIndex === 3) {
+      // Updates: hide "Clear all", show "Update all"
+      clearAllButton.style.display = 'none'
+      updateAllButton.style.display = ''
+    } else {
+      // All: show both buttons
+      clearAllButton.style.display = ''
+      updateAllButton.style.display = ''
+    }
   }
   
   // Fade out all items first
@@ -1695,6 +1720,16 @@ function filterNotificationsContent() {
         item.style.display = ''
         item.classList.remove('fade-out')
         item.classList.add('fade-in')
+      } else if (filterType === 'update') {
+        // Show all update types (game-update, app-update, system-update)
+        if (itemTypes && (itemTypes.includes('game-update') || itemTypes.includes('app-update') || itemTypes.includes('system-update'))) {
+          item.style.display = ''
+          item.classList.remove('fade-out')
+          item.classList.add('fade-in')
+        } else {
+          item.style.display = 'none'
+          item.classList.remove('fade-out')
+        }
       } else if (itemTypes && itemTypes.includes(filterType)) {
         // Show matching items (supports multiple data types)
         item.style.display = ''
@@ -1723,6 +1758,7 @@ function updateNotificationFocus() {
   const notifications = Array.from(allNotifications).filter(item => item.style.display !== 'none')
   
   const navItems = document.querySelectorAll('#shell-notifications .nav-page-item')
+  const buttons = document.querySelectorAll('.notification-action-button')
   const contentContainer = document.querySelector('#shell-notifications .notifications-list')
   
   if (!notifications || notifications.length === 0) return
@@ -1732,6 +1768,9 @@ function updateNotificationFocus() {
   
   // Remove focused class from all nav items (clear nav focus when in content)
   navItems.forEach(item => item.classList.remove('focused'))
+  
+  // Remove focused class from all buttons (clear button focus when in content)
+  buttons.forEach(button => button.classList.remove('focused'))
   
   // Add focused class to selected visible notification
   if (notifications[selectedNotificationIndex]) {
@@ -1769,6 +1808,40 @@ function navigateNotifications(direction) {
   } else if (direction === 'down' && selectedNotificationIndex < maxIndex) {
     selectedNotificationIndex++
     updateNotificationFocus()
+  }
+}
+
+// Notifications Buttons Functions
+function updateNotificationButtonsFocus() {
+  const buttons = document.querySelectorAll('.notification-action-button')
+  const navItems = document.querySelectorAll('#shell-notifications .nav-page-item')
+  const notifications = document.querySelectorAll('#shell-notifications .notification')
+  
+  if (!buttons || buttons.length === 0) return
+  
+  // Remove focused class from all buttons
+  buttons.forEach(button => button.classList.remove('focused'))
+  
+  // Remove focused class from nav items and notifications
+  navItems.forEach(item => item.classList.remove('focused'))
+  notifications.forEach(notification => notification.classList.remove('focused'))
+  
+  // Add focused class to selected button
+  if (buttons[selectedNotificationButtonIndex]) {
+    buttons[selectedNotificationButtonIndex].classList.add('focused')
+  }
+}
+
+function navigateNotificationButtons(direction) {
+  const buttons = document.querySelectorAll('.notification-action-button')
+  if (!buttons || buttons.length === 0) return
+  
+  if (direction === 'left' && selectedNotificationButtonIndex > 0) {
+    selectedNotificationButtonIndex--
+    updateNotificationButtonsFocus()
+  } else if (direction === 'right' && selectedNotificationButtonIndex < buttons.length - 1) {
+    selectedNotificationButtonIndex++
+    updateNotificationButtonsFocus()
   }
 }
 
@@ -1986,13 +2059,18 @@ function hideShellContainer(containerName) {
   }
   
   // Clear notifications navigation state
-  if (focusArea === 'notifications-nav' || focusArea === 'notifications-content') {
+  if (focusArea === 'notifications-nav' || focusArea === 'notifications-buttons' || focusArea === 'notifications-content') {
     selectedNotificationsNavIndex = 0
     selectedNotificationIndex = 0
+    selectedNotificationButtonIndex = 0
     // Remove focused and selected class from notifications nav items
     document.querySelectorAll('#shell-notifications .nav-page-item').forEach(item => {
       item.classList.remove('focused')
       item.classList.remove('selected')
+    })
+    // Remove focused class from notification buttons
+    document.querySelectorAll('.notification-action-button').forEach(button => {
+      button.classList.remove('focused')
     })
     // Remove focused class from notification content items
     document.querySelectorAll('#shell-notifications .notification').forEach(item => {
@@ -2053,9 +2131,21 @@ function handleShellInputs() {
     // Check if we're in notifications content mode - allow left to go back to nav
     else if (focusArea === 'notifications-content') {
       focusArea = 'notifications-nav'
-      // Keep the current nav index (don't reset to 0)
       updateNotificationsNavFocus()
       lastStickNavTime = now
+    }
+    // Check if we're in notifications buttons mode - allow left to go back to nav
+    else if (focusArea === 'notifications-buttons') {
+      // First check if we can navigate within buttons
+      if (selectedNotificationButtonIndex > 0) {
+        navigateNotificationButtons('left')
+        lastStickNavTime = now
+      } else {
+        // If at first button, move back to nav
+        focusArea = 'notifications-nav'
+        updateNotificationsNavFocus()
+        lastStickNavTime = now
+      }
     }
     // Only allow navigation if not in a shell surface
     else if (focusArea !== 'shell-surface') {
@@ -2094,12 +2184,27 @@ function handleShellInputs() {
       navigateDisplayControls('right')
       lastStickNavTime = now
     }
-    // Check if we're in notifications nav mode - allow right to go to content
+    // Check if we're in notifications nav mode - allow right to go to first notification
     else if (focusArea === 'notifications-nav') {
       focusArea = 'notifications-content'
       selectedNotificationIndex = 0
       updateNotificationFocus()
       lastStickNavTime = now
+    }
+    // Check if we're in notifications buttons mode - allow right to go to content
+    else if (focusArea === 'notifications-buttons') {
+      // First check if we can navigate within buttons
+      const buttons = document.querySelectorAll('.notification-action-button')
+      if (selectedNotificationButtonIndex < buttons.length - 1) {
+        navigateNotificationButtons('right')
+        lastStickNavTime = now
+      } else {
+        // If at last button, move to content
+        focusArea = 'notifications-content'
+        selectedNotificationIndex = 0
+        updateNotificationFocus()
+        lastStickNavTime = now
+      }
     }
     // Only allow navigation if not in a shell surface
     else if (focusArea !== 'shell-surface') {
@@ -2181,7 +2286,7 @@ function handleShellInputs() {
         lastStickNavTime = currentTime
       }
     }
-    // Check if we're in notifications nav mode - allow right to go to content
+    // Check if we're in notifications nav mode - allow right to go to first notification
     else if (focusArea === 'notifications-nav') {
       if (leftStick.x > STICK_THRESHOLD) {
         focusArea = 'notifications-content'
@@ -2190,11 +2295,38 @@ function handleShellInputs() {
         lastStickNavTime = currentTime
       }
     }
+    // Check if we're in notifications buttons mode
+    else if (focusArea === 'notifications-buttons') {
+      const buttons = document.querySelectorAll('.notification-action-button')
+      if (leftStick.x > STICK_THRESHOLD) {
+        // Try to navigate right within buttons first
+        if (selectedNotificationButtonIndex < buttons.length - 1) {
+          navigateNotificationButtons('right')
+          lastStickNavTime = currentTime
+        } else {
+          // If at last button, move to content
+          focusArea = 'notifications-content'
+          selectedNotificationIndex = 0
+          updateNotificationFocus()
+          lastStickNavTime = currentTime
+        }
+      } else if (leftStick.x < -STICK_THRESHOLD) {
+        // Try to navigate left within buttons first
+        if (selectedNotificationButtonIndex > 0) {
+          navigateNotificationButtons('left')
+          lastStickNavTime = currentTime
+        } else {
+          // If at first button, move back to nav
+          focusArea = 'notifications-nav'
+          updateNotificationsNavFocus()
+          lastStickNavTime = currentTime
+        }
+      }
+    }
     // Check if we're in notifications content mode - allow left to go back to nav
     else if (focusArea === 'notifications-content') {
       if (leftStick.x < -STICK_THRESHOLD) {
         focusArea = 'notifications-nav'
-        // Keep the current nav index (don't reset to 0)
         updateNotificationsNavFocus()
         lastStickNavTime = currentTime
       }
@@ -2257,15 +2389,66 @@ function handleShellInputs() {
         navigateNotificationsNav('up')
         lastStickNavTime = currentTime
       } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
-        navigateNotificationsNav('down')
+        // If at last nav item, go to buttons
+        if (selectedNotificationsNavIndex === NOTIFICATIONS_NAV_ITEMS - 1) {
+          focusArea = 'notifications-buttons'
+          // Set button index based on which nav item we're on
+          // Social (index 2) only has "Clear all" at index 0
+          // Urgent (index 1) and Updates (index 3) only have "Update all" at index 1
+          if (selectedNotificationsNavIndex === 2) {
+            selectedNotificationButtonIndex = 0 // Focus "Clear all" for Social
+          } else {
+            selectedNotificationButtonIndex = 1 // Focus "Update all" for Urgent/Updates
+          }
+          updateNotificationButtonsFocus()
+          lastStickNavTime = currentTime
+        } else {
+          navigateNotificationsNav('down')
+          lastStickNavTime = currentTime
+        }
+      }
+    }
+    // Check if we're in notifications buttons mode
+    else if (focusArea === 'notifications-buttons') {
+      const buttons = document.querySelectorAll('.notification-action-button')
+      if (leftStick.x > STICK_THRESHOLD) { // Stick pushed RIGHT
+        // Try to navigate right within buttons first
+        if (selectedNotificationButtonIndex < buttons.length - 1) {
+          navigateNotificationButtons('right')
+          lastStickNavTime = currentTime
+        }
+      } else if (leftStick.x < -STICK_THRESHOLD) { // Stick pushed LEFT
+        // Try to navigate left within buttons first
+        if (selectedNotificationButtonIndex > 0) {
+          navigateNotificationButtons('left')
+          lastStickNavTime = currentTime
+        }
+      } else if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
+        // Go back to nav
+        focusArea = 'notifications-nav'
+        updateNotificationsNavFocus()
+        lastStickNavTime = currentTime
+      } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
+        // Go to first notification
+        focusArea = 'notifications-content'
+        selectedNotificationIndex = 0
+        updateNotificationFocus()
         lastStickNavTime = currentTime
       }
     }
     // Check if we're in notifications content mode
     else if (focusArea === 'notifications-content') {
       if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
-        navigateNotifications('up')
-        lastStickNavTime = currentTime
+        // If at first notification, go back to buttons (focus on "Update all")
+        if (selectedNotificationIndex === 0) {
+          focusArea = 'notifications-buttons'
+          selectedNotificationButtonIndex = 1 // Set to "Update all" button
+          updateNotificationButtonsFocus()
+          lastStickNavTime = currentTime
+        } else {
+          navigateNotifications('up')
+          lastStickNavTime = currentTime
+        }
       } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
         navigateNotifications('down')
         lastStickNavTime = currentTime
@@ -2332,7 +2515,29 @@ function handleShellInputs() {
     }
     // Check if we're in notifications navigation mode
     else if (focusArea === 'notifications-nav') {
-      navigateNotificationsNav('down')
+      // If at last nav item, go to buttons
+      if (selectedNotificationsNavIndex === NOTIFICATIONS_NAV_ITEMS - 1) {
+        focusArea = 'notifications-buttons'
+        // Set button index based on which nav item we're on
+        // Social (index 2) only has "Clear all" at index 0
+        // Urgent (index 1) and Updates (index 3) only have "Update all" at index 1
+        if (selectedNotificationsNavIndex === 2) {
+          selectedNotificationButtonIndex = 0 // Focus "Clear all" for Social
+        } else {
+          selectedNotificationButtonIndex = 1 // Focus "Update all" for Urgent/Updates
+        }
+        updateNotificationButtonsFocus()
+        lastStickNavTime = now
+      } else {
+        navigateNotificationsNav('down')
+        lastStickNavTime = now
+      }
+    }
+    // Check if we're in notifications buttons mode - go to first notification
+    else if (focusArea === 'notifications-buttons') {
+      focusArea = 'notifications-content'
+      selectedNotificationIndex = 0
+      updateNotificationFocus()
       lastStickNavTime = now
     }
     // Check if we're in notifications content mode
@@ -2380,13 +2585,29 @@ function handleShellInputs() {
     }
     // Check if we're in notifications navigation mode
     else if (focusArea === 'notifications-nav') {
+      // If at first nav item, don't navigate further up (stay in nav)
       navigateNotificationsNav('up')
+      lastStickNavTime = now
+    }
+    // Check if we're in notifications buttons mode
+    else if (focusArea === 'notifications-buttons') {
+      // Go back to nav when pressing up from buttons
+      focusArea = 'notifications-nav'
+      updateNotificationsNavFocus()
       lastStickNavTime = now
     }
     // Check if we're in notifications content mode
     else if (focusArea === 'notifications-content') {
-      navigateNotifications('up')
-      lastStickNavTime = now
+      // If at first notification, go back to buttons (focus on "Update all")
+      if (selectedNotificationIndex === 0) {
+        focusArea = 'notifications-buttons'
+        selectedNotificationButtonIndex = 1 // Set to "Update all" button
+        updateNotificationButtonsFocus()
+        lastStickNavTime = now
+      } else {
+        navigateNotifications('up')
+        lastStickNavTime = now
+      }
     }
     // Check if we're in gallery media mode
     else if (focusArea === 'gallery-media') {

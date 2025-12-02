@@ -1,7 +1,15 @@
 {
+  "routes": [
+    {
+      "route": "/assets/*",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000"
+      }
+    }
+  ],
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/assets/*", "/*.{css,js,json,png,jpg,jpeg,gif,svg,mp4,mp3,ico,woff,woff2,ttf,eot}"]
+    "exclude": ["/assets/**"]
   },
   "mimeTypes": {
     ".json": "application/json",
@@ -15,8 +23,11 @@
   },
   "globalHeaders": {
     "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
-    "Cache-Control": "public, max-age=31536000",
-    "Content-Security-Policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; media-src 'self' blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+    "X-Frame-Options": "DENY"
+  },
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/index.html"
+    }
   }
 }

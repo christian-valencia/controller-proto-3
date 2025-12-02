@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Windows Gaming Shell v1.0</title>
-    <script type="module" crossorigin src="/assets/index-TWwHqkGo.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-ttpkST6C.css">
+    <title>Windows Gaming Shell v2.0</title>
+    <script type="module" crossorigin src="/assets/index-DM8xPxbP.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-EJVgoZoT.css">
   </head>
   <body>
     <!-- Main App Container -->
@@ -37,26 +37,17 @@
             <!-- Progress Ring -->
             <div id="progress-ring">
               <svg width="36" height="36">
-                <circle cx="18" cy="18" r="16" stroke="rgba(177,58,69,0.3)" stroke-width="2" fill="none"/>
-                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="#B13A45" stroke-width="2" fill="none" 
+                <circle cx="18" cy="18" r="16" stroke="rgba(177,58,69,0.3)" stroke-width="3" fill="none"/>
+                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="#B13A45" stroke-width="3" fill="none" 
                         stroke-dasharray="100.53" stroke-dashoffset="100.53" transform="rotate(-90 18 18)"
                         style="transition: stroke-dashoffset 0.05s linear;"/>
-                <text x="18" y="20" text-anchor="middle" dominant-baseline="middle" 
-                      fill="white" font-size="20" font-weight="600">Y</text>
+                <text x="18" y="19" text-anchor="middle" dominant-baseline="middle" 
+                      fill="white" font-size="20" font-weight="600">A</text>
               </svg>
             </div>
             
             <!-- Right Text -->
             <div id="auth-text-right">to unlock</div>
-          </div>
-          
-          <!-- Quick Resume Container -->
-          <div id="quick-resume">
-            <img src="/assets/images/qr-silksong.png" alt="Silksong" class="qr-image">
-            <div class="qr-text">
-              <div class="qr-title">Resume playing</div>
-              <div class="qr-game">Hollow Knight: Silksong</div>
-            </div>
           </div>
         </div>
         
@@ -90,7 +81,7 @@
             </video>
             <div class="preview-titlebar">
               <img src="assets/icons/silksong.png" alt="Silksong" class="titlebar-icon">
-              <span class="titlebar-text">Silksong</span>
+              <span class="titlebar-text">Hollow Knight: Silksong</span>
             </div>
           </div>
           <div id="blue-preview" class="preview-container">
@@ -130,6 +121,7 @@
                   <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
+                  <div class="launcher-app"></div>
                 </div>
               </div>
               <div class="launcher-row-container">
@@ -154,13 +146,14 @@
                   <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
                   <div class="launcher-app"></div>
+                  <div class="launcher-app"></div>
                 </div>
               </div>
             </div>
             
             <!-- Legend (top-most layer, bottom right) -->
             <div class="legend">
-              <img src="/assets/images/shell-container-legend-2.png" alt="Controls Legend" />
+              <img src="/assets/images/shell-container-legend.png" alt="Controls Legend" />
             </div>
           </div>
           
@@ -347,99 +340,119 @@
               <div class="notifications-nav-title">Notifications</div>
               <div class="notifications-nav-pages">
                 <div class="nav-page-item selected">
-                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-icon">
+                    <img src="/assets/icons/notifications.svg" alt="All" />
+                  </div>
                   <div class="nav-page-text">All</div>
                 </div>
                 <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-icon">
+                    <img src="/assets/icons/urgent.svg" alt="Urgent" />
+                  </div>
                   <div class="nav-page-text">Urgent</div>
                 </div>
                 <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-icon">
+                    <img src="/assets/icons/social.svg" alt="Social" />
+                  </div>
                   <div class="nav-page-text">Social</div>
                 </div>
                 <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Game updates</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">App updates</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">System updates</div>
+                  <div class="nav-page-icon">
+                    <img src="/assets/icons/windows-update.svg" alt="Updates" />
+                  </div>
+                  <div class="nav-page-text">Updates</div>
                 </div>
               </div>
             </div>
             <div class="notifications-content-container">
               <div class="notifications-header">
                 <h1>All notifications</h1>
+                <div class="notifications-header-buttons">
+                  <button class="notification-action-button">Clear all</button>
+                  <button class="notification-action-button">Update all</button>
+                </div>
               </div>
               <div class="notifications-list">
-                <div class="notification">
-                  <div class="notification-icon"></div>
-                  <div class="notification-text">
-                    <div class="notification-title">Header</div>
-                    <div class="notification-description">Description</div>
+                <div class="notification" data-type="social">
+                  <div class="notification-icon">
+                    <img src="/assets/icons/steam.png" alt="Steam" />
                   </div>
-                  <div class="notification-time">12:00</div>
+                  <div class="notification-text">
+                    <div class="notification-title">Friend request from JimmyNeutron</div>
+                    <div class="notification-description">From Steam</div>
+                  </div>
+                  <div class="notification-time">12:00 PM</div>
                 </div>
-                <div class="notification">
-                  <div class="notification-icon"></div>
-                  <div class="notification-text">
-                    <div class="notification-title">Header</div>
-                    <div class="notification-description">Description</div>
+                <div class="notification" data-type="game-update">
+                  <div class="notification-icon">
+                    <img src="/assets/images/halo.png" alt="Halo" />
                   </div>
-                  <div class="notification-time">12:00</div>
+                  <div class="notification-text">
+                    <div class="notification-title">Game update available for Halo: Infinite</div>
+                    <div class="notification-description">New rank features added</div>
+                  </div>
+                  <div class="notification-time">11:45 AM</div>
                 </div>
-                <div class="notification">
-                  <div class="notification-icon"></div>
-                  <div class="notification-text">
-                    <div class="notification-title">Header</div>
-                    <div class="notification-description">Description</div>
+                <div class="notification" data-type="social">
+                  <div class="notification-icon">
+                    <img src="/assets/icons/steam.png" alt="Steam" />
                   </div>
-                  <div class="notification-time">12:00</div>
+                  <div class="notification-text">
+                    <div class="notification-title">Party invite from JimmyNeutron</div>
+                    <div class="notification-description">From Steam</div>
+                  </div>
+                  <div class="notification-time">11:20 AM</div>
                 </div>
-                <div class="notification">
-                  <div class="notification-icon"></div>
-                  <div class="notification-text">
-                    <div class="notification-title">Header</div>
-                    <div class="notification-description">Description</div>
+                <div class="notification" data-type="urgent system-update">
+                  <div class="notification-icon">
+                    <img src="/assets/icons/system-update.svg" alt="System Update" />
                   </div>
-                  <div class="notification-time">12:00</div>
+                  <div class="notification-text">
+                    <div class="notification-title">Windows system update available</div>
+                    <div class="notification-description">Please update your system to the latest version. Requires a system restart.</div>
+                  </div>
+                  <div class="notification-time">10:30 AM</div>
                 </div>
-                <div class="notification">
-                  <div class="notification-icon"></div>
-                  <div class="notification-text">
-                    <div class="notification-title">Header</div>
-                    <div class="notification-description">Description</div>
+                <div class="notification" data-type="app-update">
+                  <div class="notification-icon">
+                    <img src="/assets/images/spotify.png" alt="Spotify" />
                   </div>
-                  <div class="notification-time">12:00</div>
+                  <div class="notification-text">
+                    <div class="notification-title">Spotify needs an update</div>
+                    <div class="notification-description">A new version is available.</div>
+                  </div>
+                  <div class="notification-time">9:15 AM</div>
                 </div>
-                <div class="notification">
-                  <div class="notification-icon"></div>
-                  <div class="notification-text">
-                    <div class="notification-title">Header</div>
-                    <div class="notification-description">Description</div>
+                <div class="notification" data-type="game-update">
+                  <div class="notification-icon">
+                    <img src="/assets/images/doom.png" alt="Doom" />
                   </div>
-                  <div class="notification-time">12:00</div>
+                  <div class="notification-text">
+                    <div class="notification-title">Doom: the Dark Ages needs an update</div>
+                    <div class="notification-description">A new version is available.</div>
+                  </div>
+                  <div class="notification-time">Yesterday</div>
                 </div>
-                <div class="notification">
-                  <div class="notification-icon"></div>
-                  <div class="notification-text">
-                    <div class="notification-title">Header</div>
-                    <div class="notification-description">Description</div>
+                <div class="notification" data-type="app-update">
+                  <div class="notification-icon">
+                    <img src="/assets/images/nvidia.png" alt="NVIDIA" />
                   </div>
-                  <div class="notification-time">12:00</div>
+                  <div class="notification-text">
+                    <div class="notification-title">NVIDIA GeForce Experience needs an update</div>
+                    <div class="notification-description">A new version is available.</div>
+                  </div>
+                  <div class="notification-time">Yesterday</div>
                 </div>
-                <div class="notification">
-                  <div class="notification-icon"></div>
-                  <div class="notification-text">
-                    <div class="notification-title">Header</div>
-                    <div class="notification-description">Description</div>
+                <div class="notification" data-type="urgent app-update">
+                  <div class="notification-icon">
+                    <img src="/assets/images/xbox.png" alt="Xbox" />
                   </div>
-                  <div class="notification-time">12:00</div>
+                  <div class="notification-text">
+                    <div class="notification-title">The Xbox app needs an update</div>
+                    <div class="notification-description">A new version is available. Requires a system restart.</div>
+                  </div>
+                  <div class="notification-time">2 days ago</div>
                 </div>
               </div>
             </div>
@@ -452,19 +465,27 @@
               <div class="gallery-nav-title">Gallery</div>
               <div class="gallery-nav-pages">
                 <div class="nav-page-item selected">
-                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-icon">
+                    <img src="/assets/icons/gallery.svg" alt="Gallery" />
+                  </div>
                   <div class="nav-page-text">All</div>
                 </div>
                 <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-icon">
+                    <img src="/assets/icons/picture.svg" alt="Photos" />
+                  </div>
                   <div class="nav-page-text">Photos</div>
                 </div>
                 <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-icon">
+                    <img src="/assets/icons/video.svg" alt="Videos" />
+                  </div>
                   <div class="nav-page-text">Videos</div>
                 </div>
                 <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
+                  <div class="nav-page-icon">
+                    <img src="/assets/icons/file.svg" alt="Files" />
+                  </div>
                   <div class="nav-page-text">Files</div>
                 </div>
               </div>
@@ -474,29 +495,59 @@
                 <h1>All content</h1>
               </div>
               <div class="gallery-media-grid">
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                <div class="gallery-media-item" data-type="video">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                    <span class="media-item-name">Hornet Boss Fight</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                <div class="gallery-media-item" data-type="video">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                    <span class="media-item-name">Deepnest Exploration</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/picture-icon-gallery.svg" class="media-type-icon" alt="Image" />
+                <div class="gallery-media-item" data-type="image">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/picture.svg" class="media-type-icon" alt="Image" />
+                    <span class="media-item-name">Moss Grotto Screenshot</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                <div class="gallery-media-item" data-type="video">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                    <span class="media-item-name">Silk Abilities Showcase</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                <div class="gallery-media-item" data-type="video">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                    <span class="media-item-name">Lace Combat Demo</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/picture-icon-gallery.svg" class="media-type-icon" alt="Image" />
+                <div class="gallery-media-item" data-type="image">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/picture.svg" class="media-type-icon" alt="Image" />
+                    <span class="media-item-name">Citadel Panorama</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                <div class="gallery-media-item" data-type="video">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
+                    <span class="media-item-name">Crystal Peaks Gameplay</span>
+                  </div>
                 </div>
-                <div class="gallery-media-item">
-                  <img src="/assets/icons/picture-icon-gallery.svg" class="media-type-icon" alt="Image" />
+                <div class="gallery-media-item" data-type="image">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/picture.svg" class="media-type-icon" alt="Image" />
+                    <span class="media-item-name">Kingdom's Edge Sunrise</span>
+                  </div>
+                </div>
+                <div class="gallery-media-item" data-type="file">
+                  <div class="media-item-banner">
+                    <img src="/assets/icons/file.svg" class="media-type-icon" alt="File" />
+                    <span class="media-item-name">Save Game Data.json</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -509,7 +560,7 @@
           <!-- Shell Navigation Container -->
           <div id="shell-nav">
             <div id="library" class="nav-item">
-              <img src="/assets/icons/library.svg" alt="Library" width="24" height="24" />
+              <img src="/assets/icons/apps.svg" alt="Library" width="28" height="28" />
             </div>
             <div id="settings" class="nav-item">
               <img src="/assets/icons/settings.svg" alt="Settings" width="24" height="24" />
@@ -523,7 +574,7 @@
             
             <!-- Shell Nav Labels (inside shell-nav) -->
             <div id="shell-nav-labels">
-              <div id="label-library" class="nav-label">Library</div>
+              <div id="label-library" class="nav-label">Start</div>
               <div id="label-settings" class="nav-label">Settings</div>
               <div id="label-gallery" class="nav-label">Gallery</div>
               <div id="label-notifications" class="nav-label">Notifications</div>
@@ -536,6 +587,29 @@
         
         <!-- Future containers will go here -->
         
+      </div>
+    </div>
+
+    <!-- Contextual Legend Bar -->
+    <div id="contextual-legend" class="legend-bar">
+      <div class="legend-section">
+        <div class="legend-header">Controller</div>
+        <div class="legend-items controller-items">
+          <div class="legend-item">
+            <div class="legend-button">Y</div>
+            <span class="legend-action">Unlock</span>
+          </div>
+        </div>
+      </div>
+      <div class="legend-divider"></div>
+      <div class="legend-section">
+        <div class="legend-header">Keyboard</div>
+        <div class="legend-items keyboard-items">
+          <div class="legend-item">
+            <div class="legend-button">W</div>
+            <span class="legend-action">Unlock</span>
+          </div>
+        </div>
       </div>
     </div>
 

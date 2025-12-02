@@ -1,11 +1,12 @@
-﻿/* Base Styles */
+/* Base Styles */
 html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
 
 /* Hidden App Class - Hides apps and previews initially */
 .hidden-app {
-  display: none !important;
-  visibility: hidden !important;
+  /* Position off the left edge instead of completely hiding */
+  left: -100% !important;
   opacity: 0 !important;
+  visibility: hidden !important;
   pointer-events: none !important;
 }
 
@@ -145,6 +146,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px; /* Space between apps when there are multiple */
   transition: top 0.5s ease;
   z-index: 10;
 }
@@ -163,6 +165,11 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   align-items: center;
   justify-content: center;
   position: relative;
+}
+
+/* Hidden apps should not take up space in flex layout */
+.app-container.hidden-app {
+  display: none !important;
 }
 
 /* App Background Square */
@@ -240,11 +247,14 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 }
 
 /* Slide in from left animation */
-.preview-container.slide-in-left {
+.preview-container.slide-in-left,
+#green-preview.slide-in-left {
   left: -50%; /* Start off-screen to the left */
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, -50%);
+  width: 648px !important; /* Match focus container size */
+  height: 432px !important; /* Match focus container size */
   animation: slideInFromLeft 0.6s ease-out forwards;
 }
 
@@ -284,7 +294,7 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   display: flex;
   align-items: center;
   pointer-events: none; /* Allow clicks to pass through */
-  z-index: 1; /* Above video */
+  z-index: 10; /* Above everything else in the container */
 }
 
 .titlebar-icon {
@@ -312,9 +322,9 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
 .preview-container.preview-center {
   transform: translate(-50%, -50%) !important; /* Centered */
   z-index: 5 !important; /* Active/centered preview on top */
-  width: 640px !important; /* 50% of shell (640px) */
+  width: 648px !important; /* Match focus container size */
   border-radius: 12px !important; /* Maintain consistent border-radius when centered */
-  height: 424px !important; /* 50% of shell + titlebar (360px + 64px) */
+  height: 432px !important; /* Match focus container size */
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1) !important; /* Subtle drop shadow for center preview */
 }
 
@@ -386,10 +396,48 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   border-radius: 12px;
 }
 
+.preview-image {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 64px);
+  object-fit: contain;
+  object-position: center bottom;
+  opacity: 1;
+  transition: opacity 0.4s ease, border-radius 0.4s ease, top 0.4s ease, height 0.4s ease;
+  z-index: 0;
+  border-radius: 12px;
+}
+
+.preview-container.slide-in-left .preview-image,
+.preview-container.preview-center .preview-image {
+  top: 64px;
+  height: calc(100% - 64px);
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+#green-preview.slide-in-left #silksong-image,
+#green-preview.preview-center #silksong-image {
+  top: 64px;
+  height: calc(100% - 64px);
+  object-fit: contain;
+  object-position: center bottom;
+}
+
 .preview-container.preview-scaled .preview-video {
   border-radius: 0;
   top: 0;
   height: 100%;
+}
+
+.preview-container.preview-scaled .preview-image {
+  border-radius: 0;
+  top: 0;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 #green-preview {
@@ -400,13 +448,11 @@ html, body, #app { height: 100%; margin: 0; background: #0b0f14; color: #e6edf3;
   background-repeat: no-repeat;
   /* Override default positioning for simple bottom-to-top animation */
   transform: translate(-50%, 100vh); /* Start below screen, centered horizontally */
-  width: 1280px;
-  height: 720px;
   transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease, width 0.4s ease, height 0.4s ease, left 0.4s ease; /* Added left transition */
 }
 
 /* Green preview unlocked state - slide up to center (but allow dynamic classes to override) */
-.unlocked #green-preview:not(.preview-left):not(.preview-right):not(.preview-far-left):not(.preview-far-right) {
+.unlocked #green-preview:not(.preview-left):not(.preview-right):not(.preview-far-left):not(.preview-far-right):not(.slide-in-left):not(.preview-center):not(.preview-scaled) {
   transform: translate(-50%, -50%); /* Move to center of screen */
   width: 1280px;
   height: 720px;
@@ -792,9 +838,9 @@ button:active { transform: translateY(1px); }
   bottom: 0; /* Slide up when overlay is visible and Steam mode is active */
 }
 
-/* Focus when Shell Library is visible - Use class-based approach */
-/* Shell Library Container */
-#shell-library {
+/* Focus when Shell Start is visible - Use class-based approach */
+/* Shell Start Container */
+#shell-start {
   position: absolute;
   top: 720px;
   left: 0;
@@ -811,15 +857,15 @@ button:active { transform: translateY(1px); }
   overflow: hidden;
 }
 
-/* Shell Library Visible State */
-#shell-library.visible {
+/* Shell Start Visible State */
+#shell-start.visible {
   top: 0; /* Slide up to normal position */
   transform: scale(1.0);
 }
 
-/* Library Background Image (bottom-most layer) */
-/* Library Content Styling */
-.library-content {
+/* Start Background Image (bottom-most layer) */
+/* Start Content Styling */
+.start-content {
   position: relative;
   padding: 0;
   color: #1a1a1a;
@@ -843,9 +889,9 @@ button:active { transform: translateY(1px); }
   height: auto;
 }
 
-/* Library Main Title */
-/* Library Search Box */
-.library-search-box {
+/* Start Main Title */
+/* Start Search Box */
+.start-search-box {
   position: absolute;
   top: 28px;
   left: 50%;
@@ -865,46 +911,46 @@ button:active { transform: translateY(1px); }
   transition: border-color 0.2s ease, border-width 0.2s ease, box-shadow 0.3s ease;
 }
 
-.library-search-box::placeholder {
+.start-search-box::placeholder {
   color: rgba(255, 255, 255, 0.6);
 }
 
-.library-search-box:focus {
+.start-search-box:focus {
   border-color: rgba(255, 255, 255, 0.3);
   color: rgba(255, 255, 255, 0.9);
 }
 
-.library-search-box.focused {
+.start-search-box.focused {
   border: 2px solid #B13A45; /* Red color */
   box-shadow: 0 8px 24px rgba(177, 58, 69, 0.4); /* Red shadow */
 }
 
 /* Launcher Row Container (includes title + launchers) */
-.launcher-row-container {
+.start-row-container {
   position: absolute;
   left: 64px;
   width: calc(100% - 64px);
 }
 
 /* Position each row container (accounting for search box as first child) */
-.launcher-row-container:nth-child(2) {
+.start-row-container:nth-child(2) {
   top: 116px; /* 28px (search box top) + 40px (search box height) + 48px (margin) = 116px */
 }
 
-.launcher-row-container:nth-child(3) {
+.start-row-container:nth-child(3) {
   top: calc(116px + 234px + 30px); /* First row + Title (32px) + launchers (174px) + padding (28px) + gap (30px) = 264px per row */
 }
 
-.launcher-row-container:nth-child(4) {
+.start-row-container:nth-child(4) {
   top: calc(116px + (234px + 30px) * 2);
 }
 
-.launcher-row-container:nth-child(5) {
+.start-row-container:nth-child(5) {
   top: calc(116px + (234px + 30px) * 3);
 }
 
 /* Launcher Row Title */
-.launcher-row-title {
+.start-row-title {
   font-size: 20px;
   font-weight: 400;
   color: white;
@@ -913,7 +959,7 @@ button:active { transform: translateY(1px); }
 }
 
 /* Launchers Container */
-.launchers {
+.start-apps {
   position: relative;
   width: 100%;
   height: 174px;
@@ -926,7 +972,7 @@ button:active { transform: translateY(1px); }
 /* Remove old positioning rules */
 
 /* Launcher App Containers */
-.launcher-app {
+.start-app {
   width: 174px;
   height: 174px;
   background-color: green;
@@ -942,135 +988,135 @@ button:active { transform: translateY(1px); }
 }
 
 /* First row launcher images */
-.launcher-row-container:nth-child(2) .launcher-app:nth-child(1) {
+.start-row-container:nth-child(2) .start-app:nth-child(1) {
   background-image: url('/assets/images/xbox.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(2) .launcher-app:nth-child(2) {
+.start-row-container:nth-child(2) .start-app:nth-child(2) {
   background-image: url('/assets/images/steam.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(2) .launcher-app:nth-child(3) {
+.start-row-container:nth-child(2) .start-app:nth-child(3) {
   background-image: url('/assets/images/battlenet.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(2) .launcher-app:nth-child(4) {
+.start-row-container:nth-child(2) .start-app:nth-child(4) {
   background-image: url('/assets/images/ea.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(2) .launcher-app:nth-child(5) {
+.start-row-container:nth-child(2) .start-app:nth-child(5) {
   background-image: url('/assets/images/epic.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(2) .launcher-app:nth-child(6) {
+.start-row-container:nth-child(2) .start-app:nth-child(6) {
   background-image: url('/assets/images/nvidia.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
 /* Second row game images (All games) */
-.launcher-row-container:nth-child(3) .launcher-app:nth-child(1) {
+.start-row-container:nth-child(3) .start-app:nth-child(1) {
   background-image: url('/assets/images/silksong.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(3) .launcher-app:nth-child(2) {
+.start-row-container:nth-child(3) .start-app:nth-child(2) {
   background-image: url('/assets/images/halo.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(3) .launcher-app:nth-child(3) {
+.start-row-container:nth-child(3) .start-app:nth-child(3) {
   background-image: url('/assets/images/battlefield.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(3) .launcher-app:nth-child(4) {
+.start-row-container:nth-child(3) .start-app:nth-child(4) {
   background-image: url('/assets/images/diablo.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(3) .launcher-app:nth-child(5) {
+.start-row-container:nth-child(3) .start-app:nth-child(5) {
   background-image: url('/assets/images/33immortals.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(3) .launcher-app:nth-child(6) {
+.start-row-container:nth-child(3) .start-app:nth-child(6) {
   background-image: url('/assets/images/deadisland.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(3) .launcher-app:nth-child(7) {
+.start-row-container:nth-child(3) .start-app:nth-child(7) {
   background-image: url('/assets/images/avowed.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(3) .launcher-app:nth-child(8) {
+.start-row-container:nth-child(3) .start-app:nth-child(8) {
   background-image: url('/assets/images/doom.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
 /* Third row app images (All apps) */
-.launcher-row-container:nth-child(4) .launcher-app:nth-child(1) {
+.start-row-container:nth-child(4) .start-app:nth-child(1) {
   background-image: url('/assets/images/netflix.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(4) .launcher-app:nth-child(2) {
+.start-row-container:nth-child(4) .start-app:nth-child(2) {
   background-image: url('/assets/images/spotify.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(4) .launcher-app:nth-child(3) {
+.start-row-container:nth-child(4) .start-app:nth-child(3) {
   background-image: url('/assets/images/youtube.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(4) .launcher-app:nth-child(4) {
+.start-row-container:nth-child(4) .start-app:nth-child(4) {
   background-image: url('/assets/images/discord.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(4) .launcher-app:nth-child(5) {
+.start-row-container:nth-child(4) .start-app:nth-child(5) {
   background-image: url('/assets/images/edge.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(4) .launcher-app:nth-child(6) {
+.start-row-container:nth-child(4) .start-app:nth-child(6) {
   background-image: url('/assets/images/store.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-row-container:nth-child(4) .launcher-app:nth-child(7) {
+.start-row-container:nth-child(4) .start-app:nth-child(7) {
   background-image: url('/assets/images/file-explorer.png');
   background-color: transparent;
   background-size: 180px 180px;
 }
 
-.launcher-app.focused {
+.start-app.focused {
   /* Visual indication that this launcher has focus */
   transform: scale(1.1) !important;
   border-color: #B13A45; /* Red color */
@@ -2049,3 +2095,4 @@ button:active { transform: translateY(1px); }
   height: 40px;
   background: rgba(255, 255, 255, 0.2);
 }
+

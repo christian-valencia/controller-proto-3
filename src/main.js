@@ -1,4 +1,4 @@
-﻿import { InputManager } from './input/InputManager'
+import { InputManager } from './input/InputManager'
 
 // ============================================================================
 // DEBUG MODE - Set to false for production to remove console logs
@@ -68,21 +68,25 @@ let lastAButtonPress = 0
 let isOverlayVisible = false
 
 // Focus Navigation State
-let focusArea = 'preview' // 'preview', 'shell-nav', 'shell-surface', 'library-launchers', 'settings-nav', 'gallery-nav', 'gallery-media', 'notifications-nav', 'notifications-buttons', 'notifications-content'
+let focusArea = 'preview' // 'preview', 'shell-nav', 'shell-surface', 'start-apps', 'settings-nav', 'gallery-nav', 'gallery-media', 'notifications-nav', 'notifications-buttons', 'notifications-content'
 let selectedNavIndex = 0 // 0=library, 1=settings, 2=gallery, 3=notifications
 let previousFocusState = { area: 'preview', navIndex: 0, appIndex: 0 } // Store previous focus state
 let currentShellSurface = null // Track which shell surface is currently open
-const navItems = ['library', 'settings', 'gallery', 'notifications']
+const navItems = ['start', 'settings', 'gallery', 'notifications']
 
 // Steam reveal animation state
 let isSteamRevealing = false // Flag to disable input during Steam reveal animation
 let hasSteamBeenLaunched = false // Flag to prevent Steam from being launched again
+let isXboxRevealing = false // Flag to disable input during Xbox reveal animation
+let hasXboxBeenLaunched = false // Flag to prevent Xbox from being launched again
+let isSilksongRevealing = false // Flag to disable input during Silksong reveal animation
+let hasSilksongBeenLaunched = false // Flag to prevent Silksong from being launched again
 
-// Library Launchers Navigation State
-let selectedLauncherIndex = 0 // Index of currently selected launcher app
-let selectedLauncherRow = -1 // Index of currently selected row (-1=search box, 0-2=launcher rows)
-const LAUNCHER_ROWS = 3
-const LAUNCHER_COUNTS_PER_ROW = [6, 8, 7] // Number of items in each row: Launchers(6), All games(8), All apps(7)
+// Start Launchers Navigation State
+let selectedStartIndex = 0 // Index of currently selected Start app
+let selectedStartRow = -1 // Index of currently selected row (-1=search box, 0-2=Start rows)
+const START_ROWS = 3
+const START_COUNTS_PER_ROW = [6, 8, 7] // Number of items in each row: Launchers(6), All games(8), All apps(7)
 
 // Settings Navigation State
 let selectedSettingsNavIndex = 0 // Index of currently selected settings nav item (0-10)
@@ -110,8 +114,8 @@ const MEDIA_ITEMS_PER_ROW = 2
 const MEDIA_ROWS = 5 // 9 items total, 2 per row = 5 rows
 
 // Settings Display Controls State
-let selectedDisplayControlIndex = 0 // Index of currently selected display control (0-8: 3 controls per section ├ù 3 sections)
-const DISPLAY_CONTROLS = 9 // Total number of display controls (3 sections ├ù 3 controls each)
+let selectedDisplayControlIndex = 0 // Index of currently selected display control (0-8: 3 controls per section +� 3 sections)
+const DISPLAY_CONTROLS = 9 // Total number of display controls (3 sections +� 3 controls each)
 
 // Individual slider values for each slider control (indices 0, 3, 6)
 let sliderValues = [50, 50, 50] // Three independent slider values (0-100)
@@ -176,17 +180,17 @@ const LEGEND_CONTEXTS = {
   'preview': {
     controller: [
       { button: 'A', action: 'Select' },
-      { button: '→', action: 'Nav Right' },
-      { button: '←', action: 'Nav Left' },
-      { button: '↓', action: 'Nav Down' },
-      { button: '↑', action: 'Nav Up' }
+      { button: '?', action: 'Nav Right' },
+      { button: '?', action: 'Nav Left' },
+      { button: '?', action: 'Nav Down' },
+      { button: '?', action: 'Nav Up' }
     ],
     keyboard: [
       { button: 'A', action: 'Select' },
-      { button: '→', action: 'Nav Right' },
-      { button: '←', action: 'Nav Left' },
-      { button: '↓', action: 'Nav Down' },
-      { button: '↑', action: 'Nav Up' }
+      { button: '?', action: 'Nav Right' },
+      { button: '?', action: 'Nav Left' },
+      { button: '?', action: 'Nav Down' },
+      { button: '?', action: 'Nav Up' }
     ]
   },
   'preview-scaled': {
@@ -202,20 +206,20 @@ const LEGEND_CONTEXTS = {
   'shell-nav': {
     controller: [
       { button: 'A', action: 'Select' },
-      { button: '→', action: 'Nav Right' },
-      { button: '←', action: 'Nav Left' },
-      { button: '↓', action: 'Nav Down' },
-      { button: '↑', action: 'Nav Up' }
+      { button: '?', action: 'Nav Right' },
+      { button: '?', action: 'Nav Left' },
+      { button: '?', action: 'Nav Down' },
+      { button: '?', action: 'Nav Up' }
     ],
     keyboard: [
       { button: 'A', action: 'Select' },
-      { button: '→', action: 'Nav Right' },
-      { button: '←', action: 'Nav Left' },
-      { button: '↓', action: 'Nav Down' },
-      { button: '↑', action: 'Nav Up' }
+      { button: '?', action: 'Nav Right' },
+      { button: '?', action: 'Nav Left' },
+      { button: '?', action: 'Nav Down' },
+      { button: '?', action: 'Nav Up' }
     ]
   },
-  'library': {
+  'start': {
     controller: [
       { button: 'A', action: 'Select' },
       { button: 'B', action: 'Back' }
@@ -360,7 +364,7 @@ function handlePressAndHold() {
     const progress = Math.min(elapsed / HOLD_DURATION, 1)
     
     if (progressCircle) {
-      // Calculate the dash offset (circumference = 2πr = 2π(16) ≈ 100.53)
+      // Calculate the dash offset (circumference = 2pr = 2p(16) � 100.53)
       const circumference = 100.53
       const dashOffset = circumference * (1 - progress)
       progressCircle.style.strokeDashoffset = dashOffset.toString()
@@ -386,59 +390,37 @@ function onHoldComplete() {
   const lockVideo = document.getElementById('lock-video')
   if (lockVideo) {
     lockVideo.pause()
+    lockVideo.currentTime = 0
   }
+  
+  // Stop and mute ALL videos to be safe
+  const allVideos = document.querySelectorAll('video')
+  allVideos.forEach(video => {
+    video.pause()
+    video.muted = true
+    video.currentTime = 0
+  })
   
   // Change to shell state
   changeUIState(UI_STATES.SHELL)
   
-  // Ensure preview containers are positioned correctly
-  updateAppStates()
-  
-  // Show focus container and auto-scale green preview (Silksong)
-  selectedAppIndex = 0 // Ensure green preview (Silksong) is selected
-  focusArea = 'preview' // Ensure focus is in preview mode
-  
-  const focusContainer = document.getElementById('focus')
-  const greenPreview = document.getElementById('green-preview')
-  
-  if (greenPreview) {
-    greenPreview.classList.add('preview-scaled') // Scale Silksong preview first
-    isPreviewScaled = true
-    updateLegend('preview-scaled')
-    
-    // Play Silksong video when going fullscreen
-    const silksongVideo = document.getElementById('silksong-video')
-    if (silksongVideo) {
-      silksongVideo.muted = false // Unmute audio for fullscreen
-      silksongVideo.play().catch(err => {
-        if (DEBUG) console.log('Video playback failed:', err)
-      })
-    }
-  }
-  
-  if (focusContainer) {
-    focusContainer.classList.add('visible')
-    // Update focus to match the scaled preview
-    updateFocusPosition()
-  }
-  
   // Slide out the auth container
+  const auth = document.getElementById('auth')
   if (auth) {
     auth.classList.add('slide-out')
   }
   
-  // Dismiss quick-resume container
-  const quickResume = document.getElementById('quick-resume')
-  if (quickResume) {
-    quickResume.classList.add('dismiss')
-  }
+  // Go directly to shell-start instead of preview
+  setTimeout(() => {
+    showShellStart()
+  }, 400) // Small delay for smooth transition
   
   resetHold()
   
   // Success rumble feedback
   RumbleFeedback.confirmation()
   
-  console.log('Lock screen unlocked! Shell interactions now active.')
+  console.log('Lock screen unlocked! Opening Start menu.')
 }
 
 function resetHold() {
@@ -497,15 +479,17 @@ function onXHoldComplete() {
   const activePreview = previewContainers[selectedAppIndex]
   if (activePreview && activePreview.classList.contains('preview-scaled')) {
     activePreview.classList.remove('preview-scaled')
+    activePreview.classList.add('preview-center') // Keep it centered at preview-center size
+    
+    // Ensure it stays visible
+    activePreview.style.opacity = '1'
+    activePreview.style.visibility = 'visible'
+    
     isPreviewScaled = false
     updateLegend('preview')
     
     // Pause Silksong video when scaling down
-    const silksongVideo = document.getElementById('silksong-video')
-    if (silksongVideo && activePreview.id === 'green-preview') {
-      silksongVideo.muted = true // Mute audio when scaling down
-      silksongVideo.pause()
-    }
+    // Note: Now using static image instead of video
     
     // Close overlay if it's open
     if (isOverlayVisible) {
@@ -561,9 +545,42 @@ function onXHoldComplete() {
       if (DEBUG) console.log('New app order:', appNames)
     }
     
-    // Update preview positions and app states
-    updatePreviewPositions()
-    updateAppStates()
+    // Rebuild preview containers after reordering
+    const updatedPreviewContainers = appNames.map(name => 
+      document.getElementById(`${name}-preview`)
+    )
+    
+    // Position all previews - center for active, right for others
+    updatedPreviewContainers.forEach((preview, index) => {
+      if (preview) {
+        // Remove all positioning classes first
+        preview.classList.remove('preview-center', 'preview-left', 'preview-right', 'preview-far-left', 'preview-far-right')
+        
+        if (index === 0) {
+          // Active/most recent app - centered
+          preview.classList.add('preview-center')
+        } else if (index === 1) {
+          // Second most recent - to the right
+          preview.classList.add('preview-right')
+        } else if (index === 2) {
+          // Third app - far right
+          preview.classList.add('preview-far-right')
+        }
+      }
+    })
+    
+    // Manually update app states without calling updatePreviewPositions
+    appContainers.forEach((container, index) => {
+      if (container) {
+        if (index === selectedAppIndex) {
+          container.classList.add('app-active')
+          container.classList.remove('app-rest')
+        } else {
+          container.classList.add('app-rest')
+          container.classList.remove('app-active')
+        }
+      }
+    })
     
     // Update focus to match the smaller preview
     updateFocusPosition()
@@ -715,7 +732,7 @@ const RumbleFeedback = {
 
 // State Management Functions
 function changeUIState(newState) {
-  if (DEBUG) console.log(`UI State: ${currentUIState} ΓåÆ ${newState}`)
+  if (DEBUG) console.log(`UI State: ${currentUIState} G�� ${newState}`)
   currentUIState = newState
   
   // Update legend based on UI state
@@ -766,7 +783,10 @@ function navigateApps(direction) {
   const newAppName = visibleAppNames[newVisibleIndex]
   selectedAppIndex = appNames.indexOf(newAppName)
   
-  if (DEBUG) console.log(`App Navigation: ${appNames[previousApp]} ΓåÆ ${appNames[selectedAppIndex]} (visible apps: ${visibleAppNames.join(', ')})`)
+  if (DEBUG) console.log(`App Navigation: ${appNames[previousApp]} → ${appNames[selectedAppIndex]} (visible apps: ${visibleAppNames.join(', ')})`)
+  
+  // Don't reorder - just update which app is selected and reposition previews
+  // Apps stay in their fixed positions, we just move focus left/right
   updateAppStates()
   RumbleFeedback.selectionChange()
 }
@@ -780,7 +800,7 @@ function navigateShellNav(direction) {
     selectedNavIndex = (selectedNavIndex - 1 + navItems.length) % navItems.length
   }
   
-  if (DEBUG) console.log(`Shell Nav Navigation: ${navItems[previousNav]} ΓåÆ ${navItems[selectedNavIndex]}`)
+  if (DEBUG) console.log(`Shell Nav Navigation: ${navItems[previousNav]} G�� ${navItems[selectedNavIndex]}`)
   updateFocusPosition()
   RumbleFeedback.selectionChange()
 }
@@ -890,13 +910,7 @@ function scaleUpPreview() {
     
     // Play Silksong video when going fullscreen
     if (activePreview.id === 'green-preview') {
-      const silksongVideo = document.getElementById('silksong-video')
-      if (silksongVideo) {
-        silksongVideo.muted = false // Unmute audio for fullscreen
-        silksongVideo.play().catch(err => {
-          if (DEBUG) console.log('Video playback failed:', err)
-        })
-      }
+      // Note: Now using static image instead of video
     }
     
     // Hide running apps when going fullscreen
@@ -930,7 +944,7 @@ function updateFocusPosition() {
     'focus-preview', 
     'focus-nav', 
     'focus-shell-surface',
-    'focus-shell-library',
+    'focus-shell-start',
     'focus-shell-settings'
   )
   
@@ -997,7 +1011,7 @@ function updateFocusPosition() {
 
 function updateNavLabels(activeNavItem = null) {
   const labels = {
-    'library': document.getElementById('label-library'),
+    'start': document.getElementById('label-start'),
     'settings': document.getElementById('label-settings'),
     'notifications': document.getElementById('label-notifications'),
     'gallery': document.getElementById('label-gallery')
@@ -1090,12 +1104,12 @@ function restorePreviousFocus() {
   updateFocusPosition()
 }
 
-// Library Launchers Navigation Functions
-function updateLauncherFocus() {
+// Start Launchers Navigation Functions
+function updateStartFocus() {
   const focusContainer = document.getElementById('focus')
-  const searchBox = document.querySelector('.library-search-box')
-  const launcherRowContainers = document.querySelectorAll('.launcher-row-container')
-  const libraryContent = document.querySelector('.library-content')
+  const searchBox = document.querySelector('.start-search-box')
+  const startRowContainers = document.querySelectorAll('.start-row-container')
+  const libraryContent = document.querySelector('.start-content')
   
   if (!focusContainer) return
   
@@ -1103,18 +1117,18 @@ function updateLauncherFocus() {
   focusContainer.style.opacity = '0'
   
   // Remove focus from all elements
-  document.querySelectorAll('.launcher-app').forEach(app => app.classList.remove('focused'))
+  document.querySelectorAll('.start-app').forEach(app => app.classList.remove('focused'))
   if (searchBox) {
     searchBox.classList.remove('focused')
   }
   
   // Handle search box focus (row -1)
-  if (selectedLauncherRow === -1) {
+  if (selectedStartRow === -1) {
     if (searchBox) {
       searchBox.classList.add('focused')
     }
     // Reset scroll for search box
-    launcherRowContainers.forEach((container) => {
+    startRowContainers.forEach((container) => {
       container.style.transition = 'transform 0.3s ease'
       container.style.transform = 'translateY(0)'
     })
@@ -1122,30 +1136,30 @@ function updateLauncherFocus() {
   }
   
   // Get the selected row container
-  const selectedRowContainer = launcherRowContainers[selectedLauncherRow]
+  const selectedRowContainer = startRowContainers[selectedStartRow]
   if (selectedRowContainer) {
-    const selectedRow = selectedRowContainer.querySelector('.launchers')
-    const launcherApps = selectedRow.querySelectorAll('.launcher-app')
-    const selectedLauncher = launcherApps[selectedLauncherIndex]
+    const selectedRow = selectedRowContainer.querySelector('.start-apps')
+    const startApps = selectedRow.querySelectorAll('.start-app')
+    const selectedStart = startApps[selectedStartIndex]
     
-    if (selectedLauncher) {
-      selectedLauncher.classList.add('focused')
+    if (selectedStart) {
+      selectedStart.classList.add('focused')
     }
     
     // Handle horizontal scrolling for rows with more than 5 items
-    const itemsInRow = LAUNCHER_COUNTS_PER_ROW[selectedLauncherRow]
+    const itemsInRow = START_COUNTS_PER_ROW[selectedStartRow]
     if (itemsInRow > 5) {
       // Calculate how many items can fit on screen (approx 5 items visible)
       const visibleItems = 5
       let scrollOffset = 0
       
       // Start scrolling when we're past the 3rd item (index 2)
-      if (selectedLauncherIndex >= 3) {
+      if (selectedStartIndex >= 3) {
         // Calculate how much to scroll left
         // Each item is 174px wide + 20px gap = 194px
         const itemWidth = 174 + 20
         // Scroll to keep focused item centered (around 3rd position)
-        scrollOffset = -(selectedLauncherIndex - 2) * itemWidth
+        scrollOffset = -(selectedStartIndex - 2) * itemWidth
         
         // Don't scroll past the last set of visible items
         const maxScroll = -(itemsInRow - visibleItems) * itemWidth
@@ -1154,11 +1168,11 @@ function updateLauncherFocus() {
       
       // Apply horizontal scroll to the entire row container
       selectedRowContainer.style.transition = 'transform 0.3s ease'
-      selectedRowContainer.style.transform = `translateX(${scrollOffset}px) translateY(${selectedLauncherRow >= 2 ? -(234 + 30) * (selectedLauncherRow - 1) : 0}px)`
+      selectedRowContainer.style.transform = `translateX(${scrollOffset}px) translateY(${selectedStartRow >= 2 ? -(234 + 30) * (selectedStartRow - 1) : 0}px)`
     } else {
       // Reset horizontal scroll for rows with 5 or fewer items
       selectedRowContainer.style.transition = 'transform 0.3s ease'
-      selectedRowContainer.style.transform = `translateX(0) translateY(${selectedLauncherRow >= 2 ? -(234 + 30) * (selectedLauncherRow - 1) : 0}px)`
+      selectedRowContainer.style.transform = `translateX(0) translateY(${selectedStartRow >= 2 ? -(234 + 30) * (selectedStartRow - 1) : 0}px)`
     }
   }
   
@@ -1166,13 +1180,13 @@ function updateLauncherFocus() {
   if (libraryContent) {
     let scrollOffset = 0
     
-    if (selectedLauncherRow >= 2) {
-      scrollOffset = -(234 + 30) * (selectedLauncherRow - 1) // Updated height: 234px (32 title + 12 margin + 174 launchers + 16 padding) + 30px gap
+    if (selectedStartRow >= 2) {
+      scrollOffset = -(234 + 30) * (selectedStartRow - 1) // Updated height: 234px (32 title + 12 margin + 174 launchers + 16 padding) + 30px gap
     }
     
-    // Apply smooth transform to move all launcher row containers vertically (except the selected row which is handled above)
-    launcherRowContainers.forEach((container, index) => {
-      if (index !== selectedLauncherRow) {
+    // Apply smooth transform to move all Start row containers vertically (except the selected row which is handled above)
+    startRowContainers.forEach((container, index) => {
+      if (index !== selectedStartRow) {
         container.style.transition = 'transform 0.3s ease'
         container.style.transform = `translateY(${scrollOffset}px)`
       }
@@ -1186,43 +1200,43 @@ function updateLauncherFocus() {
   }
 }
 
-function navigateLaunchers(direction) {
+function navigateStart(direction) {
   // Handle search box row (-1)
-  if (selectedLauncherRow === -1) {
+  if (selectedStartRow === -1) {
     if (direction === 'down') {
-      selectedLauncherRow = 0
-      selectedLauncherIndex = 0
-      updateLauncherFocus()
+      selectedStartRow = 0
+      selectedStartIndex = 0
+      updateStartFocus()
     }
     // No left/right/up navigation from search box
     return
   }
   
-  const currentRowItemCount = LAUNCHER_COUNTS_PER_ROW[selectedLauncherRow]
+  const currentRowItemCount = START_COUNTS_PER_ROW[selectedStartRow]
   
-  if (direction === 'left' && selectedLauncherIndex > 0) {
-    selectedLauncherIndex--
-    updateLauncherFocus()
-  } else if (direction === 'right' && selectedLauncherIndex < currentRowItemCount - 1) {
-    selectedLauncherIndex++
-    updateLauncherFocus()
+  if (direction === 'left' && selectedStartIndex > 0) {
+    selectedStartIndex--
+    updateStartFocus()
+  } else if (direction === 'right' && selectedStartIndex < currentRowItemCount - 1) {
+    selectedStartIndex++
+    updateStartFocus()
   } else if (direction === 'up') {
-    if (selectedLauncherRow > 0) {
-      selectedLauncherRow--
+    if (selectedStartRow > 0) {
+      selectedStartRow--
       // Clamp index to new row's item count
-      selectedLauncherIndex = Math.min(selectedLauncherIndex, LAUNCHER_COUNTS_PER_ROW[selectedLauncherRow] - 1)
-      updateLauncherFocus()
-    } else if (selectedLauncherRow === 0) {
+      selectedStartIndex = Math.min(selectedStartIndex, START_COUNTS_PER_ROW[selectedStartRow] - 1)
+      updateStartFocus()
+    } else if (selectedStartRow === 0) {
       // Go back to search box
-      selectedLauncherRow = -1
-      selectedLauncherIndex = 0
-      updateLauncherFocus()
+      selectedStartRow = -1
+      selectedStartIndex = 0
+      updateStartFocus()
     }
-  } else if (direction === 'down' && selectedLauncherRow < LAUNCHER_ROWS - 1) {
-    selectedLauncherRow++
+  } else if (direction === 'down' && selectedStartRow < START_ROWS - 1) {
+    selectedStartRow++
     // Clamp index to new row's item count
-    selectedLauncherIndex = Math.min(selectedLauncherIndex, LAUNCHER_COUNTS_PER_ROW[selectedLauncherRow] - 1)
-    updateLauncherFocus()
+    selectedStartIndex = Math.min(selectedStartIndex, START_COUNTS_PER_ROW[selectedStartRow] - 1)
+    updateStartFocus()
   }
 }
 
@@ -1845,7 +1859,7 @@ function navigateNotificationButtons(direction) {
   }
 }
 
-// Shell Library Functions
+// Shell Start Functions
 // Consolidated Shell Container Functions
 function showShellContainer(containerName) {
   // Store current focus state before opening
@@ -1888,13 +1902,13 @@ function showShellContainer(containerName) {
     shellNav.style.opacity = '0'
   }
   
-  // If opening library, enter launcher navigation mode
-  if (containerName === 'library') {
-    focusArea = 'library-launchers'
-    selectedLauncherIndex = 0
-    selectedLauncherRow = -1 // Start at search box
-    updateLauncherFocus()
-    updateLegend('library')
+  // If opening library, enter Start navigation mode
+  if (containerName === 'start') {
+    focusArea = 'start-apps'
+    selectedStartIndex = 0
+    selectedStartRow = -1 // Start at search box
+    updateStartFocus()
+    updateLegend('start')
   }
   
   // If opening settings, enter settings navigation mode
@@ -2012,17 +2026,17 @@ function hideShellContainer(containerName) {
     preview.classList.remove('hide-right')
   })
   
-  // Clear shell surface state and library launcher focus
+  // Clear shell surface state and Start Start focus
   currentShellSurface = null
-  if (focusArea === 'library-launchers') {
-    selectedLauncherIndex = 0
-    selectedLauncherRow = 0
+  if (focusArea === 'start-apps') {
+    selectedStartIndex = 0
+    selectedStartRow = 0
     // Remove focus from all launchers
-    document.querySelectorAll('.launcher-app').forEach(app => {
+    document.querySelectorAll('.start-app').forEach(app => {
       app.classList.remove('focused')
     })
-    // Reset scroll position of launcher rows (both horizontal and vertical)
-    document.querySelectorAll('.launchers').forEach(row => {
+    // Reset scroll position of Start rows (both horizontal and vertical)
+    document.querySelectorAll('.start-apps').forEach(row => {
       row.style.transform = 'translateX(0) translateY(0)'
     })
   }
@@ -2086,8 +2100,8 @@ function hideShellContainer(containerName) {
 }
 
 // Wrapper functions for backwards compatibility
-function showShellLibrary() { showShellContainer('library') }
-function hideShellLibrary() { hideShellContainer('library') }
+function showShellStart() { showShellContainer('start') }
+function hideShellStart() { hideShellContainer('start') }
 function showShellSettings() { showShellContainer('settings') }
 function hideShellSettings() { hideShellContainer('settings') }
 function showShellNotifications() { showShellContainer('notifications') }
@@ -2103,9 +2117,9 @@ function handleShellInputs() {
   // Horizontal Navigation - D-pad left/right (check both justPressed and isDown)
   if (input.justPressed('LEFT') || (input.isDown('LEFT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     if (DEBUG) console.log('LEFT detected - focusArea:', focusArea)
-    // Check if we're in library launchers mode
-    if (focusArea === 'library-launchers') {
-      navigateLaunchers('left')
+    // Check if we're in Start launchers mode
+    if (focusArea === 'start-apps') {
+      navigateStart('left')
       lastStickNavTime = now
     }
     // Check if we're in settings nav mode
@@ -2159,9 +2173,9 @@ function handleShellInputs() {
   }
   if (input.justPressed('RIGHT') || (input.isDown('RIGHT') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     if (DEBUG) console.log('RIGHT detected - focusArea:', focusArea)
-    // Check if we're in library launchers mode
-    if (focusArea === 'library-launchers') {
-      navigateLaunchers('right')
+    // Check if we're in Start launchers mode
+    if (focusArea === 'start-apps') {
+      navigateStart('right')
       lastStickNavTime = now
     }
     // Check if we're in settings nav mode
@@ -2245,13 +2259,13 @@ function handleShellInputs() {
   const leftStick = input.getStick('LEFT')
   const currentTime = Date.now()
   if (leftStick.magnitude > STICK_THRESHOLD && currentTime - lastStickNavTime > STICK_NAV_DELAY) {
-    // Check if we're in library launchers mode
-    if (focusArea === 'library-launchers') {
+    // Check if we're in Start launchers mode
+    if (focusArea === 'start-apps') {
       if (leftStick.x > STICK_THRESHOLD) {
-        navigateLaunchers('right')
+        navigateStart('right')
         lastStickNavTime = currentTime
       } else if (leftStick.x < -STICK_THRESHOLD) {
-        navigateLaunchers('left')
+        navigateStart('left')
         lastStickNavTime = currentTime
       }
     }
@@ -2353,13 +2367,13 @@ function handleShellInputs() {
   
   // Vertical Navigation - Left stick vertical (UP/DOWN focus area switching)
   if (leftStick.magnitude > STICK_THRESHOLD && currentTime - lastStickNavTime > STICK_NAV_DELAY) {
-    // Check if we're in library launchers mode
-    if (focusArea === 'library-launchers') {
+    // Check if we're in Start launchers mode
+    if (focusArea === 'start-apps') {
       if (leftStick.y > STICK_THRESHOLD) { // Stick pushed UP
-        navigateLaunchers('up')
+        navigateStart('up')
         lastStickNavTime = currentTime
       } else if (leftStick.y < -STICK_THRESHOLD) { // Stick pushed DOWN
-        navigateLaunchers('down')
+        navigateStart('down')
         lastStickNavTime = currentTime
       }
     }
@@ -2498,9 +2512,9 @@ function handleShellInputs() {
   // Focus area navigation - DOWN moves from preview to shell-nav, UP moves back
   if (input.justPressed('DOWN') || (input.isDown('DOWN') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     if (DEBUG) console.log('DOWN detected - focusArea:', focusArea)
-    // Check if we're in library launchers mode
-    if (focusArea === 'library-launchers') {
-      navigateLaunchers('down')
+    // Check if we're in Start launchers mode
+    if (focusArea === 'start-apps') {
+      navigateStart('down')
       lastStickNavTime = now
     }
     // Check if we're in settings navigation mode
@@ -2568,9 +2582,9 @@ function handleShellInputs() {
   }
   if (input.justPressed('UP') || (input.isDown('UP') && now - lastStickNavTime > STICK_NAV_DELAY)) {
     if (DEBUG) console.log('UP detected - focusArea:', focusArea)
-    // Check if we're in library launchers mode
-    if (focusArea === 'library-launchers') {
-      navigateLaunchers('up')
+    // Check if we're in Start launchers mode
+    if (focusArea === 'start-apps') {
+      navigateStart('up')
       lastStickNavTime = now
     }
     // Check if we're in settings navigation mode
@@ -2689,16 +2703,167 @@ function handleShellInputs() {
   const buttonTime = Date.now()
   
   if (input.isDown('A') && (buttonTime - lastAButtonPress) > A_BUTTON_DEBOUNCE) {
-    // Don't allow A button during Steam reveal animation
-    if (isSteamRevealing) {
+    // Check if overlay is visible first
+    const overlay = document.getElementById('overlay')
+    if (overlay && overlay.classList.contains('visible')) {
+      // Dismiss overlay and show shell-start
+      overlay.classList.remove('visible', 'show-gb', 'show-steam')
+      isOverlayVisible = false
+      
+      // Move app previews to the right
+      const previewContainers = document.querySelectorAll('.preview-container')
+      previewContainers.forEach(preview => {
+        if (!preview.classList.contains('hidden-app')) {
+          preview.classList.add('hide-right')
+        }
+      })
+      
+      // Show shell-start
+      showShellStart()
+      RumbleFeedback.confirmation()
+      lastAButtonPress = buttonTime
+      return
+    }
+    
+    // Don't allow A button during Steam, Xbox, or Silksong reveal animation
+    if (isSteamRevealing || isXboxRevealing || isSilksongRevealing) {
       return
     }
     
     lastAButtonPress = buttonTime
     
-    if (focusArea === 'library-launchers') {
-      // Check if Steam launcher is selected (Row 0, Index 1)
-      if (selectedLauncherRow === 0 && selectedLauncherIndex === 1) {
+    if (focusArea === 'start-apps') {
+      // Check if Xbox Start is selected (Row 0, Index 0)
+      if (selectedStartRow === 0 && selectedStartIndex === 0) {
+        // Don't allow launching Xbox if it's already been launched
+        if (hasXboxBeenLaunched) {
+          RumbleFeedback.lightTap() // Give feedback that it's disabled
+          return
+        }
+        
+        // Set flags to disable input and mark Xbox as launched
+        isXboxRevealing = true
+        hasXboxBeenLaunched = true
+        
+        // Step 1: Dismiss start menu
+        hideShellStart()
+        
+        // Step 2: Scale down the current preview (Steam) to preview-right and reveal Xbox
+        setTimeout(() => {
+          const blueApp = document.getElementById('blue')
+          const bluePreview = document.getElementById('blue-preview')
+          
+          // Reveal Xbox app and preview with slide-in animation at larger preview-center size
+          if (blueApp) blueApp.classList.remove('hidden-app')
+          if (bluePreview) {
+            bluePreview.classList.remove('hidden-app')
+            bluePreview.classList.add('slide-in-left', 'preview-center')
+          }
+          
+          // Find Xbox's current position in the array
+          const xboxIndex = appNames.indexOf('blue')
+          
+          if (xboxIndex === -1) {
+            console.error('Xbox not found in appNames array')
+            return
+          }
+          
+          selectedAppIndex = xboxIndex
+          
+          const selectedAppContainer = appContainers[selectedAppIndex]
+          const selectedAppName = appNames[selectedAppIndex]
+          
+          // Remove from current position
+          appContainers.splice(selectedAppIndex, 1)
+          appNames.splice(selectedAppIndex, 1)
+          
+          // Insert at the beginning (leftmost)
+          appContainers.unshift(selectedAppContainer)
+          appNames.unshift(selectedAppName)
+          
+          // Update the DOM order
+          const runningApps = document.getElementById('running-apps')
+          if (runningApps) {
+            runningApps.innerHTML = ''
+            appContainers.forEach(container => {
+              if (container) runningApps.appendChild(container)
+            })
+          }
+          
+          // Set to index 0 (leftmost)
+          selectedAppIndex = 0
+          
+          // Manually update app states without calling updatePreviewPositions
+          appContainers.forEach((container, index) => {
+            if (container) {
+              if (index === selectedAppIndex) {
+                container.classList.add('app-active')
+                container.classList.remove('app-rest')
+              } else {
+                container.classList.add('app-rest')
+                container.classList.remove('app-active')
+              }
+            }
+          })
+          
+          if (runningApps) runningApps.classList.add('visible')
+          
+          // Show shell-nav
+          const shellNav = document.getElementById('shell-nav')
+          if (shellNav) shellNav.classList.add('visible')
+          
+          // Move focus to preview area
+          focusArea = 'preview'
+          updateFocusPosition()
+          
+          // Keep focus hidden during slide-in
+          const focusContainer = document.getElementById('focus')
+          if (focusContainer) {
+            focusContainer.style.opacity = '0'
+            focusContainer.style.visibility = 'hidden'
+          }
+          
+          // Step 3: After slide-in completes (0.6s), reveal focus and scale up
+          setTimeout(() => {
+            if (bluePreview) {
+              bluePreview.classList.remove('slide-in-left')
+              // Ensure preview-center is set before scaling
+              if (!bluePreview.classList.contains('preview-center')) {
+                bluePreview.classList.add('preview-center')
+              }
+            }
+            
+            // Reveal focus border now that preview is centered
+            if (focusContainer) {
+              focusContainer.style.opacity = '1'
+              focusContainer.style.visibility = 'visible'
+            }
+            
+            // Directly scale up Xbox preview
+            if (bluePreview) {
+              bluePreview.classList.add('preview-scaled')
+              isPreviewScaled = true
+              updateLegend('preview-scaled')
+            }
+            
+            // Update focus to match fullscreen size
+            updateFocusPosition()
+            
+            // Hide running apps and shell-nav when going fullscreen
+            if (runningApps) runningApps.classList.remove('visible')
+            const shellNav = document.getElementById('shell-nav')
+            if (shellNav) shellNav.classList.remove('visible')
+            
+            // Re-enable input after animation completes
+            setTimeout(() => {
+              isXboxRevealing = false
+            }, 400) // Wait for scale-up to complete
+          }, 600) // Wait for slide-in animation to complete
+        }, 100) // Start almost immediately (just after Start starts dismiss)
+        
+        RumbleFeedback.confirmation()
+      } else if (selectedStartRow === 0 && selectedStartIndex === 1) {
+        // Steam Start is selected (Row 0, Index 1)
         // Don't allow launching Steam if it's already been launched
         if (hasSteamBeenLaunched) {
           RumbleFeedback.lightTap() // Give feedback that it's disabled
@@ -2710,21 +2875,19 @@ function handleShellInputs() {
         hasSteamBeenLaunched = true
         
         // Step 1: Dismiss library
-        hideShellLibrary()
+        hideShellStart()
         
-        // Step 2: Immediately after library starts dismissing, reveal and animate Steam
+        // Step 2: Immediately after Start starts dismissing, reveal and animate Steam
         setTimeout(() => {
           const orangeApp = document.getElementById('orange')
           const orangePreview = document.getElementById('orange-preview')
           
-          // Reveal Steam app and preview with slide-in animation
+          // Reveal Steam app and preview with slide-in animation at larger preview-center size
           if (orangeApp) orangeApp.classList.remove('hidden-app')
           if (orangePreview) {
             orangePreview.classList.remove('hidden-app')
-            orangePreview.classList.add('slide-in-left')
+            orangePreview.classList.add('slide-in-left', 'preview-center')
           }
-          
-          // DON'T move focus yet - let Steam animate first
           
           // Reorder to move Steam to leftmost position
           selectedAppIndex = 2 // Steam is at index 2
@@ -2752,32 +2915,190 @@ function handleShellInputs() {
           // Set to index 0 (leftmost)
           selectedAppIndex = 0
           
-          // Update states and positions (this shifts others to the right)
+          // Update states and show running apps
           updateAppStates()
-          updatePreviewPositions()
-          // Don't update focus yet
+          if (runningApps) runningApps.classList.add('visible')
           
-          // Step 3: After slide-in completes (0.6s), pause and let focus catch up
+          // Move focus to preview area
+          focusArea = 'preview'
+          updateFocusPosition()
+          
+          // Keep focus hidden during slide-in
+          const focusContainer = document.getElementById('focus')
+          if (focusContainer) {
+            focusContainer.style.opacity = '0'
+            focusContainer.style.visibility = 'hidden'
+          }
+          
+          // Step 3: After slide-in completes (0.6s), reveal focus and scale up together
           setTimeout(() => {
             if (orangePreview) {
               orangePreview.classList.remove('slide-in-left')
             }
             
-            // Move focus to preview area to catch up during the pause
-            focusArea = 'preview'
+            // Reveal focus border now that preview is centered
+            if (focusContainer) {
+              focusContainer.style.opacity = '1'
+              focusContainer.style.visibility = 'visible'
+            }
+            
+            scaleUpPreview()
+            
+            // Re-enable input after animation completes
+            setTimeout(() => {
+              isSteamRevealing = false
+            }, 400) // Wait for scale-up to complete
+          }, 600) // Wait for slide-in animation to complete
+        }, 100) // Start almost immediately (just after Start starts dismiss)
+        
+        RumbleFeedback.confirmation()
+      } else if (selectedStartRow === 1 && selectedStartIndex === 0) {
+        // Silksong Start is selected (Row 1, Index 0)
+        // Don't allow launching Silksong if it's already been launched
+        if (hasSilksongBeenLaunched) {
+          RumbleFeedback.lightTap() // Give feedback that it's disabled
+          return
+        }
+        
+        // Set flags to disable input and mark Silksong as launched
+        isSilksongRevealing = true
+        hasSilksongBeenLaunched = true
+        
+        // Step 1: Dismiss start menu
+        hideShellStart()
+        
+        // Step 2: Reveal Silksong with slide-in animation
+        setTimeout(() => {
+          const greenApp = document.getElementById('green')
+          const greenPreview = document.getElementById('green-preview')
+          
+          // Reveal Silksong app and preview with slide-in animation at larger preview-center size
+          if (greenApp) greenApp.classList.remove('hidden-app')
+          if (greenPreview) {
+            greenPreview.classList.remove('hidden-app')
+            greenPreview.classList.add('slide-in-left', 'preview-center')
+          }
+          
+          // Find Silksong's current position in the array
+          const silksongIndex = appNames.indexOf('green')
+          
+          if (silksongIndex === -1) {
+            console.error('Silksong not found in appNames array')
+            return
+          }
+          
+          selectedAppIndex = silksongIndex
+          
+          const selectedAppContainer = appContainers[selectedAppIndex]
+          const selectedAppName = appNames[selectedAppIndex]
+          
+          // Remove from current position
+          appContainers.splice(selectedAppIndex, 1)
+          appNames.splice(selectedAppIndex, 1)
+          
+          // Insert at the beginning (leftmost)
+          appContainers.unshift(selectedAppContainer)
+          appNames.unshift(selectedAppName)
+          
+          // Update the DOM order
+          const runningApps = document.getElementById('running-apps')
+          if (runningApps) {
+            runningApps.innerHTML = ''
+            appContainers.forEach(container => {
+              if (container) runningApps.appendChild(container)
+            })
+          }
+          
+          // Set to index 0 (leftmost)
+          selectedAppIndex = 0
+          
+          // Manually update app states without calling updatePreviewPositions
+          appContainers.forEach((container, index) => {
+            if (container) {
+              if (index === selectedAppIndex) {
+                container.classList.add('app-active')
+                container.classList.remove('app-rest')
+              } else {
+                container.classList.add('app-rest')
+                container.classList.remove('app-active')
+              }
+            }
+          })
+          
+          if (runningApps) runningApps.classList.add('visible')
+          
+          // Show shell-nav
+          const shellNav = document.getElementById('shell-nav')
+          if (shellNav) shellNav.classList.add('visible')
+          
+          // Position all previews explicitly after reordering (except Silksong which has slide-in-left + preview-center)
+          const updatedPreviewContainers = appNames.map(name => 
+            document.getElementById(`${name}-preview`)
+          )
+          
+          updatedPreviewContainers.forEach((preview, index) => {
+            if (preview && preview !== greenPreview) {
+              // Remove all positioning classes from other previews
+              preview.classList.remove('preview-center', 'preview-left', 'preview-right', 'preview-far-left', 'preview-far-right')
+              
+              if (index === 1) {
+                // Second app - to the right
+                preview.classList.add('preview-right')
+              } else if (index === 2) {
+                // Third app - far right
+                preview.classList.add('preview-far-right')
+              }
+            }
+          })
+          
+          // Move focus to preview area
+          focusArea = 'preview'
+          updateFocusPosition()
+          
+          // Keep focus hidden during slide-in
+          const focusContainer = document.getElementById('focus')
+          if (focusContainer) {
+            focusContainer.style.opacity = '0'
+            focusContainer.style.visibility = 'hidden'
+          }
+          
+          // Step 3: After slide-in completes (0.6s), reveal focus and scale up
+          setTimeout(() => {
+            if (greenPreview) {
+              greenPreview.classList.remove('slide-in-left')
+              // Ensure preview-center is set before scaling
+              if (!greenPreview.classList.contains('preview-center')) {
+                greenPreview.classList.add('preview-center')
+              }
+            }
+            
+            // Reveal focus border now that preview is centered
+            if (focusContainer) {
+              focusContainer.style.opacity = '1'
+              focusContainer.style.visibility = 'visible'
+            }
+            
+            // Directly scale up Silksong preview
+            if (greenPreview) {
+              greenPreview.classList.add('preview-scaled')
+              isPreviewScaled = true
+              updateLegend('preview-scaled')
+            }
+            
+            // Update focus to match fullscreen size
             updateFocusPosition()
             
-            // Step 4: After 0.4s pause, scale up Steam and focus together
+            // Hide running apps and shell-nav when going fullscreen
+            if (runningApps) runningApps.classList.remove('visible')
+            const shellNav = document.getElementById('shell-nav')
+            if (shellNav) shellNav.classList.remove('visible')
+            
+            // Re-enable input after animation completes
             setTimeout(() => {
-              scaleUpPreview()
-              
-              // Re-enable input after animation completes
-              setTimeout(() => {
-                isSteamRevealing = false
-              }, 400) // Wait for scale-up to complete
-            }, 400) // 0.4s pause for focus to catch up
-          }, 600) // Match slide-in animation duration (0.6s)
-        }, 100) // Start almost immediately (just after library starts dismiss)
+              isSilksongRevealing = false
+            }, 400) // Wait for scale-up to complete
+          }, 600) // Wait for slide-in animation to complete
+        }, 100) // Start almost immediately (just after Start starts dismiss)
         
         RumbleFeedback.confirmation()
       } else {
@@ -2789,8 +3110,8 @@ function handleShellInputs() {
       scaleUpPreview()
     } else if (focusArea === 'shell-nav') {
       // A button actions based on selected nav item
-      if (selectedNavIndex === 0) { // Library selected
-        showShellLibrary()
+      if (selectedNavIndex === 0) { // Start selected
+        showShellStart()
         RumbleFeedback.confirmation()
       } else if (selectedNavIndex === 1) { // Settings selected
         showShellSettings()
@@ -2817,13 +3138,13 @@ function handleShellInputs() {
   }
   // B button handling with InputManager fallback
   if (input.justPressed('B')) {
-    const shellLibrary = document.getElementById('shell-library')
+    const shellStart = document.getElementById('shell-start')
     const shellSettings = document.getElementById('shell-settings')
     const shellNotifications = document.getElementById('shell-notifications')
     const shellGallery = document.getElementById('shell-gallery')
     
-    if (shellLibrary && shellLibrary.classList.contains('visible')) {
-      hideShellLibrary()
+    if (shellStart && shellStart.classList.contains('visible')) {
+      hideShellStart()
       RumbleFeedback.lightTap()
     } else if (shellSettings && shellSettings.classList.contains('visible')) {
       hideShellSettings()
@@ -2961,4 +3282,6 @@ updateLegend('lock-screen')
 
 // Start the application
 requestAnimationFrame(loop)
+
+
 

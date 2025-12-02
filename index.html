@@ -59,11 +59,11 @@
         <div id="switcher">
           <!-- Running Apps Container -->
           <div id="running-apps">
-            <div class="app-container" id="green">
+            <div class="app-container hidden-app" id="green">
               <div class="app-background"></div>
               <div class="app-icon green-icon"></div>
             </div>
-            <div class="app-container" id="blue">
+            <div class="app-container hidden-app" id="blue">
               <div class="app-background"></div>
               <div class="app-icon blue-icon"></div>
             </div>
@@ -74,16 +74,14 @@
           </div>
           
           <!-- Preview Containers -->
-          <div id="green-preview" class="preview-container">
-            <video id="silksong-video" class="preview-video" loop muted playsinline>
-              <source src="/assets/videos/silksong-gameplay.mp4" type="video/mp4">
-            </video>
+          <div id="green-preview" class="preview-container hidden-app">
+            <img id="silksong-image" class="preview-image" src="assets\images\silksong-menu.png" alt="Silksong Menu" />
             <div class="preview-titlebar">
               <img src="assets/icons/silksong.png" alt="Silksong" class="titlebar-icon">
               <span class="titlebar-text">Hollow Knight: Silksong</span>
             </div>
           </div>
-          <div id="blue-preview" class="preview-container">
+          <div id="blue-preview" class="preview-container hidden-app">
             <div class="preview-titlebar">
               <img src="assets/icons/xbox.png" alt="Xbox" class="titlebar-icon">
               <span class="titlebar-text">Xbox</span>
@@ -108,44 +106,44 @@
             </div>
           </div>
           
-          <!-- Shell Library Container -->
-          <div id="shell-library">
-            <div class="library-content">
-              <input type="text" class="library-search-box" placeholder="Search for games or apps" />
-              <div class="launcher-row-container">
-                <h2 class="launcher-row-title">Launchers</h2>
-                <div class="launchers">
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
+          <!-- Shell Start Container -->
+          <div id="shell-start">
+            <div class="start-content">
+              <input type="text" class="start-search-box" placeholder="Search for games or apps" />
+              <div class="start-row-container">
+                <h2 class="start-row-title">Launchers</h2>
+                <div class="start-apps">
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
                 </div>
               </div>
-              <div class="launcher-row-container">
-                <h2 class="launcher-row-title">All games</h2>
-                <div class="launchers">
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
+              <div class="start-row-container">
+                <h2 class="start-row-title">All games</h2>
+                <div class="start-apps">
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
                 </div>
               </div>
-              <div class="launcher-row-container">
-                <h2 class="launcher-row-title">All apps</h2>
-                <div class="launchers">
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
-                  <div class="launcher-app"></div>
+              <div class="start-row-container">
+                <h2 class="start-row-title">All apps</h2>
+                <div class="start-apps">
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
+                  <div class="start-app"></div>
                 </div>
               </div>
             </div>
@@ -558,8 +556,8 @@
           
           <!-- Shell Navigation Container -->
           <div id="shell-nav">
-            <div id="library" class="nav-item">
-              <img src="/assets/icons/apps.svg" alt="Library" width="28" height="28" />
+            <div id="start" class="nav-item">
+              <img src="/assets/icons/apps.svg" alt="Start" width="28" height="28" />
             </div>
             <div id="settings" class="nav-item">
               <img src="/assets/icons/settings.svg" alt="Settings" width="24" height="24" />
@@ -573,7 +571,7 @@
             
             <!-- Shell Nav Labels (inside shell-nav) -->
             <div id="shell-nav-labels">
-              <div id="label-library" class="nav-label">Start</div>
+              <div id="label-start" class="nav-label">Start</div>
               <div id="label-settings" class="nav-label">Settings</div>
               <div id="label-gallery" class="nav-label">Gallery</div>
               <div id="label-notifications" class="nav-label">Notifications</div>

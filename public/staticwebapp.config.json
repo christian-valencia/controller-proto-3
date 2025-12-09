@@ -9,7 +9,7 @@
   ],
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/assets/**"]
+    "exclude": ["/assets/*"]
   },
   "mimeTypes": {
     ".json": "application/json",

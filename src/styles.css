@@ -147,7 +147,7 @@ body {
   left: 0;
   width: 100%;
   height: 80px;
-  background-color: transparent;
+  background-color: #141414;
   z-index: 10;
   display: flex;
   justify-content: center;
@@ -161,6 +161,13 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.shell-nav-item.focused {
+  border-color: #64B5F6;
 }
 
 /* Launchers Container */
@@ -171,6 +178,7 @@ body {
   transform: translateX(-50%);
   width: 1020px;
   height: 212px;
+  transition: transform 0.3s ease;
 }
 
 #launchers-title {
@@ -212,6 +220,114 @@ body {
 }
 
 .launcher-item.focused {
+  border-color: #64B5F6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* My Games Container */
+#my-games {
+  position: absolute;
+  top: 376px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1020px;
+  height: 212px;
+  transition: transform 0.3s ease;
+}
+
+#my-games-title {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 48px;
+  font-size: 28px;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+}
+
+#my-games-grid {
+  position: absolute;
+  top: 72px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  gap: 36px;
+}
+
+.game-item {
+  width: 140px;
+  height: 140px;
+  background-color:#212121;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 400;
+  color: white;
+  text-align: center;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-item.focused {
+  border-color: #64B5F6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* My Apps Container */
+#my-apps {
+  position: absolute;
+  top: 632px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1020px;
+  height: 212px;
+  transition: transform 0.3s ease;
+}
+
+#my-apps-title {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 48px;
+  font-size: 28px;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+}
+
+#my-apps-grid {
+  position: absolute;
+  top: 72px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  gap: 36px;
+}
+
+.app-item {
+  width: 140px;
+  height: 140px;
+  background-color:#212121;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 400;
+  color: white;
+  text-align: center;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.app-item.focused {
   border-color: #64B5F6;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }

@@ -14,6 +14,16 @@ const clock = document.getElementById('clock')
 const progressRing = document.getElementById('progress-ring')
 const progressCircle = document.getElementById('progress-circle')
 
+// Shell nav elements
+const shellNavItems = [
+  document.getElementById('shell-runningapp'),
+  document.getElementById('shell-power'),
+  document.getElementById('shell-search'),
+  document.getElementById('shell-overlay'),
+  document.getElementById('shell-settings'),
+  document.getElementById('shell-notifications')
+]
+
 // Launcher elements
 const launcherItems = [
   document.getElementById('launcher-xbox'),
@@ -22,6 +32,34 @@ const launcherItems = [
   document.getElementById('launcher-battlenet'),
   document.getElementById('launcher-ea'),
   document.getElementById('launcher-riot')
+]
+
+// My Games elements
+const gameItems = [
+  document.getElementById('game-1'),
+  document.getElementById('game-2'),
+  document.getElementById('game-3'),
+  document.getElementById('game-4'),
+  document.getElementById('game-5'),
+  document.getElementById('game-6')
+]
+
+// My Apps elements
+const appItems = [
+  document.getElementById('app-1'),
+  document.getElementById('app-2'),
+  document.getElementById('app-3'),
+  document.getElementById('app-4'),
+  document.getElementById('app-5'),
+  document.getElementById('app-6')
+]
+
+// All navigation items in 2D grid
+const navigationGrid = [
+  shellNavItems,  // Row 0
+  launcherItems,  // Row 1
+  gameItems,      // Row 2
+  appItems        // Row 3
 ]
 
 // ============================================================================
@@ -37,8 +75,10 @@ let isHoldingA = false
 let holdStartTime = 0
 const HOLD_DURATION = 600 // 0.6 seconds
 
-// Launcher navigation state
-let currentLauncherIndex = 0
+// Navigation state (2D grid)
+let currentRow = 1  // Start on launchers
+let currentCol = 0
+let scrollOffset = 0
 
 // ============================================================================
 // CLOCK UPDATE
@@ -97,27 +137,99 @@ function updateProgressRing(progress) {
 }
 
 // ============================================================================
-// LAUNCHER NAVIGATION
+// NAVIGATION
 // ============================================================================
-function updateLauncherFocus() {
-  launcherItems.forEach((item, index) => {
-    if (item) {
-      if (index === currentLauncherIndex) {
-        item.classList.add('focused')
-      } else {
-        item.classList.remove('focused')
-      }
+function updateScroll() {
+  const SHELL_NAV_HEIGHT = 80
+  const CONTAINER_HEIGHT = 212
+  const CONTAINER_GAP = 44
+  const BOTTOM_MARGIN = 120
+  const VIEWPORT_HEIGHT = 720
+  
+  // Calculate the y position of the current row
+  // Row 0 is shell-nav (no scrolling needed)
+  // Rows 1+ are the content containers
+  let rowYPosition, rowBottomPosition
+  
+  if (currentRow === 0) {
+    // Shell nav is always at the top, no scroll needed
+    scrollOffset = 0
+  } else {
+    // Content rows start after shell-nav
+    const contentRow = currentRow - 1
+    rowYPosition = SHELL_NAV_HEIGHT + (contentRow * (CONTAINER_HEIGHT + CONTAINER_GAP))
+    rowBottomPosition = rowYPosition + CONTAINER_HEIGHT
+    
+    // Calculate how much we need to scroll to keep the row visible with bottom margin
+    const maxVisibleBottom = VIEWPORT_HEIGHT - BOTTOM_MARGIN
+    
+    if (rowBottomPosition > maxVisibleBottom) {
+      scrollOffset = -(rowBottomPosition - maxVisibleBottom)
+    } else if (rowYPosition < SHELL_NAV_HEIGHT) {
+      scrollOffset = -(rowYPosition - SHELL_NAV_HEIGHT)
+    } else if (currentRow === 1) {
+      scrollOffset = 0
     }
-  })
+  }
+  
+  // Apply scroll to all containers
+  const launchers = document.getElementById('launchers')
+  const myGames = document.getElementById('my-games')
+  const myApps = document.getElementById('my-apps')
+  
+  if (launchers) launchers.style.transform = `translate(-50%, ${scrollOffset}px)`
+  if (myGames) myGames.style.transform = `translate(-50%, ${scrollOffset}px)`
+  if (myApps) myApps.style.transform = `translate(-50%, ${scrollOffset}px)`
 }
 
-function navigateLaunchers(direction) {
-  if (direction === 'left' && currentLauncherIndex > 0) {
-    currentLauncherIndex--
-    updateLauncherFocus()
-  } else if (direction === 'right' && currentLauncherIndex < launcherItems.length - 1) {
-    currentLauncherIndex++
-    updateLauncherFocus()
+function updateFocus() {
+  // Remove focus from all items
+  navigationGrid.forEach(row => {
+    row.forEach(item => {
+      if (item) item.classList.remove('focused')
+    })
+  })
+  
+  // Add focus to current item
+  const currentItem = navigationGrid[currentRow]?.[currentCol]
+  if (currentItem) {
+    currentItem.classList.add('focused')
+  }
+  
+  // Update scroll position
+  updateScroll()
+}
+
+function navigate(direction) {
+  switch(direction) {
+    case 'left':
+      if (currentCol > 0) {
+        currentCol--
+        updateFocus()
+      }
+      break
+    case 'right':
+      if (currentCol < navigationGrid[currentRow].length - 1) {
+        currentCol++
+        updateFocus()
+      }
+      break
+    case 'up':
+      if (currentRow > 0) {
+        currentRow--
+        // Keep same column, or clamp to available columns in new row
+        currentCol = Math.min(currentCol, navigationGrid[currentRow].length - 1)
+        updateFocus()
+      }
+      break
+    case 'down':
+      if (currentRow < navigationGrid.length - 1) {
+        currentRow++
+        // Keep same column, or clamp to available columns in new row
+        currentCol = Math.min(currentCol, navigationGrid[currentRow].length - 1)
+        updateFocus()
+      }
+      break
   }
 }
 
@@ -145,7 +257,7 @@ function gameLoop() {
       if (holdTime >= HOLD_DURATION) {
         unlockScreen()
         isHoldingA = false
-        // Clear any pending keyboard inputs from lock screen
+        // Clear pending keyboard inputs from lock screen
         input.keyboard.justPressed('LEFT')
         input.keyboard.justPressed('RIGHT')
         input.keyboard.justPressed('UP')
@@ -159,19 +271,30 @@ function gameLoop() {
     }
   }
   
-  // Handle launcher navigation when unlocked
+  // Handle navigation when unlocked
   else if (currentUIState === UI_STATES.UNLOCKED) {
     // D-pad and arrow key navigation
-    const gamepadLeftPressed = input.gamepad.justPressed('LEFT')
-    const gamepadRightPressed = input.gamepad.justPressed('RIGHT')
-    const keyboardLeftPressed = input.keyboard.justPressed('LEFT')
-    const keyboardRightPressed = input.keyboard.justPressed('RIGHT')
-    
-    if (gamepadLeftPressed || keyboardLeftPressed) {
-      navigateLaunchers('left')
+    if (input.gamepad.justPressed('LEFT') || input.keyboard.justPressed('LEFT')) {
+      navigate('left')
     }
-    if (gamepadRightPressed || keyboardRightPressed) {
-      navigateLaunchers('right')
+    if (input.gamepad.justPressed('RIGHT') || input.keyboard.justPressed('RIGHT')) {
+      navigate('right')
+    }
+    if (input.gamepad.justPressed('UP') || input.keyboard.justPressed('UP')) {
+      navigate('up')
+    }
+    if (input.gamepad.justPressed('DOWN') || input.keyboard.justPressed('DOWN')) {
+      navigate('down')
+    }
+    
+    // Bumpers for shell-nav navigation
+    if (currentRow === 0) {
+      if (input.gamepad.justPressed('LB')) {
+        navigate('left')
+      }
+      if (input.gamepad.justPressed('RB')) {
+        navigate('right')
+      }
     }
     
     // Left stick navigation with cooldown
@@ -180,10 +303,16 @@ function gameLoop() {
     
     if (stickCooldown <= currentTime) {
       if (leftStick.x < -0.5) {
-        navigateLaunchers('left')
+        navigate('left')
         stickCooldown = currentTime + STICK_COOLDOWN_TIME
       } else if (leftStick.x > 0.5) {
-        navigateLaunchers('right')
+        navigate('right')
+        stickCooldown = currentTime + STICK_COOLDOWN_TIME
+      } else if (leftStick.y > 0.5) {
+        navigate('up')
+        stickCooldown = currentTime + STICK_COOLDOWN_TIME
+      } else if (leftStick.y < -0.5) {
+        navigate('down')
         stickCooldown = currentTime + STICK_COOLDOWN_TIME
       }
     }

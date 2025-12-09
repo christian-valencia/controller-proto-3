@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Windows Gaming Shell v2.0</title>
+    <title>Controller Prototype</title>
     <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
     <!-- Main App Container -->
     <div id="app">
-      <!-- Windows Shell Container (1280x720 - ROG Ally Resolution) -->
-      <div id="windows-shell">
+      <!-- Main Shell Container (1280x720 - ROG Ally Resolution) -->
+      <div id="main-shell">
         <!-- Lock Screen Container -->
         <div id="lock-screen">
           <!-- Background Container -->
@@ -24,9 +24,7 @@
           <div id="smoke"></div>
           
           <!-- Clock Container -->
-          <div id="clock">
-            
-          </div>
+          <div id="clock"></div>
           
           <!-- Auth Container -->
           <div id="auth">
@@ -36,8 +34,8 @@
             <!-- Progress Ring -->
             <div id="progress-ring">
               <svg width="36" height="36">
-                <circle cx="18" cy="18" r="16" stroke="rgba(177,58,69,0.3)" stroke-width="3" fill="none"/>
-                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="#B13A45" stroke-width="3" fill="none" 
+                <circle cx="18" cy="18" r="16" stroke="rgba(100,181,246,0.3)" stroke-width="3" fill="none"/>
+                <circle id="progress-circle" cx="18" cy="18" r="16" stroke="#64B5F6" stroke-width="3" fill="none" 
                         stroke-dasharray="100.53" stroke-dashoffset="100.53" transform="rotate(-90 18 18)"
                         style="transition: stroke-dashoffset 0.05s linear;"/>
                 <text x="18" y="19" text-anchor="middle" dominant-baseline="middle" 
@@ -49,541 +47,10 @@
             <div id="auth-text-right">to unlock</div>
           </div>
         </div>
-        
-        <!-- Blur Container -->
-        <div id="blur-container">
-          <img src="/assets/images/blur2.png" alt="Blur Effect" />
+
+        <!-- Home Container -->
+        <div id="home">
         </div>
-        
-        <!-- Switcher Container -->
-        <div id="switcher">
-          <!-- Running Apps Container -->
-          <div id="running-apps">
-            <div class="app-container hidden-app" id="green">
-              <div class="app-background"></div>
-              <div class="app-icon green-icon"></div>
-            </div>
-            <div class="app-container hidden-app" id="blue">
-              <div class="app-background"></div>
-              <div class="app-icon blue-icon"></div>
-            </div>
-            <div class="app-container hidden-app" id="orange">
-              <div class="app-background"></div>
-              <div class="app-icon orange-icon"></div>
-            </div>
-          </div>
-          
-          <!-- Preview Containers -->
-          <div id="green-preview" class="preview-container hidden-app">
-            <img id="silksong-image" class="preview-image" src="assets\images\silksong-menu.png" alt="Silksong Menu" />
-            <div class="preview-titlebar">
-              <img src="assets/icons/silksong.png" alt="Silksong" class="titlebar-icon">
-              <span class="titlebar-text">Hollow Knight: Silksong</span>
-            </div>
-          </div>
-          <div id="blue-preview" class="preview-container hidden-app">
-            <div class="preview-titlebar">
-              <img src="assets/icons/xbox.png" alt="Xbox" class="titlebar-icon">
-              <span class="titlebar-text">Xbox</span>
-            </div>
-          </div>
-          <div id="orange-preview" class="preview-container hidden-app">
-            <div class="preview-titlebar">
-              <img src="assets/icons/steam.png" alt="Steam" class="titlebar-icon">
-              <span class="titlebar-text">Steam</span>
-            </div>
-          </div>
-          
-          <!-- Overlay Container -->
-          <div id="overlay">
-            <div id="gb-nav-widgets">
-              <div id="gb-nav"></div>
-              <div id="gb-widgets"></div>
-            </div>
-            <div id="steam">
-              <div id="steam-nav"></div>
-              <div id="steam-legend"></div>
-            </div>
-          </div>
-          
-          <!-- Shell Start Container -->
-          <div id="shell-start">
-            <div class="start-content">
-              <input type="text" class="start-search-box" placeholder="Search for games or apps" />
-              <div class="start-row-container">
-                <h2 class="start-row-title">Launchers</h2>
-                <div class="start-apps">
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                </div>
-              </div>
-              <div class="start-row-container">
-                <h2 class="start-row-title">All games</h2>
-                <div class="start-apps">
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                </div>
-              </div>
-              <div class="start-row-container">
-                <h2 class="start-row-title">All apps</h2>
-                <div class="start-apps">
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                  <div class="start-app"></div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Legend (top-most layer, bottom right) -->
-            <div class="legend">
-              <img src="/assets/images/shell-container-legend.png" alt="Controls Legend" />
-            </div>
-          </div>
-          
-          <!-- Shell Settings Container -->
-          <div id="shell-settings">
-            <div class="settings-navigation">
-              <div class="settings-nav-title">Settings</div>
-              <div class="settings-nav-me-control">
-                <img src="/assets/images/avatar.png" alt="Avatar" />
-                <div class="user-info">
-                  <div class="user-name">StormYeti</div>
-                  <div class="user-status">Online</div>
-                </div>
-              </div>
-              <div class="settings-nav-pages">
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Nav</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Nav</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Nav</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Nav</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Nav</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Nav</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Nav</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Nav</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Nav</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Nav</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon"></div>
-                  <div class="nav-page-text">Nav</div>
-                </div>
-              </div>
-            </div>
-            <div class="settings-content-container">
-              <h1>Title</h1>
-              <div class="section-settings">
-                <h1>Subtitle</h1>
-                <div class="slider-control">
-                  <div class="control-text">
-                    <div class="control-title">Control</div>
-                    <div class="control-description">Description</div>
-                  </div>
-                  <div class="slider-knob-container">
-                    <div class="slider-track">
-                      <div class="slider-value"></div>
-                      <div class="slider-knob"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="cycle-selector">
-                  <div class="control-text">
-                    <div class="control-title">Control</div>
-                    <div class="control-description">Description</div>
-                  </div>
-                  <div class="cycle-text">
-                    <div class="chevron-left"></div>
-                    <div class="cycle-value">Value 1</div>
-                    <div class="chevron-right"></div>
-                  </div>
-                </div>
-                <div class="cycle-selector">
-                  <div class="control-text">
-                    <div class="control-title">Control</div>
-                    <div class="control-description">Description</div>
-                  </div>
-                  <div class="cycle-text">
-                    <div class="chevron-left"></div>
-                    <div class="cycle-value">Value 1</div>
-                    <div class="chevron-right"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="section-settings">
-                <h1>Subtitle</h1>
-                <div class="slider-control">
-                  <div class="control-text">
-                    <div class="control-title">Control</div>
-                    <div class="control-description">Description</div>
-                  </div>
-                  <div class="slider-knob-container">
-                    <div class="slider-track">
-                      <div class="slider-value"></div>
-                      <div class="slider-knob"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="cycle-selector">
-                  <div class="control-text">
-                    <div class="control-title">Control</div>
-                    <div class="control-description">Description</div>
-                  </div>
-                  <div class="cycle-text">
-                    <div class="chevron-left"></div>
-                    <div class="cycle-value">Value 1</div>
-                    <div class="chevron-right"></div>
-                  </div>
-                </div>
-                <div class="cycle-selector">
-                  <div class="control-text">
-                    <div class="control-title">Control</div>
-                    <div class="control-description">Description</div>
-                  </div>
-                  <div class="cycle-text">
-                    <div class="chevron-left"></div>
-                    <div class="cycle-value">Value 1</div>
-                    <div class="chevron-right"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="section-settings">
-                <h1>Subtitle</h1>
-                <div class="slider-control">
-                  <div class="control-text">
-                    <div class="control-title">Control</div>
-                    <div class="control-description">Description</div>
-                  </div>
-                  <div class="slider-knob-container">
-                    <div class="slider-track">
-                      <div class="slider-value"></div>
-                      <div class="slider-knob"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="cycle-selector">
-                  <div class="control-text">
-                    <div class="control-title">Control</div>
-                    <div class="control-description">Description</div>
-                  </div>
-                  <div class="cycle-text">
-                    <div class="chevron-left"></div>
-                    <div class="cycle-value">Value 1</div>
-                    <div class="chevron-right"></div>
-                  </div>
-                </div>
-                <div class="cycle-selector">
-                  <div class="control-text">
-                    <div class="control-title">Control</div>
-                    <div class="control-description">Description</div>
-                  </div>
-                  <div class="cycle-text">
-                    <div class="chevron-left"></div>
-                    <div class="cycle-value">Value 1</div>
-                    <div class="chevron-right"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="settings-legend">
-              <img src="/assets/images/settings-legend.png" alt="Controller Legend" />
-            </div>
-          </div>
-          
-          <!-- Shell Notifications Container -->
-          <div id="shell-notifications">
-            <div class="notifications-navigation">
-              <div class="notifications-nav-title">Notifications</div>
-              <div class="notifications-nav-pages">
-                <div class="nav-page-item selected">
-                  <div class="nav-page-icon">
-                    <img src="/assets/icons/notifications.svg" alt="All" />
-                  </div>
-                  <div class="nav-page-text">All</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon">
-                    <img src="/assets/icons/urgent.svg" alt="Urgent" />
-                  </div>
-                  <div class="nav-page-text">Urgent</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon">
-                    <img src="/assets/icons/social.svg" alt="Social" />
-                  </div>
-                  <div class="nav-page-text">Social</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon">
-                    <img src="/assets/icons/windows-update.svg" alt="Updates" />
-                  </div>
-                  <div class="nav-page-text">Updates</div>
-                </div>
-              </div>
-            </div>
-            <div class="notifications-content-container">
-              <div class="notifications-header">
-                <h1>All notifications</h1>
-                <div class="notifications-header-buttons">
-                  <button class="notification-action-button">Clear all</button>
-                  <button class="notification-action-button">Update all</button>
-                </div>
-              </div>
-              <div class="notifications-list">
-                <div class="notification" data-type="social">
-                  <div class="notification-icon">
-                    <img src="/assets/icons/steam.png" alt="Steam" />
-                  </div>
-                  <div class="notification-text">
-                    <div class="notification-title">Friend request from JimmyNeutron</div>
-                    <div class="notification-description">From Steam</div>
-                  </div>
-                  <div class="notification-time">12:00 PM</div>
-                </div>
-                <div class="notification" data-type="game-update">
-                  <div class="notification-icon">
-                    <img src="/assets/images/halo.png" alt="Halo" />
-                  </div>
-                  <div class="notification-text">
-                    <div class="notification-title">Game update available for Halo: Infinite</div>
-                    <div class="notification-description">New rank features added</div>
-                  </div>
-                  <div class="notification-time">11:45 AM</div>
-                </div>
-                <div class="notification" data-type="social">
-                  <div class="notification-icon">
-                    <img src="/assets/icons/steam.png" alt="Steam" />
-                  </div>
-                  <div class="notification-text">
-                    <div class="notification-title">Party invite from JimmyNeutron</div>
-                    <div class="notification-description">From Steam</div>
-                  </div>
-                  <div class="notification-time">11:20 AM</div>
-                </div>
-                <div class="notification" data-type="urgent system-update">
-                  <div class="notification-icon">
-                    <img src="/assets/icons/system-update.svg" alt="System Update" />
-                  </div>
-                  <div class="notification-text">
-                    <div class="notification-title">Windows system update available</div>
-                    <div class="notification-description">Please update your system to the latest version. Requires a system restart.</div>
-                  </div>
-                  <div class="notification-time">10:30 AM</div>
-                </div>
-                <div class="notification" data-type="app-update">
-                  <div class="notification-icon">
-                    <img src="/assets/images/spotify.png" alt="Spotify" />
-                  </div>
-                  <div class="notification-text">
-                    <div class="notification-title">Spotify needs an update</div>
-                    <div class="notification-description">A new version is available.</div>
-                  </div>
-                  <div class="notification-time">9:15 AM</div>
-                </div>
-                <div class="notification" data-type="game-update">
-                  <div class="notification-icon">
-                    <img src="/assets/images/doom.png" alt="Doom" />
-                  </div>
-                  <div class="notification-text">
-                    <div class="notification-title">Doom: the Dark Ages needs an update</div>
-                    <div class="notification-description">A new version is available.</div>
-                  </div>
-                  <div class="notification-time">Yesterday</div>
-                </div>
-                <div class="notification" data-type="app-update">
-                  <div class="notification-icon">
-                    <img src="/assets/images/nvidia.png" alt="NVIDIA" />
-                  </div>
-                  <div class="notification-text">
-                    <div class="notification-title">NVIDIA GeForce Experience needs an update</div>
-                    <div class="notification-description">A new version is available.</div>
-                  </div>
-                  <div class="notification-time">Yesterday</div>
-                </div>
-                <div class="notification" data-type="urgent app-update">
-                  <div class="notification-icon">
-                    <img src="/assets/images/xbox.png" alt="Xbox" />
-                  </div>
-                  <div class="notification-text">
-                    <div class="notification-title">The Xbox app needs an update</div>
-                    <div class="notification-description">A new version is available. Requires a system restart.</div>
-                  </div>
-                  <div class="notification-time">2 days ago</div>
-                </div>
-              </div>
-            </div>
-            <div class="notifications-legend"></div>
-          </div>
-          
-          <!-- Shell Gallery Container -->
-          <div id="shell-gallery">
-            <div class="gallery-navigation">
-              <div class="gallery-nav-title">Gallery</div>
-              <div class="gallery-nav-pages">
-                <div class="nav-page-item selected">
-                  <div class="nav-page-icon">
-                    <img src="/assets/icons/gallery.svg" alt="Gallery" />
-                  </div>
-                  <div class="nav-page-text">All</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon">
-                    <img src="/assets/icons/picture.svg" alt="Photos" />
-                  </div>
-                  <div class="nav-page-text">Photos</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon">
-                    <img src="/assets/icons/video.svg" alt="Videos" />
-                  </div>
-                  <div class="nav-page-text">Videos</div>
-                </div>
-                <div class="nav-page-item">
-                  <div class="nav-page-icon">
-                    <img src="/assets/icons/file.svg" alt="Files" />
-                  </div>
-                  <div class="nav-page-text">Files</div>
-                </div>
-              </div>
-            </div>
-            <div class="gallery-content-container">
-              <div class="gallery-header">
-                <h1>All content</h1>
-              </div>
-              <div class="gallery-media-grid">
-                <div class="gallery-media-item" data-type="video">
-                  <div class="media-item-banner">
-                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
-                    <span class="media-item-name">Hornet Boss Fight</span>
-                  </div>
-                </div>
-                <div class="gallery-media-item" data-type="video">
-                  <div class="media-item-banner">
-                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
-                    <span class="media-item-name">Deepnest Exploration</span>
-                  </div>
-                </div>
-                <div class="gallery-media-item" data-type="image">
-                  <div class="media-item-banner">
-                    <img src="/assets/icons/picture.svg" class="media-type-icon" alt="Image" />
-                    <span class="media-item-name">Moss Grotto Screenshot</span>
-                  </div>
-                </div>
-                <div class="gallery-media-item" data-type="video">
-                  <div class="media-item-banner">
-                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
-                    <span class="media-item-name">Silk Abilities Showcase</span>
-                  </div>
-                </div>
-                <div class="gallery-media-item" data-type="video">
-                  <div class="media-item-banner">
-                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
-                    <span class="media-item-name">Lace Combat Demo</span>
-                  </div>
-                </div>
-                <div class="gallery-media-item" data-type="image">
-                  <div class="media-item-banner">
-                    <img src="/assets/icons/picture.svg" class="media-type-icon" alt="Image" />
-                    <span class="media-item-name">Citadel Panorama</span>
-                  </div>
-                </div>
-                <div class="gallery-media-item" data-type="video">
-                  <div class="media-item-banner">
-                    <img src="/assets/icons/video.svg" class="media-type-icon" alt="Video" />
-                    <span class="media-item-name">Crystal Peaks Gameplay</span>
-                  </div>
-                </div>
-                <div class="gallery-media-item" data-type="image">
-                  <div class="media-item-banner">
-                    <img src="/assets/icons/picture.svg" class="media-type-icon" alt="Image" />
-                    <span class="media-item-name">Kingdom's Edge Sunrise</span>
-                  </div>
-                </div>
-                <div class="gallery-media-item" data-type="file">
-                  <div class="media-item-banner">
-                    <img src="/assets/icons/file.svg" class="media-type-icon" alt="File" />
-                    <span class="media-item-name">Save Game Data.json</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <!-- Gallery Legend -->
-            <div class="gallery-legend">
-              <img src="/assets/images/shell-container-legend.png" alt="Controls Legend" />
-            </div>
-          </div>
-          
-          <!-- Shell Navigation Container -->
-          <div id="shell-nav">
-            <div id="start" class="nav-item">
-              <img src="/assets/icons/apps.svg" alt="Start" width="28" height="28" />
-            </div>
-            <div id="settings" class="nav-item">
-              <img src="/assets/icons/settings.svg" alt="Settings" width="24" height="24" />
-            </div>
-            <div id="gallery" class="nav-item">
-              <img src="/assets/icons/gallery.svg" alt="Gallery" width="24" height="24" />
-            </div>
-            <div id="notifications" class="nav-item">
-              <img src="/assets/icons/notifications.svg" alt="Notifications" width="24" height="24" />
-            </div>
-            
-            <!-- Shell Nav Labels (inside shell-nav) -->
-            <div id="shell-nav-labels">
-              <div id="label-start" class="nav-label">Start</div>
-              <div id="label-settings" class="nav-label">Settings</div>
-              <div id="label-gallery" class="nav-label">Gallery</div>
-              <div id="label-notifications" class="nav-label">Notifications</div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Focus Container -->
-        <div id="focus"></div>
-        
-        <!-- Future containers will go here -->
-        
       </div>
     </div>
 
@@ -594,17 +61,24 @@
         <div class="legend-items controller-items">
           <div class="legend-item">
             <div class="legend-button">Y</div>
-            <span class="legend-action">Unlock</span>
+            <div class="legend-label">Action</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-button">A</div>
+            <div class="legend-label">Select</div>
           </div>
         </div>
       </div>
-      <div class="legend-divider"></div>
       <div class="legend-section">
         <div class="legend-header">Keyboard</div>
         <div class="legend-items keyboard-items">
           <div class="legend-item">
-            <div class="legend-button">W</div>
-            <span class="legend-action">Unlock</span>
+            <div class="legend-key">W</div>
+            <div class="legend-label">Action</div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-key">A</div>
+            <div class="legend-label">Select</div>
           </div>
         </div>
       </div>

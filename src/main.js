@@ -14,6 +14,16 @@ const clock = document.getElementById('clock')
 const progressRing = document.getElementById('progress-ring')
 const progressCircle = document.getElementById('progress-circle')
 
+// Launcher elements
+const launcherItems = [
+  document.getElementById('launcher-xbox'),
+  document.getElementById('launcher-steam'),
+  document.getElementById('launcher-epic'),
+  document.getElementById('launcher-battlenet'),
+  document.getElementById('launcher-ea'),
+  document.getElementById('launcher-riot')
+]
+
 // ============================================================================
 // STATE MANAGEMENT
 // ============================================================================
@@ -26,6 +36,9 @@ let currentUIState = UI_STATES.LOCKED
 let isHoldingA = false
 let holdStartTime = 0
 const HOLD_DURATION = 600 // 0.6 seconds
+
+// Launcher navigation state
+let currentLauncherIndex = 0
 
 // ============================================================================
 // CLOCK UPDATE
@@ -84,8 +97,36 @@ function updateProgressRing(progress) {
 }
 
 // ============================================================================
+// LAUNCHER NAVIGATION
+// ============================================================================
+function updateLauncherFocus() {
+  launcherItems.forEach((item, index) => {
+    if (item) {
+      if (index === currentLauncherIndex) {
+        item.classList.add('focused')
+      } else {
+        item.classList.remove('focused')
+      }
+    }
+  })
+}
+
+function navigateLaunchers(direction) {
+  if (direction === 'left' && currentLauncherIndex > 0) {
+    currentLauncherIndex--
+    updateLauncherFocus()
+  } else if (direction === 'right' && currentLauncherIndex < launcherItems.length - 1) {
+    currentLauncherIndex++
+    updateLauncherFocus()
+  }
+}
+
+// ============================================================================
 // GAME LOOP
 // ============================================================================
+let stickCooldown = 0
+const STICK_COOLDOWN_TIME = 200 // ms between stick navigation
+
 function gameLoop() {
   input.update()
   
@@ -104,11 +145,46 @@ function gameLoop() {
       if (holdTime >= HOLD_DURATION) {
         unlockScreen()
         isHoldingA = false
+        // Clear any pending keyboard inputs from lock screen
+        input.keyboard.justPressed('LEFT')
+        input.keyboard.justPressed('RIGHT')
+        input.keyboard.justPressed('UP')
+        input.keyboard.justPressed('DOWN')
       }
     } else {
       if (isHoldingA) {
         isHoldingA = false
         updateProgressRing(0)
+      }
+    }
+  }
+  
+  // Handle launcher navigation when unlocked
+  else if (currentUIState === UI_STATES.UNLOCKED) {
+    // D-pad and arrow key navigation
+    const gamepadLeftPressed = input.gamepad.justPressed('LEFT')
+    const gamepadRightPressed = input.gamepad.justPressed('RIGHT')
+    const keyboardLeftPressed = input.keyboard.justPressed('LEFT')
+    const keyboardRightPressed = input.keyboard.justPressed('RIGHT')
+    
+    if (gamepadLeftPressed || keyboardLeftPressed) {
+      navigateLaunchers('left')
+    }
+    if (gamepadRightPressed || keyboardRightPressed) {
+      navigateLaunchers('right')
+    }
+    
+    // Left stick navigation with cooldown
+    const leftStick = input.getStick('LEFT')
+    const currentTime = Date.now()
+    
+    if (stickCooldown <= currentTime) {
+      if (leftStick.x < -0.5) {
+        navigateLaunchers('left')
+        stickCooldown = currentTime + STICK_COOLDOWN_TIME
+      } else if (leftStick.x > 0.5) {
+        navigateLaunchers('right')
+        stickCooldown = currentTime + STICK_COOLDOWN_TIME
       }
     }
   }
@@ -121,6 +197,4 @@ requestAnimationFrame(gameLoop)
 
 console.log('Controller prototype initialized')
 console.log('Press and hold A (controller) or W (keyboard) to unlock')
-
-
 

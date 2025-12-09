@@ -44,6 +44,7 @@ const KEY_MAP: Record<string, ButtonName> = {
 export class KeyboardManager {
   private keysDown: Set<string> = new Set()
   private prevKeysDown: Set<string> = new Set()
+  private justPressedKeys: Set<string> = new Set()
   
   // Simulated stick positions using WASD and arrow keys
   private leftStick = { x: 0, y: 0 }
@@ -56,7 +57,14 @@ export class KeyboardManager {
         e.preventDefault()
       }
       
+      const wasDown = this.keysDown.has(e.key)
       this.keysDown.add(e.key)
+      
+      // Track new presses
+      if (!wasDown) {
+        this.justPressedKeys.add(e.key)
+      }
+      
       this.updateSticks()
     })
 
@@ -102,6 +110,7 @@ export class KeyboardManager {
 
   update() {
     this.prevKeysDown = new Set(this.keysDown)
+    // Don't clear justPressedKeys here - they need to persist for the frame
   }
 
   isDown(buttonName: ButtonName): boolean {
@@ -115,16 +124,15 @@ export class KeyboardManager {
   }
 
   justPressed(buttonName: ButtonName): boolean {
-    const isDownNow = this.isDown(buttonName)
-    if (!isDownNow) return false
-    
-    // Check if this button was NOT down in the previous frame
+    // Check if any key mapped to this button was just pressed
     for (const [key, mappedButton] of Object.entries(KEY_MAP)) {
-      if (mappedButton === buttonName && this.prevKeysDown.has(key)) {
-        return false  // Was already down
+      if (mappedButton === buttonName && this.justPressedKeys.has(key)) {
+        // Remove from set so it only triggers once
+        this.justPressedKeys.delete(key)
+        return true
       }
     }
-    return true
+    return false
   }
 
   justReleased(buttonName: ButtonName): boolean {

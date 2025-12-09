@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Controller Prototype</title>
-    <script type="module" crossorigin src="./assets/index-CEdcO7aK.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-J8XsgTyk.css">
+    <title>Windows Shell prototype v2.0 | Extensible Home</title>
+    <script type="module" crossorigin src="./assets/index-QbVGqwGX.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-aGa7Zbt7.css">
   </head>
   <body>
     <!-- Main App Container -->
@@ -51,6 +51,52 @@
 
         <!-- Home Container -->
         <div id="home">
+          <!-- Shell Navigation -->
+          <div id="shell-nav">
+            <div id="shell-runningapp" class="shell-nav-item">
+              <svg width="24" height="24">
+                <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <div id="shell-power" class="shell-nav-item">
+              <svg width="24" height="24">
+                <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <div id="shell-search" class="shell-nav-item">
+              <svg width="24" height="24">
+                <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <div id="shell-overlay" class="shell-nav-item">
+              <svg width="24" height="24">
+                <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <div id="shell-settings" class="shell-nav-item">
+              <svg width="24" height="24">
+                <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <div id="shell-notifications" class="shell-nav-item">
+              <svg width="24" height="24">
+                <circle cx="12" cy="12" r="10" stroke="white" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Launchers Container -->
+          <div id="launchers">
+            <div id="launchers-title">Launchers</div>
+            <div id="launchers-grid">
+              <div id="launcher-xbox" class="launcher-item focused">Xbox</div>
+              <div id="launcher-steam" class="launcher-item">Steam</div>
+              <div id="launcher-epic" class="launcher-item">Epic Games</div>
+              <div id="launcher-battlenet" class="launcher-item">Battle.net</div>
+              <div id="launcher-ea" class="launcher-item">EA</div>
+              <div id="launcher-riot" class="launcher-item">Riot Games</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
